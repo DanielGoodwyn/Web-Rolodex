@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <title>Rolodex</title>
+  <meta name="description" content="Rolodex">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="http://www.parsecdn.com/js/parse-1.3.3.min.js"></script>
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCv2f7_vCuZxatrsc28LltGai044uEcAhk"></script>
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/themes/smoothness/jquery-ui.css" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"></script>
+</head>
+<body>
+  <div id="create-card">
+    <div class="panel panel-success">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i id="collapse-down-create-card" class="float-right glyphicon glyphicon-collapse-down btn-create-card"></i>new association card</h3>
+      </div>
+      <div class="panel-body">
+        <div class="two-fifths">
+          <input id="newNameInput" name="newNameInput" type="text" onkeyup="newAssociation(event)" placeholder="Name" value="">
+        </div>
+        <div class="two-fifths">
+          <input id="newTypeInput" name="newTypeInput" type="text" onkeyup="newAssociation(event)" placeholder="type" value="">
+        </div>
+        <div class="fifth">
+          <p><button id="newAssociation" class="btn btn-success">create +</button></p>
+        </div>
+        <div class="two-fifths">
+          <p><i>example: Philz Coffee</i></p>
+        </div>
+        <div class="two-fifths">
+          <p><i>example: Coffee Shops</i></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <nav class="navbar navbar-default navbar-fixed-top glass">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#rolodex-navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" onclick="window.location.href='index.html';">
+          <span>
+            <img src="images/rolodex.png">
+          </span>
+          <span class="hidden-xs">
+            Rolodex
+          </span>
+        </a>
+      </div>
+      <div class="collapse navbar-collapse" id="rolodex-navbar-collapse">
+        <ul class="nav navbar-nav navbar-right">
+          <li>
+            <a href="about.html"><i class="glyphicon glyphicon-info-sign"></i> about rolodex</a>
+          </li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+              <span id="userProfilePicture"></span>
+              <span id="usernameDiv"></span>
+              <span class="caret"></span>
+            </a>            
+            <ul class="dropdown-menu" role="menu">
+              <li><a onclick="window.location.href='login.html';"><i class="glyphicon glyphicon-user"></i> Account</a></li>
+              <li class="divider"></li>
+              <li><a onclick="logout()"><i class="glyphicon glyphicon-log-out"></i> Log out</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <nav class="navbar navbar-default navbar-fixed-bottom glass">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand hood" id="hood"></a>
+      </div>
+      <div class="float-right bottom-right collapse navbar-collapse visible" id="rolodex-bottom-navbar-collapse">
+        <ul class="nav navbar-nav navbar-right visible">
+          <li class="dropdown visible">
+            <a class="btn-create-card create-green visible">
+              <i class="glyphicon glyphicon-plus visible"></i> card
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    <div class="row panels">
+      <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class='float-left glyphicon glyphicon-filter'></i> filter type</h3>
+          </div>
+          <div class="panel-body">
+            association card type
+            <br>
+            <div id="typeSelectDiv"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class='float-left glyphicon glyphicon-sort'></i> sort order</h3>
+          </div>
+          <div class="panel-body">
+            <div class="half">
+              <p>
+                sort
+                <br>
+                <select id="sortSelect" onchange="setSort()">
+                  <option selected value="name">association name</option>
+                  <option value="neighborhood">neighborhood name</option>
+                  <option value="distance">distance</option>
+                  <option value="rating">my rating</option>
+                </select>
+              </p>
+            </div>
+            <div class="half">
+              <button class="btn btn-primary" style="display:none;" id="ascendingButton" onclick="setOrder('ascending', true)"><i class='glyphicon glyphicon-sort-by-alphabet-alt'></i></button>
+              <button class="btn btn-primary" style="display:none;" id="descendingButton" onclick="setOrder('descending', true)"><i class='glyphicon glyphicon-sort-by-alphabet'></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-4 col-lg-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class='float-left glyphicon glyphicon-search'></i> search my created association cards</h3>
+          </div>
+          <div class="panel-body">
+            <div class="half">
+              <input type="search" id="nameStartsWith" type="text" name="nameStartsWith" placeholder="by Name" onkeyup="getAssociations()">
+            </div>
+            <div class="half">
+              <input type="search" id="neighborhoodStartsWith" type="text" name="neighborhoodStartsWith" placeholder="by Neighborhood" onkeyup="getAssociations()">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="clearfix"></div>
+      <div class="row">
+        <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4" id="checkNamesDiv"></div>
+        <div class="clearfix visible-xs"></div>
+        <br class="visible-xs"/>
+        <a class="col-xs-6 col-sm-4 col-md-4 col-lg-4 black" id="expandCards">▼ expand all cards</a>
+        <a class="col-xs-6 col-sm-4 col-md-4 col-lg-4 black" id="collapseCards">▶ collapse all cards</a>
+      </div>
+      <br>
+    <div class="clearfix"></div>
+    <div id="output"></div>
+  </div>
+  <script src="js/rolodex.js"></script>
+</body>
+</html>

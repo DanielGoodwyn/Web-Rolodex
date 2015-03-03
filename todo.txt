@@ -1,0 +1,20 @@
+----------------------------------------------------------------------
+                                                         Rolodex | Web
+----------------------------------------------------------------------
+  _______
+_| FIXES |____________________________________________________________
+
+   difficult |   distance   | nearby (multidementional arrays?)
+     tedious |   refactor   | use jQuery!
+     complex |   refactor   | redraw / expand/collapse / accordian
+----------------------------------------------------------------------
+  __________
+_| FEATURES |_________________________________________________________
+
+     tedious |   facebook   | option to sign up/log in link, or unlink
+      medium |  savestate   | remember last filter type
+      medium |  indicator   | display if card section has stuff in it
+     tedious |   numbers    | sort cards by any kind of number
+     tedious |    dates     | sort cards by est/dob
+     tedious |    times     | sort cards/notes by created or updated
+----------------------------------------------------------------------

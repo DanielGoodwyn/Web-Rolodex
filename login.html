@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <title>Rolodex</title>
+  <meta name="description" content="Rolodex">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="http://www.parsecdn.com/js/parse-1.3.3.min.js"></script>
+</head>
+<body>
+  <nav class="navbar navbar-default navbar-fixed-top glass">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#rolodex-navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>        
+        <a class="navbar-brand" onclick="window.location.href='index.html';">
+          <span>
+            <img src="images/rolodex.png">
+          </span>
+          <span class="hidden-xs">
+            Rolodex
+          </span>
+        </a>
+      </div>
+      <div class="collapse navbar-collapse" id="rolodex-navbar-collapse">
+        <ul class="nav navbar-nav navbar-right">
+          <li>
+            <a href="about.html"><i class="glyphicon glyphicon-info-sign"></i> about rolodex</a>
+          </li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+              <span id="userProfilePicture"></span>
+              <span id="usernameDiv"></span>
+              <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu" role="menu">
+              <li><a onclick="window.location.href='login.html';"><i class="glyphicon glyphicon-user"></i> Account</a></li>
+              <li class="divider"></li>
+              <li><a onclick="logout()"><i class="glyphicon glyphicon-log-out"></i> Log out</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"> <i class="float-left glyphicon glyphicon-user"></i> My Rolodex Account</h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <div id="profilePicture"></div>
+                <div class="input-group accountInfo">
+                  <span class="input-group-label" id="basic-addon1">Profile Picture (url)</span>
+                  <input class="form-control" type="url" id="profilePictureInput" onkeypress="return setProfilePicture(event)">
+                  <span class="input-group-btn">
+                    <button class="btn btn-primary" type="button" onclick="setProfilePicture('click')">Set</button>
+                  </span>
+                </div>
+              </div>
+              <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <input type="text" id="usernameInput" placeholder="username (required)" onkeypress="return login(event)">
+                <input type="password" id="passwordInput" placeholder="password (required)" onkeypress="return login(event)">
+                <input type="email" id="emailInput" placeholder="email (only required for signup)" onkeypress="return signup(event)">
+                <div class="input-group accountInfo">
+                  <span class="input-group-label" id="basic-addon1">Username</span>
+                  <input class="form-control" type="text" id="changeUsernameInput" onkeypress="return setUsername(event)">
+                  <span class="input-group-btn">
+                    <button class="btn btn-primary" type="button" onclick="setUsername('click')">Set</button>
+                  </span>
+                </div>
+                <div class="input-group accountInfo">
+                  <span class="input-group-label" id="basic-addon1">Email</span>
+                  <input class="form-control" type="email" id="changeEmailInput" onkeypress="return setEmail(event)">
+                  <span class="input-group-btn">
+                    <button class="btn btn-primary" type="button" onclick="setEmail('click')">Set</button>
+                  </span>
+                </div>
+                <a class="accountInfo" onclick="resetPassword()">Reset Password</a>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                  <button class="btn btn-success" id="signupBtn" onclick="signup('click')">signup</button>
+                  <button class="btn btn-primary" id="loginBtn" onclick="login('click')">login</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+        <p>Learn <a href="about.html">About</a> Rolodex.</p>
+        <button id="go" onclick="window.location.href='index.html';" type="button" class="btn btn-success">Begin!</button>
+        <br><br>
+        <p class="loginAlert alert alert-warning" style="display:none;">You may be prompted by your browser to <b>allow permission</b> (recommend) to use your current location.</p>
+      </div>
+    </div>
+  </div>
+  <script src="js/rolodex.js"></script>
+</body>
+</html>

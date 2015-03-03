@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <title>Rolodex</title>
+  <meta name="description" content="Rolodex">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="http://www.parsecdn.com/js/parse-1.3.3.min.js"></script>
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCv2f7_vCuZxatrsc28LltGai044uEcAhk"></script>
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/themes/smoothness/jquery-ui.css" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"></script>
+</head>
+<body>
+  <nav class="navbar navbar-default navbar-fixed-top glass">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#rolodex-navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" onclick="window.location.href='index.html';">
+          <span>
+            <img src="images/rolodex.png">
+          </span>
+          <span class="hidden-xs">
+            Rolodex
+          </span>
+        </a>
+      </div>
+      <div class="collapse navbar-collapse" id="rolodex-navbar-collapse">
+        <ul class="nav navbar-nav navbar-right">
+          <li>
+            <a href="about.html"><i class="glyphicon glyphicon-info-sign"></i> about rolodex</a>
+          </li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+              <span id="userProfilePicture"></span>
+              <span id="usernameDiv">log in to begin.</span>
+              <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu" role="menu">
+              <li><a onclick="window.location.href='login.html';"><i class="glyphicon glyphicon-user"></i> Account</a></li>
+              <li class="divider"></li>
+              <li><a onclick="logout()"><i class="glyphicon glyphicon-log-out"></i> Log out</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+      <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title"><i class="float-left glyphicon glyphicon-book"></i> How To Use Rolodex</h3>
+            </div>
+            <div class="panel-body left-align">
+              <h2>How To</h2>
+              <h3>Creating a Card</h3>
+              <p>To create an <b>Association Card</b>:
+                <ol>
+                  <li>Click the
+                    <div class="navbar-collapse visible" id="rolodex-bottom-navbar-collapse">
+                      <ul class="nav navbar-nav">
+                        <li class="dropdown">
+                          <a class="btn-create-card create-green">
+                            <i class="glyphicon glyphicon-plus"></i> card
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                    button on the bottom right corner of the page to open the <b>new association card</b> panel.<br>(The <b>new association card</b> panel should be open already if you have not created any <b>types</b> yet.)</li>
+                  <li>Enter the New Association's <b>name</b> and <b>type</b>.</li>
+                  <li>Click <button class="btn btn-success">create +</button> or press enter.</li>
+                  <li>Enter whatever additional <b>information</b> you'd like into the <b>card</b>'s corresponding input fields, and click <button class="btn btn-primary">+</button> or press enter.</li>                  
+                </ol>
+                <p class="alert alert-info"><b>Associate Cards</b> are created from within <b>Association Cards</b>.</p>
+              </p>
+              <h3>Navigating through your Cards</h3>              
+              <p>Once you've <b>created</b> some <b>association cards</b>, you can <b>filter</b> them by <b>type</b> using the <b><i class='glyphicon glyphicon-filter'></i> filter type</b> panel.</p>
+              <p class="alert alert-info">You can only see one <b>type</b> at a time.</p>
+              <p>You can <b>search</b> through your <b>association cards</b> by <b>name</b> or <b>neighborhood</b> by beginning to type in one of the inputs in the <b><i class='glyphicon glyphicon-search'></i> search my created association cards</b> panel.</p>
+              <p class="alert alert-info">To see all cards for that type, leave the search input fields blank.</p>
+              <p class="alert alert-info">You must enter in an <b>address</b> for a card in order for it to be sorted by neighborhood.</p>
+              <p>You can <b>sort</b> your <b>association cards</b> (ascending or decending) by <b>name</b>, <b>neighborhood</b>, or <b>rating</b> using the <b><i class='glyphicon glyphicon-sort'></i> sort order</b> panel.</p>
+              <p class="alert alert-info">Sort by <b>distance</b> not implemented (<i>yet</i>).</p>
+              <p class="loginAlert alert alert-warning">You may be prompted by your browser to <b>allow permission</b> (recommend) to use your current location.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title"><i class="float-left glyphicon glyphicon-info-sign"></i> About Rolodex</h3>
+            </div>
+            <div class="panel-body left-align">
+              <h2>About</h2>
+              <p>This <b>Web App</b> was built in 2015 by <a href="http://www.DanielGoodwyn.com">Daniel Goodwyn</a> using <a href="http://www.parse.com">Parse</a>, <a href="http://www.jquery.com">jQuery</a>, and <a href="http://getbootstrap.com">Bootstrap</a>.</p>
+              <div class="alert alert-info">
+                <p>Feel free to view the source code in your browser if you're into that kind of thing.</p>
+                <p style="text-align:center;">
+                <a href="js/rolodex.js">rolodex.js</a> | <a href="css/styles.css">styles.css</a>
+                </p>
+              </div>
+              <p>You can use this Web App to organize your own personal list (or "<b>Rolodex</b>") of contact "<b>Cards</b>" with related information. Create "<b>Association" Cards</b> by "<b>Type</b>", and fill them in with a <b>Location</b>, <b>Links</b> to a webiste, Facebook, Instagram, and Twitter, "<b>Associates</b>", and <b>Notes</b>.</p>
+              <h3>Card Types</h3>
+              <p>"<b>Types</b>" are meant to be used as different categories that you can filter your many contact <b>Cards</b> by, such as <i>Coffee Shops</i>, <i>Tech Companies</i>, or <i>Places to Visit</i>.</p>
+              <h4>Associations</h4>
+              <p>"<b>Association</b>" <b>Cards</b> are meant to be used as individual contact <b>Cards</b> for each <b>Type</b> such as <i>Philz Coffee</i>, <i>Twitter</i>, or <i>The Golden Gate Bridge</i>.</p>
+              <h4>Associates</h4>
+              <p>"<b>Associate</b>" <b>Cards</b> are meant to be used as individual contact <b>Cards</b> for people associated with each <b>Association</b> such as <i>Phil Jaber</i>, <i>Jack Dorsey</i>, or <i>Irving Morrow</i>.<br>(Techincally, <b>Associate</b> is an <b>Association</b> <b>Type</b>.)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="alert alert-info login-alert">You must be <a href="login.html"><u>logged in</u></a> to use this app.</p>
+      <button id="go" onclick="window.location.href='index.html';" type="button" class="btn btn-success">Begin!</button>
+  </div>
+  <script src="js/rolodex.js"></script>
+</body>
+</html>
