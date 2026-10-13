@@ -34,6 +34,10 @@ const Parse = {
         if (user) {
           db.collection('users').doc(user.uid).get().then(function(doc) {
             var userData = doc.exists ? doc.data() : { email: user.email };
+            if (user.displayName && (!userData.username || userData.username === user.displayName.toLowerCase().replace(/[^a-z0-9]/g, ''))) {
+              userData.username = user.displayName.trim().toLowerCase();
+              db.collection('users').doc(user.uid).set({ username: userData.username }, { merge: true });
+            }
             Parse.User._currentUser = new Parse.UserClass(user, userData);
             try {
               localStorage.setItem('parse_current_user', JSON.stringify({ uid: user.uid, data: userData }));
@@ -291,7 +295,10 @@ Parse.User = {
       var user = cred.user;
       return db.collection('users').doc(user.uid).get().then(function(doc) {
         var existingData = doc.exists ? doc.data() : {};
-        var usernameCandidate = existingData.username || (user.displayName ? user.displayName.toLowerCase().replace(/[^a-z0-9]/g, '') : user.email.split('@')[0]);
+        var usernameCandidate = existingData.username;
+        if (!usernameCandidate || (user.displayName && usernameCandidate === user.displayName.toLowerCase().replace(/[^a-z0-9]/g, ''))) {
+          usernameCandidate = user.displayName ? user.displayName.trim().toLowerCase() : user.email.split('@')[0];
+        }
         var userData = {
           username: usernameCandidate,
           email: user.email,

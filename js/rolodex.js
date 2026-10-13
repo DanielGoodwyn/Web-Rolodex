@@ -1475,7 +1475,11 @@ function setElementById(identification, string) {
 }
 
 function capitaliseFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
+	if (string === null || string === undefined) return "";
+	string = String(string);
+	return string.toLowerCase().replace(/(?:^|[\s\-_.])([a-z0-9])/g, function(match) {
+		return match.toUpperCase();
+	});
 }
 
 function visit(string) {

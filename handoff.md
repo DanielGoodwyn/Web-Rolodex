@@ -28,11 +28,14 @@ The legacy 2015 Parse.com-based Rolodex web application has been revived and upg
    - Added branded Google Sign-In button and separator in `login.html`.
    - Wired up login state handling in `js/rolodex.js`.
    - Verified end-to-end in production: clicked "Sign in with Google", authenticated via popup with `danielgoodwyn@gmail.com`, and successfully redirected to the active session.
-5. **Clean URLs & Server Configuration (`.htaccess`)**:
+5. **Title Case Every Word for Usernames**:
+   - Upgraded `capitaliseFirstLetter()` in `js/rolodex.js` to capitalize the initial letter of every word (supporting spaces, hyphens, and underscores: e.g. "Daniel Goodwyn", "Mary-Ann", "John Doe").
+   - Preserved spaces in Google Auth `displayName` and upgraded legacy collapsed usernames.
+6. **Clean URLs & Server Configuration (`.htaccess`)**:
    - Stripped `.html` extensions (`/rolodex/`, `/rolodex/login`, `/rolodex/about`).
    - 301 redirects from legacy `.html` URLs to extensionless URLs.
-   - Added cache-control headers (`mod_headers`) and script cachebusting (`?v=5`).
-6. **Production Deployment & Verification**:
+   - Added cache-control headers (`mod_headers`) and script cachebusting (`?v=6`).
+7. **Production Deployment & Verification**:
    - Deployed all assets via SFTP to IONOS production host.
    - Verified HTTP 200 responses on all routes.
    - Verified Card creation, ratings, locations, links, type filtering, name search, and ascending/descending sorting in Chrome.
