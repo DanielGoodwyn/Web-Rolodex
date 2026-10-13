@@ -353,3 +353,29 @@ hr {
 .black {
     color: #333;
 }
+
+.btn-google-maps {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    background: #ffffff;
+    color: #333333;
+    border: 1px solid #cccccc!important;
+    border-radius: 4px;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none!important;
+    display: inline-block;
+    transition: all 0.2s ease;
+}
+
+.btn-google-maps:hover {
+    background: #f4f4f4;
+    color: #1a73e8;
+    border-color: #4285f4!important;
+}
+
+.btn-google-maps i.glyphicon-map-marker {
+    color: #ea4335;
+    margin-right: 2px;
+}

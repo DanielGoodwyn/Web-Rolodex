@@ -41,10 +41,15 @@ The legacy 2015 Parse.com-based Rolodex web application has been revived and upg
    - Stripped `.html` extensions (`/rolodex/`, `/rolodex/login`, `/rolodex/about`).
    - 301 redirects from legacy `.html` URLs to extensionless URLs.
    - Added cache-control headers (`mod_headers`) and script cachebusting (`?v=7`).
-8. **Production Deployment & Verification**:
+8. **100% Free Location Geocoding & Google Maps Integration ($0 Cost)**:
+   - Replaced Google Cloud Geocoder dependency (which required Google Cloud billing accounts and authorization holds) with OpenStreetMap Nominatim for forward and reverse geocoding.
+   - Provides free address-to-coordinates geocoding and device GPS-to-neighborhood detection with $0 charges and zero API key requirements.
+   - Added direct "Open in Google Maps" navigation links (`https://www.google.com/maps/search/?api=1&query=...`) to each card, leveraging Google's free universal URL scheme to open native Google Maps directions with zero charges.
+   - Updated distance sorting to calculate Haversine distance in memory via `database-adapter.js`.
+9. **Production Deployment & Verification**:
    - Deployed all assets via SFTP to IONOS production host.
    - Verified HTTP 200 responses on all routes.
-   - Verified Card creation, ratings, locations, links, type filtering, name search, and ascending/descending sorting in Chrome.
+   - Verified Card creation, ratings, locations, links, type filtering, name search, ascending/descending sorting, and Google Maps links.
 
 ### 3. Key Files
 - `index.html`: Main Rolodex cards view.

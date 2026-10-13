@@ -96,6 +96,158 @@ $(document).ready(function() {
 	}
 });
 
+function extractNeighborhoodFromAddress(addr, defaultName) {
+	if (!addr) return defaultName || "-";
+	return addr.neighbourhood || addr.suburb || addr.city_district || addr.district || addr.quarter || addr.city || addr.town || addr.village || addr.county || defaultName || "-";
+}
+
+function freeGeocodeAddress(address, callback) {
+	if (!address || !address.trim()) {
+		if (callback) callback({ success: false, error: "Empty address" });
+		return;
+	}
+
+	var url = "https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=1&q=" + encodeURIComponent(address.trim());
+	$.ajax({
+		url: url,
+		type: "GET",
+		dataType: "json",
+		timeout: 8000,
+		headers: {
+			"Accept-Language": "en"
+		},
+		success: function(data) {
+			if (data && data.length > 0) {
+				var item = data[0];
+				var lat = parseFloat(item.lat);
+				var lng = parseFloat(item.lon);
+				var neighborhood = extractNeighborhoodFromAddress(item.address, address.split(',')[0].trim());
+				var formattedAddress = item.display_name || address;
+				if (callback) {
+					callback({
+						success: true,
+						latitude: lat,
+						longitude: lng,
+						neighborhood: neighborhood,
+						formatted_address: formattedAddress,
+						source: "nominatim"
+					});
+				}
+			} else {
+				tryGoogleGeocode(address, callback);
+			}
+		},
+		error: function() {
+			tryGoogleGeocode(address, callback);
+		}
+	});
+}
+
+function tryGoogleGeocode(address, callback) {
+	if (typeof google !== 'undefined' && google.maps && google.maps.Geocoder) {
+		try {
+			var geocoder = new google.maps.Geocoder();
+			geocoder.geocode({ 'address': address }, function(results, status) {
+				if (status == google.maps.GeocoderStatus.OK && results && results[0]) {
+					var lat = results[0].geometry.location.lat();
+					var lng = results[0].geometry.location.lng();
+					var formatted = results[0].formatted_address;
+					var neighborhood = results[0].address_components[0].long_name;
+					for (var i = 0; i < results[0].address_components.length; i++) {
+						var comp = results[0].address_components[i];
+						if (comp.types.indexOf("neighborhood") !== -1 || comp.types.indexOf("locality") !== -1) {
+							neighborhood = comp.long_name;
+							break;
+						}
+					}
+					if (callback) {
+						callback({
+							success: true,
+							latitude: lat,
+							longitude: lng,
+							neighborhood: neighborhood,
+							formatted_address: formatted,
+							source: "google"
+						});
+					}
+					return;
+				}
+				if (callback) callback({ success: false, error: status });
+			});
+			return;
+		} catch (e) {
+			if (callback) callback({ success: false, error: e.message });
+			return;
+		}
+	}
+	if (callback) callback({ success: false, error: "Geocoder unavailable" });
+}
+
+function freeReverseGeocode(lat, lng, callback) {
+	var url = "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lng);
+	$.ajax({
+		url: url,
+		type: "GET",
+		dataType: "json",
+		timeout: 8000,
+		headers: {
+			"Accept-Language": "en"
+		},
+		success: function(data) {
+			if (data && data.address) {
+				var neighborhood = extractNeighborhoodFromAddress(data.address, "Local Area");
+				if (callback) {
+					callback({
+						success: true,
+						neighborhood: neighborhood,
+						displayName: data.display_name,
+						source: "nominatim"
+					});
+				}
+			} else {
+				tryGoogleReverseGeocode(lat, lng, callback);
+			}
+		},
+		error: function() {
+			tryGoogleReverseGeocode(lat, lng, callback);
+		}
+	});
+}
+
+function tryGoogleReverseGeocode(lat, lng, callback) {
+	if (typeof google !== 'undefined' && google.maps && google.maps.Geocoder) {
+		try {
+			var geocoder = new google.maps.Geocoder();
+			geocoder.geocode({ 'address': lat + ", " + lng }, function(results, status) {
+				if (status == google.maps.GeocoderStatus.OK && results && results[0]) {
+					var neighborhood = "Current Location";
+					for (var i = 0; i < results[0].address_components.length; i++) {
+						var comp = results[0].address_components[i];
+						if (comp.types.indexOf("neighborhood") !== -1 || comp.types.indexOf("locality") !== -1) {
+							neighborhood = comp.long_name;
+							break;
+						}
+					}
+					if (callback) {
+						callback({
+							success: true,
+							neighborhood: neighborhood,
+							source: "google"
+						});
+					}
+					return;
+				}
+				if (callback) callback({ success: false, error: status });
+			});
+			return;
+		} catch (e) {
+			if (callback) callback({ success: false, error: e.message });
+			return;
+		}
+	}
+	if (callback) callback({ success: false, error: "Geocoder unavailable" });
+}
+
 function setDefaults() {
 	var sortEl = document.getElementById("sortSelect");
 	sort = sortEl ? sortEl.value : "name";
@@ -105,33 +257,16 @@ function setDefaults() {
 			currentLocationPoint = point;
 			currentLocationPointLatitude = currentLocationPoint.latitude;
 			currentLocationPointLongitude = currentLocationPoint.longitude;
-			var address = currentLocationPointLatitude + ", " + currentLocationPointLongitude;
-			if (typeof google !== 'undefined' && google.maps && google.maps.Geocoder) {
-				var geocoder = new google.maps.Geocoder();
-				geocoder.geocode( { 'address': address}, function(results, status) {
-					var neighborhoodFound = false;
-					if (status == google.maps.GeocoderStatus.OK && results && results[0]) {
-						for (var i = 0; i < results[0].address_components.length; i++) {
-							var comp = results[0].address_components[i];
-							if (comp.types.indexOf("neighborhood") !== -1 || comp.types.indexOf("locality") !== -1) {
-								neighborhood = comp.long_name;
-								setElementById("hood", "<span><img src='images/hood.png'></span><span>" + neighborhood + "</span>");
-								neighborhoodFound = true;
-								break;
-							}
-						}
-					}
-					if (!neighborhoodFound) {
-						setElementById("hood", "<span><img src='images/hood.png'></span><span>SF Bay Area</span>");
-					}
-					setOrder("ascending", false);
-					setTypeSelect();
-				});
-			} else {
-				setElementById("hood", "<span><img src='images/hood.png'></span><span>Current Location</span>");
+			freeReverseGeocode(currentLocationPointLatitude, currentLocationPointLongitude, function(res) {
+				if (res && res.success && res.neighborhood) {
+					neighborhood = res.neighborhood;
+					setElementById("hood", "<span><img src='images/hood.png'></span><span>" + neighborhood + "</span>");
+				} else {
+					setElementById("hood", "<span><img src='images/hood.png'></span><span>SF Bay Area</span>");
+				}
 				setOrder("ascending", false);
 				setTypeSelect();
-			}
+			});
 		},
 		error: function(error) {
 			setTypeSelect();
@@ -1138,29 +1273,15 @@ function updateLocation(AssociationObjectId, event) {
 			});
 		};
 
-		if (typeof google !== 'undefined' && google.maps && google.maps.Geocoder) {
-			var geocoder = new google.maps.Geocoder();
-			geocoder.geocode({ 'address': address }, function(results, status) {
-				if (status == google.maps.GeocoderStatus.OK && results && results[0]) {
-					var latitude = results[0].geometry.location.lat();
-					var longitude = results[0].geometry.location.lng();
-					var formatted_address = results[0].formatted_address;
-					var neighborhood = results[0].address_components[0].long_name;
-					for (var i = 0; i < results[0].address_components.length; i++) {
-						var comp = results[0].address_components[i];
-						if (comp.types.indexOf("neighborhood") !== -1 || comp.types.indexOf("locality") !== -1) {
-							neighborhood = comp.long_name;
-							break;
-						}
-					}
-					applyLocation(latitude, longitude, formatted_address, neighborhood);
-				} else {
-					applyLocation(currentLocationPointLatitude, currentLocationPointLongitude, address, address.split(',')[0]);
-				}
-			});
-		} else {
-			applyLocation(currentLocationPointLatitude, currentLocationPointLongitude, address, address.split(',')[0]);
-		}
+		freeGeocodeAddress(address, function(res) {
+			if (res && res.success) {
+				applyLocation(res.latitude, res.longitude, res.formatted_address, res.neighborhood);
+			} else {
+				var fallbackLat = (typeof currentLocationPointLatitude !== 'undefined' && currentLocationPointLatitude !== null) ? currentLocationPointLatitude : 37.7749;
+				var fallbackLng = (typeof currentLocationPointLongitude !== 'undefined' && currentLocationPointLongitude !== null) ? currentLocationPointLongitude : -122.4194;
+				applyLocation(fallbackLat, fallbackLng, address, address.split(',')[0].trim());
+			}
+		});
 	}
 }
 
@@ -1195,27 +1316,9 @@ function getAssociations() {
 	if (sort != null && sort !== "") {
 		if (order != null && order !== "") {
 			if (sort == "distance") {
-				Parse.GeoPoint.current({
-				    success: function (point) {
-						currentLocationPoint = point;
-						currentLocationPointLatitude = currentLocationPoint.latitude;
-						currentLocationPointLongitude = currentLocationPoint.longitude;
-						var address = currentLocationPointLatitude + ", " + currentLocationPointLongitude;
-						var geocoder = new google.maps.Geocoder();
-						geocoder.geocode( { 'address': address}, function(results, status) {
-							if (status == google.maps.GeocoderStatus.OK) {
-								for (var i = 0; i < results[0].address_components.length; i++) {
-									var address_component = results[0].address_components[i].long_name;
-									if (results[0].address_components[i].types == "neighborhood,political") {
-										neighborhood = results[0].address_components[i].long_name;
-										setElementById("hood", "<span>" + neighborhood + "</span>");
-										query.near("geo", currentLocationPoint);										
-									}
-								}
-							}
-						});
-					}
-				});
+				if (currentLocationPoint) {
+					query.near("geo", currentLocationPoint);
+				}
 			} else {
 				if (order == "descending") {
 					query.descending(sort);
@@ -1400,13 +1503,17 @@ function getAssociations() {
 			output = output + "<div class='col-xs-12 col-sm-6 col-md-6 col-lg-7'>";
 
 			output = output + "<input class='locationInput' placeholder='location (example: 3101 24th Street, San Francisco, CA)' type='text' id='" + listItemId + "locationInput' onkeyup='updateLocation(&apos;" + listItemId + "&apos;, event)' value='" + listItemLocation + "'>";
+			if (listItemLocation && listItemLocation.trim() !== "") {
+				var mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(listItemLocation);
+				output = output + "<div><a href='" + mapsUrl + "' target='_blank' rel='noopener noreferrer' class='btn btn-google-maps' id='" + listItemId + "mapsLink'><i class='glyphicon glyphicon-map-marker'></i> Google Maps <i class='glyphicon glyphicon-new-window' style='font-size:9px;'></i></a></div>";
+			}
 			output = output + "</div>";
 
 			output = output + "<div class='col-xs-12 col-sm-6 col-md-4 col-lg-3'>";
 			output = output + "<p>" + listItemNeighborhood + "</p>";
 			output = output + "</div>";
 			output = output + "<div class='hidden-xs hidden-sm col-md-2 col-lg-2'>";
-			output = output + "<p>" + listItemGeo + "</p>";
+			output = output + "<p>" + (listItemGeo !== "-" ? (listItemGeo + " mi") : "-") + "</p>";
 			output = output + "</div></div></div>";
 
 			output = output + "<h2><div data-toggle='collapse' data-parent='#accordion-" + listItemId + "' href='#collapse" + listItemId + "Links' aria-expanded='true' aria-controls='collapse" + listItemId + "Links' class='collapsed'>";
