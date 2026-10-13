@@ -181,6 +181,40 @@ function cleanRawAddress(str, userInput) {
 	return s;
 }
 
+function expandAddressAbbreviations(str) {
+	if (!str) return "";
+	var s = String(str).trim();
+	var replacements = [
+		[/\bctr\b\.?/gi, "Center"],
+		[/\bct\b\.?/gi, "Court"],
+		[/\bst\b\.?/gi, "Street"],
+		[/\bave\b\.?/gi, "Avenue"],
+		[/\bblvd\b\.?/gi, "Boulevard"],
+		[/\brd\b\.?/gi, "Road"],
+		[/\bdr\b\.?/gi, "Drive"],
+		[/\bln\b\.?/gi, "Lane"],
+		[/\bpl\b\.?/gi, "Place"],
+		[/\bcir\b\.?/gi, "Circle"],
+		[/\bpkwy\b\.?/gi, "Parkway"],
+		[/\bhwy\b\.?/gi, "Highway"],
+		[/\bsq\b\.?/gi, "Square"],
+		[/\bste\b\.?/gi, "Suite"],
+		[/\bapt\b\.?/gi, "Apartment"]
+	];
+	for (var i = 0; i < replacements.length; i++) {
+		s = s.replace(replacements[i][0], replacements[i][1]);
+	}
+	return s;
+}
+
+function prepareGeocodeQuery(str) {
+	var s = expandAddressAbbreviations(str);
+	// Strip interior unit / suite / floor / apartment numbers for geocoding search because OSM does not index them
+	s = s.replace(/,\s*(?:Suite|Ste|Apt|Apartment|Unit|Floor|Fl|#)\s*[\w-]+/gi, "");
+	s = s.replace(/\b(?:Suite|Ste|Apt|Apartment|Unit|Floor|Fl|#)\s*[\w-]+,?\s*/gi, "");
+	return s.trim();
+}
+
 function formatCleanAddress(item, userInput) {
 	if (!item) return cleanRawAddress(userInput || "", userInput);
 	var addr = item.address;
@@ -188,17 +222,19 @@ function formatCleanAddress(item, userInput) {
 		return cleanRawAddress(item.display_name || userInput, userInput);
 	}
 
+	var userHouseMatch = userInput ? String(userInput).trim().match(/^(\d+[A-Za-z]?)\b/) : null;
+	var userHouse = userHouseMatch ? userHouseMatch[1] : null;
+
 	// 1. Resolve House Number
 	var rawHouse = addr.house_number || addr.street_number || addr.housenumber || "";
 	var houseNumber = rawHouse;
 	if (rawHouse.indexOf(";") !== -1 || rawHouse.indexOf(",") !== -1) {
 		var parts = rawHouse.split(/[;,]+/).map(function(s) { return s.trim(); }).filter(Boolean);
 		var matched = null;
-		if (userInput) {
+		if (userHouse) {
 			for (var i = 0; i < parts.length; i++) {
-				var num = parts[i];
-				if (new RegExp("\\b" + num + "\\b").test(userInput)) {
-					matched = num;
+				if (parts[i] === userHouse) {
+					matched = parts[i];
 					break;
 				}
 			}
@@ -206,8 +242,26 @@ function formatCleanAddress(item, userInput) {
 		houseNumber = matched || parts[0];
 	}
 
-	// 2. Road / Street
-	var road = addr.road || addr.street || addr.pedestrian || addr.footway || addr.path || addr.highway || "";
+	// Never drop user-specified house number if geocoder lost it or returned a contradictory one
+	if (userHouse) {
+		if (!houseNumber || (houseNumber !== userHouse && !new RegExp("\\b" + userHouse + "\\b").test(houseNumber))) {
+			houseNumber = userHouse;
+		}
+	}
+
+	// 2. Road / Street / Locality
+	var road = addr.road || addr.street || addr.pedestrian || addr.footway || addr.path || addr.highway || addr.locality || addr.place || addr.square || addr.commercial || "";
+	if (!road && item.name && item.name !== item.display_name) {
+		road = item.name;
+	}
+
+	// If road ends with a contradictory number (e.g. "Embarcadero Center 1" when userHouse is "5"), strip the wrong number
+	if (userHouse && /\s+\d+$/.test(road)) {
+		var trailingNumMatch = road.match(/\s+(\d+)$/);
+		if (trailingNumMatch && trailingNumMatch[1] !== userHouse) {
+			road = road.replace(/\s+\d+$/, "");
+		}
+	}
 
 	// 3. City / Town
 	var city = addr.city || addr.town || addr.village || addr.municipality || addr.hamlet || addr.county || "";
@@ -227,16 +281,24 @@ function formatCleanAddress(item, userInput) {
 	// 5. Postcode
 	var postcode = addr.postcode || "";
 
+	// Check if user input included a suite/unit
+	var unitMatch = userInput ? String(userInput).match(/\b((?:suite|ste|apt|apartment|unit|floor|fl|#)\s*[\w-]+)\b/i) : null;
+	var unitPart = unitMatch ? unitMatch[1] : "";
+
 	// Build street part
 	var streetPart = "";
 	if (houseNumber && road) {
 		streetPart = houseNumber + " " + road;
 	} else if (road) {
-		streetPart = road;
+		streetPart = (userHouse ? (userHouse + " ") : "") + road;
 	} else if (houseNumber) {
 		streetPart = houseNumber;
 	} else if (item.name && item.name !== item.display_name) {
 		streetPart = item.name;
+	}
+
+	if (streetPart && unitPart && !new RegExp(unitPart, "i").test(streetPart)) {
+		streetPart = streetPart + ", " + unitPart;
 	}
 
 	// Build city/state/zip part
@@ -273,38 +335,77 @@ function freeGeocodeAddress(address, callback) {
 		return;
 	}
 
-	var url = "https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=1&q=" + encodeURIComponent(address.trim());
-	$.ajax({
-		url: url,
-		type: "GET",
-		dataType: "json",
-		timeout: 8000,
-		headers: {
-			"Accept-Language": "en"
-		},
-		success: function(data) {
-			if (data && data.length > 0) {
-				var item = data[0];
-				var lat = parseFloat(item.lat);
-				var lng = parseFloat(item.lon);
-				var neighborhood = extractNeighborhoodFromAddress(item.address, address.split(',')[0].trim());
-				var formattedAddress = formatCleanAddress(item, address);
-				if (callback) {
-					callback({
-						success: true,
-						latitude: lat,
-						longitude: lng,
-						neighborhood: neighborhood,
-						formatted_address: formattedAddress,
-						source: "nominatim"
-					});
+	var rawInput = address.trim();
+	var userHouseMatch = rawInput.match(/^(\d+[A-Za-z]?)\b/);
+	var userHouse = userHouseMatch ? userHouseMatch[1] : null;
+
+	var searchQuery = prepareGeocodeQuery(rawInput);
+
+	var doNominatimRequest = function(queryStr, onDone, onFail) {
+		var url = "https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q=" + encodeURIComponent(queryStr);
+		$.ajax({
+			url: url,
+			type: "GET",
+			dataType: "json",
+			timeout: 8000,
+			headers: {
+				"Accept-Language": "en"
+			},
+			success: function(data) {
+				if (data && data.length > 0) {
+					onDone(data);
+				} else {
+					onFail();
 				}
-			} else {
-				tryGoogleGeocode(address, callback);
+			},
+			error: function() {
+				onFail();
 			}
-		},
-		error: function() {
-			tryGoogleGeocode(address, callback);
+		});
+	};
+
+	var handleResults = function(data) {
+		var selectedItem = data[0];
+		if (userHouse && data.length > 1) {
+			for (var i = 0; i < data.length; i++) {
+				var it = data[i];
+				var h = it.address && (it.address.house_number || it.address.housenumber || it.address.street_number);
+				if (h && (h === userHouse || new RegExp("\\b" + userHouse + "\\b").test(h))) {
+					selectedItem = it;
+					break;
+				}
+				if (it.display_name && (new RegExp("^" + userHouse + "\\b").test(it.display_name) || new RegExp("\\b" + userHouse + ",?\\s+").test(it.display_name))) {
+					selectedItem = it;
+					break;
+				}
+			}
+		}
+
+		var lat = parseFloat(selectedItem.lat);
+		var lng = parseFloat(selectedItem.lon);
+		var neighborhood = extractNeighborhoodFromAddress(selectedItem.address, rawInput.split(',')[0].trim());
+		var formattedAddress = formatCleanAddress(selectedItem, rawInput);
+		if (callback) {
+			callback({
+				success: true,
+				latitude: lat,
+				longitude: lng,
+				neighborhood: neighborhood,
+				formatted_address: formattedAddress,
+				source: "nominatim"
+			});
+		}
+	};
+
+	doNominatimRequest(searchQuery, handleResults, function() {
+		// If query had zip or extra details, try query without zip code
+		var fallbackQuery = searchQuery.replace(/\b\d{5}(?:-\d{4})?\b/, "").trim().replace(/,\s*,/g, ",");
+		if (fallbackQuery !== searchQuery && fallbackQuery.length > 3) {
+			doNominatimRequest(fallbackQuery, handleResults, function() {
+				tryGoogleGeocode(rawInput, callback);
+			});
+		} else {
+			tryGoogleGeocode(rawInput, callback);
 		}
 	});
 }

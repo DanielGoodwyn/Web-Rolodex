@@ -45,7 +45,7 @@ This document provides complete context, architectural background, operational p
 
 ### E. Clean URLs & Caching
 - **Clean URLs**: Extensionless routing via [`.htaccess`](file:///Users/danielgoodwyn/src/Rolodex/.htaccess) (`/rolodex/`, `/rolodex/login`, `/rolodex/about`) with 301 redirects from `.html` paths.
-- **Cachebusting**: Production script and stylesheet references use query versioning (`?v=9`).
+- **Cachebusting**: Production script and stylesheet references use query versioning (`?v=10`).
 
 ---
 
