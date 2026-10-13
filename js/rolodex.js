@@ -196,7 +196,8 @@ function checkCurrentUser() {
 		username = currentUser.getUsername();
 		userId = currentUser.id;
 		setElementById("usernameDiv", "<b>" + capitaliseFirstLetter(username) + "</b>");
-		document.getElementById("go").style.display = "inline-block";
+		var goBtn = document.getElementById("go");
+		if (goBtn) goBtn.style.display = "inline-block";
 		if (sPage == "login") {
 			document.getElementById("loginBtn").style.display = "none";
 			document.getElementById("signupBtn").style.display = "none";
@@ -207,7 +208,8 @@ function checkCurrentUser() {
 		if (sPage == "about") {
 			$('.login-alert').removeClass('alert-info').addClass('alert-danger');
 		} else if (sPage == "login") {
-			document.getElementById("go").style.display = "none";
+			var goBtn = document.getElementById("go");
+			if (goBtn) goBtn.style.display = "none";
 			document.getElementById("loginBtn").style.display = "inline-block";
 			document.getElementById("signupBtn").style.display = "inline-block";
 			$("#googleAuthSection").show();
