@@ -21,20 +21,27 @@ The legacy 2015 Parse.com-based Rolodex web application has been revived and upg
    - Implemented dedicated "Forgot password?" UI in `login.html`.
    - Connected `Parse.User.requestPasswordReset()` to `firebase.auth().sendPasswordResetEmail()`.
    - Verified end-to-end: sent reset email to `danielgoodwyn@gmail.com`, opened reset link, set new password, and authenticated.
-4. **Clean URLs & Server Configuration (`.htaccess`)**:
+4. **Sign in with Google (Firebase Google Auth Provider)**:
+   - Configured Google Sign-In Provider in Firebase Console (`rolodex-ade98`) with support email `danielgoodwyn@gmail.com`.
+   - Added `danielgoodwyn.com` to Firebase Authentication Authorized Domains.
+   - Implemented `Parse.User.logInWithGoogle()` using `firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())` in `js/database-adapter.js`.
+   - Added branded Google Sign-In button and separator in `login.html`.
+   - Wired up login state handling in `js/rolodex.js`.
+   - Verified end-to-end in production: clicked "Sign in with Google", authenticated via popup with `danielgoodwyn@gmail.com`, and successfully redirected to the active session.
+5. **Clean URLs & Server Configuration (`.htaccess`)**:
    - Stripped `.html` extensions (`/rolodex/`, `/rolodex/login`, `/rolodex/about`).
    - 301 redirects from legacy `.html` URLs to extensionless URLs.
-   - Added cache-control headers (`mod_headers`) and script cachebusting (`?v=4`).
-5. **Production Deployment & Verification**:
+   - Added cache-control headers (`mod_headers`) and script cachebusting (`?v=5`).
+6. **Production Deployment & Verification**:
    - Deployed all assets via SFTP to IONOS production host.
    - Verified HTTP 200 responses on all routes.
    - Verified Card creation, ratings, locations, links, type filtering, name search, and ascending/descending sorting in Chrome.
 
 ### 3. Key Files
 - `index.html`: Main Rolodex cards view.
-- `login.html`: User login, signup, password reset, and account settings.
+- `login.html`: User login, signup, Google sign-in, password reset, and account settings.
 - `about.html`: Information and documentation.
-- `js/database-adapter.js`: Drop-in Parse-to-Firebase adapter.
+- `js/database-adapter.js`: Drop-in Parse-to-Firebase adapter (supports Email/Password & Google OAuth).
 - `js/firebase-config.js`: Firebase configuration.
 - `js/rolodex.js`: Application logic.
 - `.htaccess`: Apache clean URL rewrite rules and cache headers.

@@ -162,8 +162,9 @@ function setUserInputs() {
 		$("#signupBtn").hide();
 		$(".accountInfo").show();
 		$("#passwordInput").hide();
-		$(".loginAlert").show();
+		$("#loginAlert").show();
 		$("#forgotPasswordSection").hide();
+		$("#googleAuthSection").hide();
 		getProfilePicture();
 	} else {
 		setElementById("usernameDiv", "log in to begin.");
@@ -178,6 +179,7 @@ function setUserInputs() {
 		$("#passwordInput").show();
 		$(".loginAlert").hide();
 		$("#forgotPasswordSection").show();
+		$("#googleAuthSection").show();
 		showForgotPassword(false);
 	}
 }
@@ -192,6 +194,7 @@ function checkCurrentUser() {
 		if (sPage == "login") {
 			document.getElementById("loginBtn").style.display = "none";
 			document.getElementById("signupBtn").style.display = "none";
+			$("#googleAuthSection").hide();
 		}
 		getProfilePicture();
 	} else {
@@ -201,6 +204,7 @@ function checkCurrentUser() {
 			document.getElementById("go").style.display = "none";
 			document.getElementById("loginBtn").style.display = "inline-block";
 			document.getElementById("signupBtn").style.display = "inline-block";
+			$("#googleAuthSection").show();
 		}
 		setElementById("usernameDiv", "log in to begin.");
 	}
@@ -279,6 +283,23 @@ function login(e) {
 function logout() {
 	Parse.User.logOut();
 	setCurrentUser();
+}
+
+function loginWithGoogle() {
+	Parse.User.logInWithGoogle({
+		success: function(user) {
+			var currentUser = Parse.User.current();
+			username = currentUser.getUsername();
+			userId = currentUser.id;
+			setElementById("usernameDiv", "<b>" + capitaliseFirstLetter(username) + "</b>");
+			getProfilePicture();
+			setUserInputs();
+			alert("Signed in with Google successfully! Welcome, " + capitaliseFirstLetter(username) + ".");
+		},
+		error: function(user, error) {
+			alert("Google Sign-In error: " + (error.message || error.code || "Failed to sign in with Google"));
+		}
+	});
 }
 
 function setUsername(event) {

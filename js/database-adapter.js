@@ -280,6 +280,34 @@ Parse.User = {
     }).catch(function(err) {
       if (callbacks && callbacks.error) callbacks.error({ code: err.code || 400, message: err.message });
     });
+  },
+  logInWithGoogle: function(callbacks) {
+    if (!window.auth) {
+      if (callbacks && callbacks.error) callbacks.error(null, { code: 500, message: "Firebase Auth not initialized" });
+      return;
+    }
+    var provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).then(function(cred) {
+      var user = cred.user;
+      return db.collection('users').doc(user.uid).get().then(function(doc) {
+        var existingData = doc.exists ? doc.data() : {};
+        var usernameCandidate = existingData.username || (user.displayName ? user.displayName.toLowerCase().replace(/[^a-z0-9]/g, '') : user.email.split('@')[0]);
+        var userData = {
+          username: usernameCandidate,
+          email: user.email,
+          pic: existingData.pic || user.photoURL || "images/rolodex.png"
+        };
+        return db.collection('users').doc(user.uid).set(userData, { merge: true }).then(function() {
+          Parse.User._currentUser = new Parse.UserClass(user, userData);
+          try {
+            localStorage.setItem('parse_current_user', JSON.stringify({ uid: user.uid, data: userData }));
+          } catch (e) {}
+          if (callbacks && callbacks.success) callbacks.success(Parse.User._currentUser);
+        });
+      });
+    }).catch(function(err) {
+      if (callbacks && callbacks.error) callbacks.error(null, { code: err.code || 400, message: err.message });
+    });
   }
 };
 
