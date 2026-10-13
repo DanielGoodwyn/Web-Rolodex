@@ -469,12 +469,16 @@ Parse.Query = function(className) {
       if (self._nearPoint && self._nearPoint.latitude !== undefined) {
         var targetLat = self._nearPoint.latitude;
         var targetLng = self._nearPoint.longitude;
+        var isDesc = self._order.length > 0 && self._order[0].dir === 'desc';
         items.sort(function(a, b) {
           var aGeo = a.get('geo');
           var bGeo = b.get('geo');
-          var aDist = aGeo ? (Math.pow(aGeo.latitude - targetLat, 2) + Math.pow(aGeo.longitude - targetLng, 2)) : Infinity;
-          var bDist = bGeo ? (Math.pow(bGeo.latitude - targetLat, 2) + Math.pow(bGeo.longitude - targetLng, 2)) : Infinity;
-          return aDist - bDist;
+          if (!aGeo && !bGeo) return 0;
+          if (!aGeo) return 1;
+          if (!bGeo) return -1;
+          var aDist = Math.pow(aGeo.latitude - targetLat, 2) + Math.pow(aGeo.longitude - targetLng, 2);
+          var bDist = Math.pow(bGeo.latitude - targetLat, 2) + Math.pow(bGeo.longitude - targetLng, 2);
+          return isDesc ? (bDist - aDist) : (aDist - bDist);
         });
       } else if (self._order.length > 0 && self._order[0].field) {
         var sortField = self._order[0].field;

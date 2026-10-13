@@ -6,9 +6,9 @@ var type;
 var sort;
 var order;
 var output;
-var currentLocationPoint;
 var currentLocationPointLatitude = 37.776804;
 var currentLocationPointLongitude = -122.416844;
+var currentLocationPoint = new Parse.GeoPoint({latitude: currentLocationPointLatitude, longitude: currentLocationPointLongitude});
 var currentUser;
 var username;
 var email;
@@ -1583,8 +1583,12 @@ function getAssociations() {
 	if (sort != null && sort !== "") {
 		if (order != null && order !== "") {
 			if (sort == "distance") {
-				if (currentLocationPoint) {
-					query.near("geo", currentLocationPoint);
+				var point = currentLocationPoint || (new Parse.GeoPoint({latitude: currentLocationPointLatitude, longitude: currentLocationPointLongitude}));
+				query.near("geo", point);
+				if (order == "descending") {
+					query.descending("distance");
+				} else {
+					query.ascending("distance");
 				}
 			} else {
 				if (order == "descending") {
@@ -1641,10 +1645,20 @@ function getAssociations() {
 			if (geoArray[j] != undefined) {
 				listItemLatitude = (Math.round(geoArray[j].latitude * 1000) / 1000);
 				listItemLongitude = (Math.round(geoArray[j].longitude * 1000) / 1000);
-				var distance = (Math.round(Math.abs(((currentLocationPointLatitude - listItemLatitude) + (currentLocationPointLongitude - listItemLongitude)) * (69)) * 1000) / 1000);
+				var lat1 = currentLocationPointLatitude;
+				var lon1 = currentLocationPointLongitude;
+				var lat2 = listItemLatitude;
+				var lon2 = listItemLongitude;
+				var dLat = (lat2 - lat1) * Math.PI / 180;
+				var dLon = (lon2 - lon1) * Math.PI / 180;
+				var aDist = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+				            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+				            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+				var cDist = 2 * Math.atan2(Math.sqrt(aDist), Math.sqrt(1 - aDist));
+				var distance = Math.round(3958.8 * cDist * 10) / 10;
 				distanceArray.push(distance);
 				listItemGeo = distance;
-				if (listItemGeo > (-180) || listItemGeo < (180)) {
+				if (listItemGeo >= 0) {
 				} else {					
 					listItemGeo = "-";
 				}
