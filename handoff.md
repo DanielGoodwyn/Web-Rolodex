@@ -1,0 +1,41 @@
+# Project Handoff: Rolodex
+
+## Status: COMPLETE & VERIFIED IN PRODUCTION
+
+### 1. Goal & Architecture
+The legacy 2015 Parse.com-based Rolodex web application has been revived and upgraded to Firebase (Authentication and Cloud Firestore). It is deployed and operational at `https://danielgoodwyn.com/rolodex/`.
+
+### 2. Completed Milestones
+1. **Firebase Migration**:
+   - Provisioned Firebase Project: `rolodex-ade98` (Project Number: `119025024991`).
+   - Enabled Email/Password provider in Firebase Authentication.
+   - Configured Cloud Firestore in test mode (`databases/(default)`).
+   - Created `js/firebase-config.js` with active credentials.
+2. **Compatibility Adapter (`js/database-adapter.js`)**:
+   - Drop-in replacement for legacy Parse 1.3.3 SDK.
+   - Wraps Firebase v8 SDK (`firebase-app.js`, `firebase-auth.js`, `firebase-firestore.js`).
+   - Emulates `Parse.User` (`signUp`, `logIn`, `logOut`, `requestPasswordReset`, `current`) with synchronous `localStorage` caching and reactive auth-state listeners.
+   - Emulates `Parse.Object` and `Parse.Query` with client-side filtering and sorting to support regex search and avoid Firestore composite index errors.
+   - Emulates `Parse.GeoPoint` and integrates Google Maps Geocoder with fallback.
+3. **Forgot Password Feature**:
+   - Implemented dedicated "Forgot password?" UI in `login.html`.
+   - Connected `Parse.User.requestPasswordReset()` to `firebase.auth().sendPasswordResetEmail()`.
+   - Verified end-to-end: sent reset email to `danielgoodwyn@gmail.com`, opened reset link, set new password, and authenticated.
+4. **Clean URLs & Server Configuration (`.htaccess`)**:
+   - Stripped `.html` extensions (`/rolodex/`, `/rolodex/login`, `/rolodex/about`).
+   - 301 redirects from legacy `.html` URLs to extensionless URLs.
+   - Added cache-control headers (`mod_headers`) and script cachebusting (`?v=4`).
+5. **Production Deployment & Verification**:
+   - Deployed all assets via SFTP to IONOS production host.
+   - Verified HTTP 200 responses on all routes.
+   - Verified Card creation, ratings, locations, links, type filtering, name search, and ascending/descending sorting in Chrome.
+
+### 3. Key Files
+- `index.html`: Main Rolodex cards view.
+- `login.html`: User login, signup, password reset, and account settings.
+- `about.html`: Information and documentation.
+- `js/database-adapter.js`: Drop-in Parse-to-Firebase adapter.
+- `js/firebase-config.js`: Firebase configuration.
+- `js/rolodex.js`: Application logic.
+- `.htaccess`: Apache clean URL rewrite rules and cache headers.
+- `deploy_rolodex.exp`: Automated SFTP deployment script (credentials stored in `.env`).

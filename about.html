@@ -1,16 +1,21 @@
 <!DOCTYPE html>
+<html>
 <head>
   <meta charset="utf-8">
   <title>Rolodex</title>
   <meta name="description" content="Rolodex">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <link rel="apple-touch-icon" href="apple-touch-icon.png"/>
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
   <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
-  <script type="text/javascript" src="http://www.parsecdn.com/js/parse-1.3.3.min.js"></script>
+  <!-- Firebase SDK v8 -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="js/firebase-config.js?v=4"></script>
+  <script src="js/database-adapter.js?v=4"></script>
   <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCv2f7_vCuZxatrsc28LltGai044uEcAhk"></script>
   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/themes/smoothness/jquery-ui.css" />
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"></script>
@@ -25,9 +30,9 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" onclick="window.location.href='index.html';">
+        <a class="navbar-brand" onclick="window.location.href='./';">
           <span>
-            <img src="images/rolodex.png">
+            <img src="images/rolodex.png" alt="Rolodex logo">
           </span>
           <span class="hidden-xs">
             Rolodex
@@ -37,7 +42,7 @@
       <div class="collapse navbar-collapse" id="rolodex-navbar-collapse">
         <ul class="nav navbar-nav navbar-right">
           <li>
-            <a href="about.html"><i class="glyphicon glyphicon-info-sign"></i> about rolodex</a>
+            <a href="about"><i class="glyphicon glyphicon-info-sign"></i> about rolodex</a>
           </li>
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -46,7 +51,7 @@
               <span class="caret"></span>
             </a>
             <ul class="dropdown-menu" role="menu">
-              <li><a onclick="window.location.href='login.html';"><i class="glyphicon glyphicon-user"></i> Account</a></li>
+              <li><a onclick="window.location.href='login';"><i class="glyphicon glyphicon-user"></i> Account</a></li>
               <li class="divider"></li>
               <li><a onclick="logout()"><i class="glyphicon glyphicon-log-out"></i> Log out</a></li>
             </ul>
@@ -91,7 +96,7 @@
               <p class="alert alert-info">To see all cards for that type, leave the search input fields blank.</p>
               <p class="alert alert-info">You must enter in an <b>address</b> for a card in order for it to be sorted by neighborhood.</p>
               <p>You can <b>sort</b> your <b>association cards</b> (ascending or decending) by <b>name</b>, <b>neighborhood</b>, or <b>rating</b> using the <b><i class='glyphicon glyphicon-sort'></i> sort order</b> panel.</p>
-              <p class="alert alert-info">Sort by <b>distance</b> not implemented (<i>yet</i>).</p>
+              <p class="alert alert-info">Sort by <b>distance</b> uses your current geolocation.</p>
               <p class="loginAlert alert alert-warning">You may be prompted by your browser to <b>allow permission</b> (recommend) to use your current location.</p>
             </div>
           </div>
@@ -103,27 +108,27 @@
             </div>
             <div class="panel-body left-align">
               <h2>About</h2>
-	      <p>This <b>Web App</b> was built in 2015 by <a href="http://www.DanielGoodwyn.com/contact">Daniel Goodwyn</a> using <a href="http://www.parse.com">Parse</a>, <a href="http://www.jquery.com">jQuery</a>, and <a href="http://getbootstrap.com">Bootstrap</a> (including <a href="http://glyphicons.com/">Glyphicons</a>).</p>
+	      <p>This <b>Web App</b> was built by <a href="https://danielgoodwyn.com/contact.html">Daniel Goodwyn</a> using <a href="https://firebase.google.com/">Firebase</a>, <a href="https://jquery.com">jQuery</a>, and <a href="https://getbootstrap.com">Bootstrap</a> (including <a href="https://glyphicons.com/">Glyphicons</a>).</p>
               <div class="alert alert-info">
                 <p>Feel free to view the source code on <a href="https://github.com/DanielGoodwyn/Web-Rolodex"><b>GitHub</b></a> or in your browser if you're into that kind of thing.</p>
                 <p style="text-align:center;">
                 <a href="js/rolodex.js">rolodex.js</a> | <a href="css/styles.css">styles.css</a>
                 </p>
               </div>
-              <p>You can use this Web App to organize your own personal list (or "<b>Rolodex</b>") of contact "<b>Cards</b>" with related information. Create "<b>Association" Cards</b> by "<b>Type</b>", and fill them in with a <b>Location</b>, <b>Links</b> to a webiste, Facebook, Instagram, and Twitter, "<b>Associates</b>", and <b>Notes</b>.</p>
+              <p>You can use this Web App to organize your own personal list (or "<b>Rolodex</b>") of contact "<b>Cards</b>" with related information. Create "<b>Association" Cards</b> by "<b>Type</b>", and fill them in with a <b>Location</b>, <b>Links</b> to a website, Facebook, Instagram, and Twitter, "<b>Associates</b>", and <b>Notes</b>.</p>
               <h3>Card Types</h3>
               <p>"<b>Types</b>" are meant to be used as different categories that you can filter your many contact <b>Cards</b> by, such as <i>Coffee Shops</i>, <i>Tech Companies</i>, or <i>Places to Visit</i>.</p>
               <h4>Associations</h4>
               <p>"<b>Association</b>" <b>Cards</b> are meant to be used as individual contact <b>Cards</b> for each <b>Type</b> such as <i>Philz Coffee</i>, <i>Twitter</i>, or <i>The Golden Gate Bridge</i>.</p>
               <h4>Associates</h4>
-              <p>"<b>Associate</b>" <b>Cards</b> are meant to be used as individual contact <b>Cards</b> for people associated with each <b>Association</b> such as <i>Phil Jaber</i>, <i>Jack Dorsey</i>, or <i>Irving Morrow</i>.<br>(Techincally, <b>Associate</b> is an <b>Association</b> <b>Type</b>.)</p>
+              <p>"<b>Associate</b>" <b>Cards</b> are meant to be used as individual contact <b>Cards</b> for people associated with each <b>Association</b> such as <i>Phil Jaber</i>, <i>Jack Dorsey</i>, or <i>Irving Morrow</i>.<br>(Technically, <b>Associate</b> is an <b>Association</b> <b>Type</b>.)</p>
             </div>
           </div>
         </div>
       </div>
-      <p class="alert alert-info login-alert">You must be <a href="login.html"><u>logged in</u></a> to use this app.</p>
-      <button id="go" onclick="window.location.href='index.html';" type="button" class="btn btn-success">Begin!</button>
+      <p class="alert alert-info login-alert">You must be <a href="login"><u>logged in</u></a> to use this app.</p>
+      <button id="go" onclick="window.location.href='./';" type="button" class="btn btn-success">Begin!</button>
   </div>
-  <script src="js/rolodex.js"></script>
+  <script src="js/rolodex.js?v=4"></script>
 </body>
 </html>

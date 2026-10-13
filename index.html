@@ -1,16 +1,21 @@
 <!DOCTYPE html>
+<html>
 <head>
   <meta charset="utf-8">
   <title>Rolodex</title>
   <meta name="description" content="Rolodex">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <link rel="apple-touch-icon" href="apple-touch-icon.png"/>
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
   <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
-  <script type="text/javascript" src="http://www.parsecdn.com/js/parse-1.3.3.min.js"></script>
+  <!-- Firebase SDK v8 -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="js/firebase-config.js?v=4"></script>
+  <script src="js/database-adapter.js?v=4"></script>
   <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCv2f7_vCuZxatrsc28LltGai044uEcAhk"></script>
   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/themes/smoothness/jquery-ui.css" />
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"></script>
@@ -49,9 +54,9 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" onclick="window.location.href='index.html';">
+        <a class="navbar-brand" onclick="window.location.href='./';">
           <span>
-            <img src="images/rolodex.png">
+            <img src="images/rolodex.png" alt="Rolodex logo">
           </span>
           <span class="hidden-xs">
             Rolodex
@@ -61,7 +66,7 @@
       <div class="collapse navbar-collapse" id="rolodex-navbar-collapse">
         <ul class="nav navbar-nav navbar-right">
           <li>
-            <a href="about.html"><i class="glyphicon glyphicon-info-sign"></i> about rolodex</a>
+            <a href="about"><i class="glyphicon glyphicon-info-sign"></i> about rolodex</a>
           </li>
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -70,7 +75,7 @@
               <span class="caret"></span>
             </a>            
             <ul class="dropdown-menu" role="menu">
-              <li><a onclick="window.location.href='login.html';"><i class="glyphicon glyphicon-user"></i> Account</a></li>
+              <li><a onclick="window.location.href='login';"><i class="glyphicon glyphicon-user"></i> Account</a></li>
               <li class="divider"></li>
               <li><a onclick="logout()"><i class="glyphicon glyphicon-log-out"></i> Log out</a></li>
             </ul>
@@ -162,6 +167,6 @@
     <div class="clearfix"></div>
     <div id="output"></div>
   </div>
-  <script src="js/rolodex.js"></script>
+  <script src="js/rolodex.js?v=4"></script>
 </body>
 </html>

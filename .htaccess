@@ -1,0 +1,25 @@
+RewriteEngine On
+RewriteBase /rolodex/
+
+# Disable aggressive caching for HTML and JS
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|js|css)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+  </FilesMatch>
+</IfModule>
+
+# Redirect /rolodex/index.html to /rolodex/
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /rolodex/index\.html [NC]
+RewriteRule ^index\.html$ https://danielgoodwyn.com/rolodex/ [R=301,L]
+
+# Redirect /rolodex/*.html to /rolodex/* (strip .html from URL)
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /rolodex/([^\ \?]+)\.html [NC]
+RewriteRule ^([^\ \?]+)\.html$ %1 [R=301,L]
+
+# Internally rewrite clean URLs to corresponding .html files
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}\.html -f
+RewriteRule ^([^\.]+)$ $1.html [NC,L]

@@ -1,5 +1,4 @@
-
-Parse.initialize("VCiFrwf8i1nDQRjVgPmjeNQQBr2Ui7HxNpT4JILI", "HKUvywcJF727ajICFcHKBpdAhTvA6zMJaVhV3lb2");
+Parse.initialize();
 
 var nameStartsWithValue;
 var neighborhoodStartsWithValue;
@@ -20,17 +19,21 @@ var newTypeInputValueBool = false;
 var scrollToItem = "";
 var toggleDisplayCardBool = true;
 var sPath = window.location.pathname;
-var sPage = sPath.substring(sPath.lastIndexOf('/') + 1);
+var rawPage = sPath.substring(sPath.lastIndexOf('/') + 1);
+var sPage = rawPage.replace(/\.html$/, '');
+if (sPage === "" || sPage === "rolodex") {
+	sPage = "index";
+}
 
 $(document).ready(function() {
-	if (sPage == "login.html") {
+	if (sPage == "login") {
 		checkCurrentUser();
 		setUserInputs();
 		userProfilePicture();
-	} else if (sPage == "about.html") {		
+	} else if (sPage == "about") {		
 		checkCurrentUser();
 		userProfilePicture();		
-	} else if (sPage == "index.html") {
+	} else if (sPage == "index") {
 		setDefaults();
 		userProfilePicture();
 		$(document).delegate('.display-card', 'click', function() {
@@ -94,6 +97,8 @@ $(document).ready(function() {
 });
 
 function setDefaults() {
+	var sortEl = document.getElementById("sortSelect");
+	sort = sortEl ? sortEl.value : "name";
 	setNameStartsWithValue(false);
 	Parse.GeoPoint.current({
 		success: function (point) {
@@ -101,26 +106,36 @@ function setDefaults() {
 			currentLocationPointLatitude = currentLocationPoint.latitude;
 			currentLocationPointLongitude = currentLocationPoint.longitude;
 			var address = currentLocationPointLatitude + ", " + currentLocationPointLongitude;
-			var geocoder = new google.maps.Geocoder();
-			geocoder.geocode( { 'address': address}, function(results, status) {
-				if (status == google.maps.GeocoderStatus.OK) {
-					for (var i = 0; i < results[0].address_components.length; i++) {
-						var address_component = results[0].address_components[i].long_name;
-						if (results[0].address_components[i].types == "neighborhood,political") {
-							neighborhood = results[0].address_components[i].long_name;
-							setElementById("hood", "<span><img src='images/hood.png'></span><span>" + neighborhood + "</span>");
-							setOrder("ascending", false);
-							setTypeSelect();
+			if (typeof google !== 'undefined' && google.maps && google.maps.Geocoder) {
+				var geocoder = new google.maps.Geocoder();
+				geocoder.geocode( { 'address': address}, function(results, status) {
+					var neighborhoodFound = false;
+					if (status == google.maps.GeocoderStatus.OK && results && results[0]) {
+						for (var i = 0; i < results[0].address_components.length; i++) {
+							var comp = results[0].address_components[i];
+							if (comp.types.indexOf("neighborhood") !== -1 || comp.types.indexOf("locality") !== -1) {
+								neighborhood = comp.long_name;
+								setElementById("hood", "<span><img src='images/hood.png'></span><span>" + neighborhood + "</span>");
+								neighborhoodFound = true;
+								break;
+							}
 						}
 					}
-				}
-			});
+					if (!neighborhoodFound) {
+						setElementById("hood", "<span><img src='images/hood.png'></span><span>SF Bay Area</span>");
+					}
+					setOrder("ascending", false);
+					setTypeSelect();
+				});
+			} else {
+				setElementById("hood", "<span><img src='images/hood.png'></span><span>Current Location</span>");
+				setOrder("ascending", false);
+				setTypeSelect();
+			}
 		},
 		error: function(error) {
 			setTypeSelect();
-			alert("current location not detected; default set to somewhere in San Francisco, California. ~(37.77, -122.41)");
 			setElementById("hood", "<span><img src='images/hood.png'></span><span>San Francisco (default)</span>");
-
 		}
 	});
 	setCurrentUser();
@@ -132,7 +147,7 @@ function setUserInputs() {
 	if (currentUser) {
 		username = currentUser.getUsername();
 		email = currentUser.getEmail();
-		pic = currentUser.get("pic");
+		pic = currentUser.get("pic") || "images/rolodex.png";
 		userId = currentUser.id;
 		setElementById("usernameDiv", "<b>" + capitaliseFirstLetter(username) + "</b>");
 		document.getElementById("changeUsernameInput").value = capitaliseFirstLetter(username);
@@ -148,6 +163,7 @@ function setUserInputs() {
 		$(".accountInfo").show();
 		$("#passwordInput").hide();
 		$(".loginAlert").show();
+		$("#forgotPasswordSection").hide();
 		getProfilePicture();
 	} else {
 		setElementById("usernameDiv", "log in to begin.");
@@ -161,6 +177,8 @@ function setUserInputs() {
 		$(".accountInfo").hide();
 		$("#passwordInput").show();
 		$(".loginAlert").hide();
+		$("#forgotPasswordSection").show();
+		showForgotPassword(false);
 	}
 }
 
@@ -171,15 +189,15 @@ function checkCurrentUser() {
 		userId = currentUser.id;
 		setElementById("usernameDiv", "<b>" + capitaliseFirstLetter(username) + "</b>");
 		document.getElementById("go").style.display = "inline-block";
-		if (sPage == "login.html") {
+		if (sPage == "login") {
 			document.getElementById("loginBtn").style.display = "none";
 			document.getElementById("signupBtn").style.display = "none";
 		}
 		getProfilePicture();
 	} else {
-		if (sPage == "about.html") {
+		if (sPage == "about") {
 			$('.login-alert').removeClass('alert-info').addClass('alert-danger');
-		} else if (sPage == "login.html") {
+		} else if (sPage == "login") {
 			document.getElementById("go").style.display = "none";
 			document.getElementById("loginBtn").style.display = "inline-block";
 			document.getElementById("signupBtn").style.display = "inline-block";
@@ -196,15 +214,22 @@ function setCurrentUser() {
 		setElementById("usernameDiv", "<b>" + capitaliseFirstLetter(username) + "</b>");
 		getProfilePicture();
 	} else {
-	    window.location.href = 'login.html';
+		if (typeof Parse !== 'undefined' && Parse._authResolving) {
+			return; // Wait for Firebase Auth state to resolve before redirecting
+		}
+	    window.location.href = 'login';
 	}
 }
 
 function signup(e) {
 	if (e.keyCode == 13 || e == "click") {
-		usernameInput = document.getElementById("usernameInput").value.toLowerCase();
+		usernameInput = document.getElementById("usernameInput").value.trim().toLowerCase();
 		passwordInput = document.getElementById("passwordInput").value;
-		emailInput = document.getElementById("emailInput").value.toLowerCase();
+		emailInput = document.getElementById("emailInput").value.trim().toLowerCase();
+		if (!usernameInput || !passwordInput || !emailInput) {
+			alert("Please fill in username, password, and email to sign up.");
+			return;
+		}
 		var user = new Parse.User();
 		user.set("username", usernameInput);
 		user.set("password", passwordInput);
@@ -218,10 +243,10 @@ function signup(e) {
 			setElementById("usernameDiv", "<b>" + capitaliseFirstLetter(username) + "</b>");
 			getProfilePicture();
 			setUserInputs();
+			alert("Signed up successfully! Welcome, " + capitaliseFirstLetter(username) + ".");
 		  },
 		  error: function(user, error) {
-		    alert("Error: " + error.code + " " + error.message);
-				login('click');
+		    alert("Sign up error: " + (error.message || error.code || "Unknown error"));
 		  }
 		});
 	}
@@ -229,8 +254,12 @@ function signup(e) {
 
 function login(e) {
 	if (e.keyCode == 13 || e == "click") {
-		usernameInput = document.getElementById("usernameInput").value.toLowerCase();
-		passwordInput = document.getElementById("passwordInput").value.toLowerCase();
+		usernameInput = document.getElementById("usernameInput").value.trim().toLowerCase();
+		passwordInput = document.getElementById("passwordInput").value;
+		if (!usernameInput || !passwordInput) {
+			alert("Please enter username/email and password to log in.");
+			return;
+		}
 		Parse.User.logIn(usernameInput, passwordInput, {
 			success: function(user) {
 				var currentUser = Parse.User.current();
@@ -241,8 +270,7 @@ function login(e) {
 				setUserInputs();
 			},
 			error: function(user, error) {
-				alert("Error: " + error.code + " " + error.message);
-				signup('click');
+				alert("Log in error: " + (error.message || error.code || "Unknown error"));
 			}
 		});
 	}
@@ -256,16 +284,20 @@ function logout() {
 function setUsername(event) {
 	if (event.which == 13 || event.keyCode == 13 || event == "click") {
 		currentUser = Parse.User.current();
-		username = $("#changeUsernameInput").val().toLowerCase();
+		username = $("#changeUsernameInput").val().trim().toLowerCase();
+		if (!username) {
+			alert("Username cannot be empty.");
+			return;
+		}
 		currentUser.save({
 			username: username
 		}, {
 			success: function(currentUser) {
 				alert("Username set to " + capitaliseFirstLetter(username) + ".");
-				window.location.href = 'http://www.danielgoodwyn.com/rolodex/login.html';
-		},
+				window.location.href = 'login';
+			},
 			error: function(currentUser, error) {
-				alert("Error: " + error.code + " " + error.message);
+				alert("Error: " + (error.message || error.code));
 			}
 		});
 	}
@@ -274,16 +306,20 @@ function setUsername(event) {
 function setEmail(event) {
 	if (event.which == 13 || event.keyCode == 13 || event == "click") {
 		currentUser = Parse.User.current();
-		email = $("#changeEmailInput").val().toLowerCase();
+		email = $("#changeEmailInput").val().trim().toLowerCase();
+		if (!email || !email.includes('@')) {
+			alert("Please enter a valid email address.");
+			return;
+		}
 		currentUser.save({
 			email: email
 		}, {
 			success: function(currentUser) {
 				alert("Email set to " + email + ".");
-				window.location.href = 'http://www.danielgoodwyn.com/rolodex/login.html';
+				window.location.href = 'login';
 			},
 			error: function(currentUser, error) {
-				alert("Error: " + error.code + " " + error.message);
+				alert("Error: " + (error.message || error.code));
 			}
 		});
 	}
@@ -291,15 +327,54 @@ function setEmail(event) {
 
 function resetPassword() {
   currentUser = Parse.User.current();
-  email = $("#changeEmailInput").val().toLowerCase();
+  var email = $("#changeEmailInput").val() || (currentUser ? currentUser.getEmail() : "");
+  if (!email) {
+    alert("No email address found for password reset.");
+    return;
+  }
   Parse.User.requestPasswordReset(email, {
     success: function() {
 		alert("Password reset request sent to " + email + ".");
     },
     error: function(error) {
-      alert("Error: " + error.code + " " + error.message);
+      alert("Error: " + (error.message || error.code));
     }
   });
+}
+
+function showForgotPassword(show) {
+	if (show) {
+		var prefill = $("#emailInput").val() || $("#usernameInput").val();
+		if (prefill && prefill.includes('@')) {
+			$("#forgotPasswordEmailInput").val(prefill);
+		}
+		$("#forgotPasswordBox").slideDown();
+		$("#forgotPasswordLink").hide();
+	} else {
+		$("#forgotPasswordBox").slideUp();
+		$("#forgotPasswordLink").show();
+		$("#forgotPasswordStatus").html("");
+	}
+}
+
+function sendForgotPassword() {
+	var email = $("#forgotPasswordEmailInput").val().trim().toLowerCase();
+	if (!email || !email.includes('@')) {
+		alert("Please enter a valid email address.");
+		return;
+	}
+	$("#forgotPasswordStatus").html("<span style='color:#666;'>Sending password reset email...</span>");
+	Parse.User.requestPasswordReset(email, {
+		success: function() {
+			alert("Password reset email sent to " + email + ". Check your inbox!");
+			$("#forgotPasswordStatus").html("<span class='text-success'><b>Reset email sent to " + email + "!</b></span>");
+			setTimeout(function() { showForgotPassword(false); }, 3000);
+		},
+		error: function(error) {
+			alert("Reset error: " + (error.message || error.code || "Failed to send reset email"));
+			$("#forgotPasswordStatus").html("<span class='text-danger'>Error: " + (error.message || error.code) + "</span>");
+		}
+	});
 }
 
 function getProfilePicture() {
@@ -914,64 +989,55 @@ function updateRating(AssociationObjectId) {
 function updateLocation(AssociationObjectId, event) {
 	if (event.which == 13 || event.keyCode == 13 || event == "focusout") {
 		var address = document.getElementById(AssociationObjectId + "locationInput").value;
-		var geocoder = new google.maps.Geocoder();
-		geocoder.geocode( { 'address': address}, function(results, status) {
-			if (status == google.maps.GeocoderStatus.OK) {
-				var latitude = results[0].geometry.location.lat();
-				var longitude = results[0].geometry.location.lng();
-				var geoValue = new Parse.GeoPoint({latitude: latitude, longitude: longitude});
-				var formatted_address = results[0].formatted_address;
-				var objectsArray = [];
-				var neighborhood = "";
-				neighborhood = results[0].address_components[0].long_name;
-				var Association = Parse.Object.extend("Association");
-				var query = new Parse.Query(Association);
-				query.get(AssociationObjectId, {
-					success: function(Association) {
-						Association.set("geo", geoValue);
-						Association.set("neighborhood", neighborhood);
-						Association.set("location", formatted_address);
-						Association.save(null, {
-							success: function(Association) {
-								getAssociations();
-							},
-							error: function(Association, error) {
-								alert("Error: " + error.code + " " + error.message);
-							}
-						});
-					},
-					error: function(object, error) {
-						alert("Error: " + error.code + " " + error.message);
-					}
-				});
-				for (var i = 0; i < results[0].address_components.length; i++) {
-					var address_component = results[0].address_components[i].long_name;
-					if (results[0].address_components[i].types == "neighborhood,political") {
-						neighborhood = results[0].address_components[i].long_name;
-						var Association = Parse.Object.extend("Association");
-						var query = new Parse.Query(Association);
-						query.get(AssociationObjectId, {
-							success: function(Association) {
-								Association.set("geo", geoValue);
-								Association.set("neighborhood", neighborhood);
-								Association.set("location", formatted_address);
-								Association.save(null, {
-									success: function(Association) {
-										getAssociations();
-									},
-									error: function(Association, error) {
-										alert("Error: " + error.code + " " + error.message);
-									}
-								});
-							},
-							error: function(object, error) {
-								alert("Error: " + error.code + " " + error.message);
-							}
-						});
-					}
+		if (!address) return;
+
+		var applyLocation = function(lat, lng, formattedAddress, neighborhoodName) {
+			var geoValue = new Parse.GeoPoint({latitude: lat, longitude: lng});
+			var Association = Parse.Object.extend("Association");
+			var query = new Parse.Query(Association);
+			query.get(AssociationObjectId, {
+				success: function(Association) {
+					Association.set("geo", geoValue);
+					Association.set("neighborhood", neighborhoodName || "-");
+					Association.set("location", formattedAddress || address);
+					Association.save(null, {
+						success: function() {
+							getAssociations();
+						},
+						error: function(assoc, error) {
+							alert("Error saving location: " + (error.message || error.code));
+						}
+					});
+				},
+				error: function(object, error) {
+					alert("Error finding card: " + (error.message || error.code));
 				}
-			}
-		});
+			});
+		};
+
+		if (typeof google !== 'undefined' && google.maps && google.maps.Geocoder) {
+			var geocoder = new google.maps.Geocoder();
+			geocoder.geocode({ 'address': address }, function(results, status) {
+				if (status == google.maps.GeocoderStatus.OK && results && results[0]) {
+					var latitude = results[0].geometry.location.lat();
+					var longitude = results[0].geometry.location.lng();
+					var formatted_address = results[0].formatted_address;
+					var neighborhood = results[0].address_components[0].long_name;
+					for (var i = 0; i < results[0].address_components.length; i++) {
+						var comp = results[0].address_components[i];
+						if (comp.types.indexOf("neighborhood") !== -1 || comp.types.indexOf("locality") !== -1) {
+							neighborhood = comp.long_name;
+							break;
+						}
+					}
+					applyLocation(latitude, longitude, formatted_address, neighborhood);
+				} else {
+					applyLocation(currentLocationPointLatitude, currentLocationPointLongitude, address, address.split(',')[0]);
+				}
+			});
+		} else {
+			applyLocation(currentLocationPointLatitude, currentLocationPointLongitude, address, address.split(',')[0]);
+		}
 	}
 }
 
@@ -997,14 +1063,14 @@ function getAssociations() {
 	var distanceArray = [];
 	var query = new Parse.Query("Association");
 	query.equalTo("type", type);
-	if (nameStartsWithValue != null || nameStartsWithValue != "") {
+	if (nameStartsWithValue != null && nameStartsWithValue !== "") {
 		query.matches("name", "(" + capitaliseFirstLetter(nameStartsWithValue) + "|" + nameStartsWithValue.toLowerCase() + ")" + ".*");
 	}
-	if (neighborhoodStartsWithValue != null && neighborhoodStartsWithValue != "" && neighborhoodStartsWithValue != "(undefined)") {
+	if (neighborhoodStartsWithValue != null && neighborhoodStartsWithValue !== "" && neighborhoodStartsWithValue !== "(undefined)") {
 		query.matches("neighborhood", "(" + capitaliseFirstLetter(neighborhoodStartsWithValue) + "|" + neighborhoodStartsWithValue.toLowerCase() + ")" + ".*");
 	}	
-	if (sort != null || sort != "") {
-		if (order != null || order != "") {
+	if (sort != null && sort !== "") {
+		if (order != null && order !== "") {
 			if (sort == "distance") {
 				Parse.GeoPoint.current({
 				    success: function (point) {
@@ -1036,7 +1102,7 @@ function getAssociations() {
 			}
 		}
 	} else {
-		if (order != null || order != "") {
+		if (order != null && order !== "") {
 			if (order == "descending") {
 				query.descending("name");
 			} else {
