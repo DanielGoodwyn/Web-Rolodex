@@ -1919,17 +1919,17 @@ function getAssociations() {
 						}
 					},
 					error: function(error) {
-						alert("Error: " + error.code + " " + error.message);
+						alert("Error: " + (error.message || error.code));
 					}
 				});
 			},
 			error: function(error) {
-				alert("Error: " + error.code + " " + error.message);
+				alert("Error: " + (error.message || error.code));
 			}
 		});
 	},
 	error: function(error) {
-		alert("Error: " + error.code + " " + error.message);
+		alert("Error: " + (error.message || error.code));
 	}
 	});
 }
@@ -1938,20 +1938,31 @@ function checkNames() {
 	var checkNamesDiv = "";
 	var typeId;
 
+	if (type === "associate") {
+		checkNamesDiv = "<div><i class='glyphicon glyphicon-filter'></i> associate</div>";
+		setElementById("checkNamesDiv", checkNamesDiv);
+		return;
+	}
+
 	var typeQuery = new Parse.Query("Type");
 	typeQuery.equalTo("type", type);
-	typeQuery.find({
-	success: function(results) {
-		typeId = results[0].id;
-		checkNamesDiv = "<div><i class='glyphicon glyphicon-filter'></i> " + type + "</div>";
-		if (output=="") {
-			checkNamesDiv = "<button class='btn btn-danger' onclick='deleteType(&apos;" + typeId + "&apos;)'>delete " + type + " ×</button>";
-		}
-		setElementById("checkNamesDiv", checkNamesDiv);
-	},
-	error: function(error) {
-		alert("Error: " + error.code + " " + error.message);
+	if (typeof userId !== 'undefined' && userId) {
+		typeQuery.equalTo("userId", userId);
 	}
+	typeQuery.find({
+		success: function(results) {
+			checkNamesDiv = "<div><i class='glyphicon glyphicon-filter'></i> " + type + "</div>";
+			if (results && results.length > 0) {
+				typeId = results[0].id;
+				if (output === "" && typeId) {
+					checkNamesDiv = "<button class='btn btn-danger' onclick='deleteType(&apos;" + typeId + "&apos;)'>delete " + type + " ×</button>";
+				}
+			}
+			setElementById("checkNamesDiv", checkNamesDiv);
+		},
+		error: function(error) {
+			setElementById("checkNamesDiv", "<div><i class='glyphicon glyphicon-filter'></i> " + type + "</div>");
+		}
 	});
 }
 
