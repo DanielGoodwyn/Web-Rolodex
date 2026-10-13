@@ -101,6 +101,172 @@ function extractNeighborhoodFromAddress(addr, defaultName) {
 	return addr.neighbourhood || addr.suburb || addr.city_district || addr.district || addr.quarter || addr.city || addr.town || addr.village || addr.county || defaultName || "-";
 }
 
+var US_STATES_MAP = {
+	"alabama": "AL", "alaska": "AK", "arizona": "AZ", "arkansas": "AR", "california": "CA",
+	"colorado": "CO", "connecticut": "CT", "delaware": "DE", "district of columbia": "DC",
+	"florida": "FL", "georgia": "GA", "hawaii": "HI", "idaho": "ID", "illinois": "IL",
+	"indiana": "IN", "iowa": "IA", "kansas": "KS", "kentucky": "KY", "louisiana": "LA",
+	"maine": "ME", "maryland": "MD", "massachusetts": "MA", "michigan": "MI", "minnesota": "MN",
+	"mississippi": "MS", "missouri": "MO", "montana": "MT", "nebraska": "NE", "nevada": "NV",
+	"new hampshire": "NH", "new jersey": "NJ", "new mexico": "NM", "new york": "NY",
+	"north carolina": "NC", "north dakota": "ND", "ohio": "OH", "oklahoma": "OK",
+	"oregon": "OR", "pennsylvania": "PA", "rhode island": "RI", "south carolina": "SC",
+	"south dakota": "SD", "tennessee": "TN", "texas": "TX", "utah": "UT", "vermont": "VT",
+	"virginia": "VA", "washington": "WA", "west virginia": "WV", "wisconsin": "WI", "wyoming": "WY"
+};
+
+function cleanRawAddress(str, userInput) {
+	if (!str) return "";
+	var s = String(str).trim();
+
+	// Check if string matches raw Nominatim US display_name pattern:
+	// e.g. "2431;2453;2455, Fillmore Street, Pacific Heights, San Francisco, California, 94115, United States"
+	// or "3101, 24th Street, Mission, San Francisco, California, 94110, United States"
+	var parts = s.split(",").map(function(p) { return p.trim(); });
+	if (parts.length >= 6 && /^(?:united states|usa)$/i.test(parts[parts.length - 1])) {
+		parts.pop();
+		var zip = parts[parts.length - 1];
+		if (/^\d{5}(?:-\d{4})?$/.test(zip)) {
+			parts.pop();
+			var state = parts.pop();
+			var stateCode = US_STATES_MAP[state.toLowerCase()] || state;
+			var city = parts.pop();
+			var house = parts[0];
+			if (/^[\d;,\s]+[A-Za-z]?$/.test(house) && parts.length >= 2) {
+				var road = parts[1];
+				if (house.indexOf(";") !== -1) {
+					var houseParts = house.split(";").map(function(h) { return h.trim(); }).filter(Boolean);
+					var matched = null;
+					if (userInput) {
+						for (var i = 0; i < houseParts.length; i++) {
+							if (new RegExp("\\b" + houseParts[i] + "\\b").test(userInput)) {
+								matched = houseParts[i];
+								break;
+							}
+						}
+					}
+					house = matched || houseParts[0];
+				}
+				return house + " " + road + ", " + city + ", " + stateCode + " " + zip;
+			}
+		}
+	}
+
+	// General cleanup: remove trailing ", United States" / ", USA"
+	s = s.replace(/,\s*(?:United States|USA)\s*$/i, "");
+
+	// Clean semicolon house numbers (e.g. 2431;2453;2455 -> 2453 or 2431)
+	s = s.replace(/\b(\d+[A-Za-z]?)(?:;\d+[A-Za-z]?)+\b/g, function(match) {
+		var nums = match.split(";").map(function(n) { return n.trim(); });
+		if (userInput) {
+			for (var i = 0; i < nums.length; i++) {
+				if (new RegExp("\\b" + nums[i] + "\\b").test(userInput)) return nums[i];
+			}
+		}
+		return nums[0];
+	});
+
+	// Remove comma between house number and road (e.g. "3101, 24th Street" -> "3101 24th Street")
+	s = s.replace(/(^|[,\n]\s*)(\d+[A-Za-z]?),\s+([A-Za-z])/g, "$1$2 $3");
+
+	// Convert ", California, 94115" -> ", CA 94115"
+	s = s.replace(/,\s*([A-Za-z\s]+),\s*(\d{5}(?:-\d{4})?)\s*$/i, function(m, stateName, zip) {
+		var key = stateName.trim().toLowerCase();
+		if (US_STATES_MAP[key]) {
+			return ", " + US_STATES_MAP[key] + " " + zip;
+		}
+		return m;
+	});
+
+	return s;
+}
+
+function formatCleanAddress(item, userInput) {
+	if (!item) return cleanRawAddress(userInput || "", userInput);
+	var addr = item.address;
+	if (!addr) {
+		return cleanRawAddress(item.display_name || userInput, userInput);
+	}
+
+	// 1. Resolve House Number
+	var rawHouse = addr.house_number || addr.street_number || addr.housenumber || "";
+	var houseNumber = rawHouse;
+	if (rawHouse.indexOf(";") !== -1 || rawHouse.indexOf(",") !== -1) {
+		var parts = rawHouse.split(/[;,]+/).map(function(s) { return s.trim(); }).filter(Boolean);
+		var matched = null;
+		if (userInput) {
+			for (var i = 0; i < parts.length; i++) {
+				var num = parts[i];
+				if (new RegExp("\\b" + num + "\\b").test(userInput)) {
+					matched = num;
+					break;
+				}
+			}
+		}
+		houseNumber = matched || parts[0];
+	}
+
+	// 2. Road / Street
+	var road = addr.road || addr.street || addr.pedestrian || addr.footway || addr.path || addr.highway || "";
+
+	// 3. City / Town
+	var city = addr.city || addr.town || addr.village || addr.municipality || addr.hamlet || addr.county || "";
+
+	// 4. State
+	var state = addr.state || "";
+	var countryCode = (addr.country_code || "").toLowerCase();
+
+	if (countryCode === "us") {
+		if (addr["ISO3166-2-lvl4"] && addr["ISO3166-2-lvl4"].indexOf("US-") === 0) {
+			state = addr["ISO3166-2-lvl4"].replace("US-", "");
+		} else if (state && US_STATES_MAP[state.toLowerCase()]) {
+			state = US_STATES_MAP[state.toLowerCase()];
+		}
+	}
+
+	// 5. Postcode
+	var postcode = addr.postcode || "";
+
+	// Build street part
+	var streetPart = "";
+	if (houseNumber && road) {
+		streetPart = houseNumber + " " + road;
+	} else if (road) {
+		streetPart = road;
+	} else if (houseNumber) {
+		streetPart = houseNumber;
+	} else if (item.name && item.name !== item.display_name) {
+		streetPart = item.name;
+	}
+
+	// Build city/state/zip part
+	var cityStatePart = "";
+	if (city && state) {
+		cityStatePart = city + ", " + state + (postcode ? " " + postcode : "");
+	} else if (city) {
+		cityStatePart = city + (postcode ? " " + postcode : "");
+	} else if (state) {
+		cityStatePart = state + (postcode ? " " + postcode : "");
+	} else if (postcode) {
+		cityStatePart = postcode;
+	}
+
+	var result = "";
+	if (streetPart && cityStatePart) {
+		result = streetPart + ", " + cityStatePart;
+	} else if (streetPart) {
+		result = streetPart;
+	} else if (cityStatePart) {
+		result = cityStatePart;
+	}
+
+	if (countryCode !== "us" && addr.country && result) {
+		result = result + ", " + addr.country;
+	}
+
+	return result || cleanRawAddress(item.display_name || userInput, userInput);
+}
+
 function freeGeocodeAddress(address, callback) {
 	if (!address || !address.trim()) {
 		if (callback) callback({ success: false, error: "Empty address" });
@@ -122,7 +288,7 @@ function freeGeocodeAddress(address, callback) {
 				var lat = parseFloat(item.lat);
 				var lng = parseFloat(item.lon);
 				var neighborhood = extractNeighborhoodFromAddress(item.address, address.split(',')[0].trim());
-				var formattedAddress = item.display_name || address;
+				var formattedAddress = formatCleanAddress(item, address);
 				if (callback) {
 					callback({
 						success: true,
@@ -1366,6 +1532,7 @@ function getAssociations() {
 			if (listItemLocation == "undefined" || listItemLocation == undefined) {
 				listItemLocation = "";
 			}
+			listItemLocation = cleanRawAddress(listItemLocation);
 			var listItemGeo = "";
 			var listItemLatitude = 122.4167;
 			var listItemLongitude = 37.7833;
