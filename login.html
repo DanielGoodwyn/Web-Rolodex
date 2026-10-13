@@ -14,8 +14,8 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-  <script src="js/firebase-config.js?v=6"></script>
-  <script src="js/database-adapter.js?v=6"></script>
+  <script src="js/firebase-config.js?v=7"></script>
+  <script src="js/database-adapter.js?v=7"></script>
 </head>
 <body>
   <nav class="navbar navbar-default navbar-fixed-top glass">
@@ -66,14 +66,25 @@
           </div>
           <div class="panel-body">
             <div class="row">
-              <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+              <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 text-center">
                 <div id="profilePicture"></div>
-                <div class="input-group accountInfo">
-                  <span class="input-group-label" id="basic-addon1">Profile Picture (url)</span>
-                  <input class="form-control" type="url" id="profilePictureInput" onkeypress="return setProfilePicture(event)">
-                  <span class="input-group-btn">
-                    <button class="btn btn-primary" type="button" onclick="setProfilePicture('click')">Set</button>
-                  </span>
+                <div class="accountInfo" style="max-width: 480px; margin: 0 auto 20px auto; text-align: left;">
+                  <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap;">
+                    <input type="file" id="profilePictureFileInput" accept="image/*" style="display: none;" onchange="uploadProfilePicture(this)">
+                    <button class="btn btn-default" type="button" onclick="$('#profilePictureFileInput').click()" id="uploadPicBtn">
+                      <i class="glyphicon glyphicon-camera"></i> Upload Photo
+                    </button>
+                    <button class="btn btn-default" type="button" onclick="useGoogleProfilePicture()" id="googlePicBtn" style="display: none;">
+                      <i class="glyphicon glyphicon-picture"></i> Use Google Photo
+                    </button>
+                  </div>
+                  <div class="input-group">
+                    <span class="input-group-addon" id="basic-addon1">URL</span>
+                    <input class="form-control" type="url" id="profilePictureInput" placeholder="https://example.com/photo.jpg" onkeypress="return setProfilePicture(event)">
+                    <span class="input-group-btn">
+                      <button class="btn btn-primary" type="button" onclick="setProfilePicture('click')">Set URL</button>
+                    </span>
+                  </div>
                 </div>
               </div>
               <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
@@ -145,6 +156,6 @@
       </div>
     </div>
   </div>
-  <script src="js/rolodex.js?v=6"></script>
+  <script src="js/rolodex.js?v=7"></script>
 </body>
 </html>

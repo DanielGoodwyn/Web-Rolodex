@@ -31,11 +31,17 @@ The legacy 2015 Parse.com-based Rolodex web application has been revived and upg
 5. **Title Case Every Word for Usernames**:
    - Upgraded `capitaliseFirstLetter()` in `js/rolodex.js` to capitalize the initial letter of every word (supporting spaces, hyphens, and underscores: e.g. "Daniel Goodwyn", "Mary-Ann", "John Doe").
    - Preserved spaces in Google Auth `displayName` and upgraded legacy collapsed usernames.
-6. **Clean URLs & Server Configuration (`.htaccess`)**:
+6. **Profile Picture (Upload, URL, & Auto-Grab Google Photo)**:
+   - Auto-grabs Google profile picture from `user.photoURL` on sign-in and auth state changes.
+   - Added native file upload with client-side canvas downscaling (max 256x256 WebP/JPEG) for instant uploads and Firestore persistence without requiring Blaze storage billing.
+   - Added "Use Google Photo" restore button for Google accounts.
+   - Preserved direct URL configuration.
+   - Styled circular avatars in navbar and account settings.
+7. **Clean URLs & Server Configuration (`.htaccess`)**:
    - Stripped `.html` extensions (`/rolodex/`, `/rolodex/login`, `/rolodex/about`).
    - 301 redirects from legacy `.html` URLs to extensionless URLs.
-   - Added cache-control headers (`mod_headers`) and script cachebusting (`?v=6`).
-7. **Production Deployment & Verification**:
+   - Added cache-control headers (`mod_headers`) and script cachebusting (`?v=7`).
+8. **Production Deployment & Verification**:
    - Deployed all assets via SFTP to IONOS production host.
    - Verified HTTP 200 responses on all routes.
    - Verified Card creation, ratings, locations, links, type filtering, name search, and ascending/descending sorting in Chrome.

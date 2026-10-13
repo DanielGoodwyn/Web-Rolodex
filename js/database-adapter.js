@@ -34,9 +34,17 @@ const Parse = {
         if (user) {
           db.collection('users').doc(user.uid).get().then(function(doc) {
             var userData = doc.exists ? doc.data() : { email: user.email };
+            var updates = {};
             if (user.displayName && (!userData.username || userData.username === user.displayName.toLowerCase().replace(/[^a-z0-9]/g, ''))) {
               userData.username = user.displayName.trim().toLowerCase();
-              db.collection('users').doc(user.uid).set({ username: userData.username }, { merge: true });
+              updates.username = userData.username;
+            }
+            if (user.photoURL && (!userData.pic || userData.pic === "images/rolodex.png")) {
+              userData.pic = user.photoURL;
+              updates.pic = userData.pic;
+            }
+            if (Object.keys(updates).length > 0) {
+              db.collection('users').doc(user.uid).set(updates, { merge: true });
             }
             Parse.User._currentUser = new Parse.UserClass(user, userData);
             try {
@@ -150,6 +158,11 @@ Parse.ObjectClass = function(className, id, data) {
     } else {
       cleanData.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
       db.collection(self.className).doc(self.id).set(cleanData, { merge: true }).then(function() {
+        if (self.className === 'users') {
+          try {
+            localStorage.setItem('parse_current_user', JSON.stringify({ uid: self.id, data: self.data }));
+          } catch (e) {}
+        }
         if (callbacks && callbacks.success) callbacks.success(self);
       }).catch(function(err) {
         if (callbacks && callbacks.error) callbacks.error(self, err);
@@ -184,6 +197,15 @@ Parse.Object = {
 Parse.UserClass = function(authUser, data) {
   Parse.ObjectClass.call(this, 'users', authUser ? authUser.uid : null, data);
   this.authUser = authUser;
+
+  this.get = function(key) {
+    if (key === 'pic') {
+      if ((!this.data.pic || this.data.pic === "images/rolodex.png") && this.authUser && this.authUser.photoURL) {
+        return this.authUser.photoURL;
+      }
+    }
+    return this.data[key];
+  };
 
   this.getUsername = function() {
     return this.data.username || (this.authUser ? (this.authUser.displayName || this.authUser.email.split('@')[0]) : '');
@@ -299,10 +321,14 @@ Parse.User = {
         if (!usernameCandidate || (user.displayName && usernameCandidate === user.displayName.toLowerCase().replace(/[^a-z0-9]/g, ''))) {
           usernameCandidate = user.displayName ? user.displayName.trim().toLowerCase() : user.email.split('@')[0];
         }
+        var picCandidate = existingData.pic;
+        if (!picCandidate || picCandidate === "images/rolodex.png") {
+          picCandidate = user.photoURL || "images/rolodex.png";
+        }
         var userData = {
           username: usernameCandidate,
           email: user.email,
-          pic: existingData.pic || user.photoURL || "images/rolodex.png"
+          pic: picCandidate
         };
         return db.collection('users').doc(user.uid).set(userData, { merge: true }).then(function() {
           Parse.User._currentUser = new Parse.UserClass(user, userData);

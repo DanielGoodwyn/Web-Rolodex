@@ -171,14 +171,24 @@ hr {
 }
 
 #profilePicture img {
-    height: 5em;
-    width: 5em;
-    border-radius: 5em;
-    margin: 1em;
+    height: 6em;
+    width: 6em;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0.5em auto;
+    display: inline-block;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
 #userProfilePicture img {
-    border-radius: 2em;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    vertical-align: middle;
+    margin-right: 6px;
+    border: 1px solid rgba(0,0,0,0.15);
 }
 
 .glass {

@@ -165,6 +165,12 @@ function setUserInputs() {
 		$("#loginAlert").show();
 		$("#forgotPasswordSection").hide();
 		$("#googleAuthSection").hide();
+		var authUser = (window.firebase && firebase.auth) ? firebase.auth().currentUser : null;
+		if (authUser && authUser.photoURL) {
+			$("#googlePicBtn").show();
+		} else {
+			$("#googlePicBtn").hide();
+		}
 		getProfilePicture();
 	} else {
 		setElementById("usernameDiv", "log in to begin.");
@@ -402,29 +408,121 @@ function getProfilePicture() {
 	var profilePicture;
 	var currentUser = Parse.User.current();
 	if (currentUser) {
-		profilePicture = currentUser.get('pic');
-		if(document.getElementById("profilePicture")) {
-			setElementById("profilePicture", "<a href=' " + profilePicture + " '><img src=" + profilePicture + ">");
-			userProfilePicture();
+		profilePicture = currentUser.get('pic') || "images/rolodex.png";
+		if (document.getElementById("profilePicture")) {
+			setElementById("profilePicture", "<a href='" + profilePicture + "' target='_blank' title='View full photo'><img src='" + profilePicture + "' alt='Profile Picture'></a>");
 		}
+		if (document.getElementById("profilePictureInput") && !document.getElementById("profilePictureInput").matches(':focus')) {
+			document.getElementById("profilePictureInput").value = profilePicture;
+		}
+		userProfilePicture();
 	}
 }
 
 function setProfilePicture(event) {
 	if (event.which == 13 || event.keyCode == 13 || event == "click") {
-		var profilePicture = document.getElementById("profilePictureInput").value;
+		var profilePicture = (document.getElementById("profilePictureInput").value || "").trim();
+		if (!profilePicture) {
+			alert("Please enter a valid image URL.");
+			return;
+		}
 		var currentUser = Parse.User.current();
 		if (currentUser) {
 			currentUser.set("pic", profilePicture);
 			currentUser.save(null, {
 				success: function(currentUser) {
 					getProfilePicture();
+					alert("Profile picture URL updated successfully!");
 				},
 				error: function(currentUser, error) {
-					alert("Error: " + error.code + " " + error.message);
+					alert("Error: " + (error.message || error.code));
 				}
 			});
 		}
+	}
+}
+
+function uploadProfilePicture(input) {
+	if (!input.files || !input.files[0]) return;
+	var file = input.files[0];
+	if (!file.type || !file.type.match(/^image\//i)) {
+		alert("Please select a valid image file.");
+		return;
+	}
+
+	var reader = new FileReader();
+	reader.onload = function(e) {
+		var img = new Image();
+		img.onload = function() {
+			var maxDim = 256;
+			var width = img.width;
+			var height = img.height;
+			if (width > height) {
+				if (width > maxDim) {
+					height = Math.round((height * maxDim) / width);
+					width = maxDim;
+				}
+			} else {
+				if (height > maxDim) {
+					width = Math.round((width * maxDim) / height);
+					height = maxDim;
+				}
+			}
+
+			var canvas = document.createElement('canvas');
+			canvas.width = width;
+			canvas.height = height;
+			var ctx = canvas.getContext('2d');
+			ctx.drawImage(img, 0, 0, width, height);
+
+			var dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+			var currentUser = Parse.User.current();
+			if (currentUser) {
+				currentUser.set("pic", dataUrl);
+				currentUser.save(null, {
+					success: function() {
+						if (document.getElementById("profilePictureInput")) {
+							document.getElementById("profilePictureInput").value = dataUrl;
+						}
+						getProfilePicture();
+						alert("Profile photo uploaded and updated successfully!");
+					},
+					error: function(user, error) {
+						alert("Failed to save profile photo: " + (error.message || error.code));
+					}
+				});
+			}
+		};
+		img.onerror = function() {
+			alert("Could not process the selected image file.");
+		};
+		img.src = e.target.result;
+	};
+	reader.readAsDataURL(file);
+}
+
+function useGoogleProfilePicture() {
+	var currentUser = Parse.User.current();
+	var authUser = (window.firebase && firebase.auth) ? firebase.auth().currentUser : null;
+	var googlePhoto = authUser ? authUser.photoURL : null;
+	if (!googlePhoto) {
+		alert("No Google profile photo found for this account.");
+		return;
+	}
+	if (currentUser) {
+		currentUser.set("pic", googlePhoto);
+		currentUser.save(null, {
+			success: function() {
+				if (document.getElementById("profilePictureInput")) {
+					document.getElementById("profilePictureInput").value = googlePhoto;
+				}
+				getProfilePicture();
+				alert("Profile picture set to your Google account photo!");
+			},
+			error: function(user, error) {
+				alert("Error: " + (error.message || error.code));
+			}
+		});
 	}
 }
 
@@ -432,8 +530,10 @@ function userProfilePicture() {
 	var profilePicture;
 	var currentUser = Parse.User.current();
 	if (currentUser) {
-		profilePicture = currentUser.get('pic');
-		setElementById("userProfilePicture", "<img src=" + profilePicture + ">");
+		profilePicture = currentUser.get('pic') || "images/rolodex.png";
+		if (document.getElementById("userProfilePicture")) {
+			setElementById("userProfilePicture", "<img src='" + profilePicture + "' alt='User'>");
+		}
 	}
 }
 
