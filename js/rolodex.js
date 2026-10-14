@@ -8,6 +8,8 @@ var order;
 var output;
 var filterAssociationId = null;
 var filterAssociationName = null;
+var filterAssociateCategory = null;
+var availableBaseTypes = [];
 var currentLocationPointLatitude = 37.776804;
 var currentLocationPointLongitude = -122.416844;
 var currentLocationPoint = new Parse.GeoPoint({latitude: currentLocationPointLatitude, longitude: currentLocationPointLongitude});
@@ -948,49 +950,71 @@ function userProfilePicture() {
 }
 
 function setTypeSelect() {
-	var userTypeArray = [];
 	var typeSelectDiv = "<select id='typeSelect' onchange='setType()'>";
 	var query = new Parse.Query("Type");
 	query.equalTo("userId", userId);
 	query.ascending("type");
 	query.find({
 	success: function(results) {
+		var orgTypes = [];
 		for (var i = 0; i < results.length; i++) {
 			var object = results[i];
 			var tVal = object.get('type');
-			if (tVal && userTypeArray.indexOf(tVal) === -1) {
-				userTypeArray.push(tVal);
+			if (tVal && tVal !== 'associate' && orgTypes.indexOf(tVal) === -1) {
+				orgTypes.push(tVal);
 			}
-		}
-		if (userTypeArray.indexOf('associate') === -1) {
-			userTypeArray.push('associate');
 		}
 
-		if (userTypeArray.length == 0) {
-			typeSelectDiv = typeSelectDiv + "<option disabled></option>";
-			typeSelectDiv = typeSelectDiv + "</select>";
+		availableBaseTypes = orgTypes.slice();
+		availableBaseTypes.push('associate');
+
+		if (orgTypes.length === 0) {
+			typeSelectDiv += "<option value='associate'>all associates</option>";
+			typeSelectDiv += "</select>";
 			setElementById("typeSelectDiv", typeSelectDiv);
-			$("#create-card").show();
-			$(".panels").hide();
-			$("#checkNamesDiv").hide();
-			$("#expandCards").hide();
-			$("#collapseCards").hide();
-		} else {
-			$(".panels").show();
-			$("#checkNamesDiv").show();
-			$("#expandCards").show();
-			$("#collapseCards").show();
-			for (var j = 0; j < userTypeArray.length; j++) {
-				var optVal = userTypeArray[j];
-				typeSelectDiv = typeSelectDiv + "<option value='" + optVal + "'>" + optVal + "</option>";
-			}
-			typeSelectDiv = typeSelectDiv + "</select>";
-			setElementById("typeSelectDiv", typeSelectDiv);
-			if (type && userTypeArray.indexOf(type) !== -1) {
-				document.getElementById("typeSelect").value = type;
-			}
 			setType();
+			return;
 		}
+
+		$(".panels").show();
+		$("#checkNamesDiv").show();
+		$("#expandCards").show();
+		$("#collapseCards").show();
+
+		// Organization cards optgroup
+		typeSelectDiv += "<optgroup label='Organization Cards'>";
+		for (var j = 0; j < orgTypes.length; j++) {
+			typeSelectDiv += "<option value='" + orgTypes[j] + "'>" + orgTypes[j] + "</option>";
+		}
+		typeSelectDiv += "</optgroup>";
+
+		// Associate cards optgroup
+		typeSelectDiv += "<optgroup label='Associate Cards'>";
+		typeSelectDiv += "<option value='associate'>all associates</option>";
+		for (var k = 0; k < orgTypes.length; k++) {
+			typeSelectDiv += "<option value='associate_type:" + orgTypes[k] + "'>" + orgTypes[k] + " associates</option>";
+		}
+		typeSelectDiv += "</optgroup>";
+		typeSelectDiv += "</select>";
+
+		setElementById("typeSelectDiv", typeSelectDiv);
+
+		// Synchronize dropdown selection with active filter state
+		var targetVal;
+		if (filterAssociateCategory) {
+			targetVal = "associate_type:" + filterAssociateCategory;
+		} else if (type === "associate") {
+			targetVal = "associate";
+		} else if (type && orgTypes.indexOf(type) !== -1) {
+			targetVal = type;
+		} else {
+			targetVal = orgTypes[0];
+		}
+
+		if (document.getElementById("typeSelect")) {
+			document.getElementById("typeSelect").value = targetVal;
+		}
+		setType();
 	},
 	error: function(error) {
 		alert("Error: " + error.code + " " + error.message);
@@ -1000,17 +1024,34 @@ function setTypeSelect() {
 
 function setType() {
 	var typeSelect = document.getElementById("typeSelect");
+	var selVal = "";
 	if (newTypeInputValueBool) {
-		type = $("#newTypeInput").val();
+		selVal = $("#newTypeInput").val();
 		newTypeInputValueBool = false;		
 	} else if (typeSelect && typeSelect.options && typeSelect.selectedIndex >= 0) {
-		type = typeSelect.options[typeSelect.selectedIndex].value;
-	}	
+		selVal = typeSelect.options[typeSelect.selectedIndex].value;
+	}
+
+	if (selVal.indexOf("associate_type:") === 0) {
+		type = "associate";
+		filterAssociateCategory = selVal.replace("associate_type:", "");
+		filterAssociationId = null;
+		filterAssociationName = null;
+	} else if (selVal === "associate") {
+		type = "associate";
+		filterAssociateCategory = null;
+		filterAssociationId = null;
+		filterAssociationName = null;
+	} else {
+		type = selVal;
+		filterAssociateCategory = null;
+		filterAssociationId = null;
+		filterAssociationName = null;
+	}
+
 	if (document.getElementById("newTypeInput")) {
 		document.getElementById("newTypeInput").value = type || "";
 	}
-	filterAssociationId = null;
-	filterAssociationName = null;
 	setSort();
 }
 
@@ -1064,15 +1105,53 @@ function setOrder(string, bool) {
 function findAssociate(string) {
 	filterAssociationId = null;
 	filterAssociationName = null;
+	filterAssociateCategory = null;
 	if (document.getElementById("nameStartsWith")) {
 		document.getElementById("nameStartsWith").value = string;
 	}
 	getAssociates();
 }
 
+function filterAssociatesByCategory(category) {
+	type = "associate";
+	filterAssociateCategory = category;
+	filterAssociationId = null;
+	filterAssociationName = null;
+	if (document.getElementById("typeSelect")) {
+		$("#typeSelect").val("associate_type:" + category);
+	}
+	if (document.getElementById("newTypeInput")) {
+		$("#newTypeInput").val("associate");
+	}
+	if (document.getElementById("nameStartsWith")) {
+		document.getElementById("nameStartsWith").value = "";
+		nameStartsWithValue = "";
+	}
+	if (document.getElementById("neighborhoodStartsWith")) {
+		document.getElementById("neighborhoodStartsWith").value = "";
+		neighborhoodStartsWithValue = "";
+	}
+	getAssociations();
+}
+
+function clearAssociateCategoryFilter() {
+	filterAssociateCategory = null;
+	filterAssociationId = null;
+	filterAssociationName = null;
+	type = "associate";
+	if (document.getElementById("typeSelect")) {
+		$("#typeSelect").val("associate");
+	}
+	if (document.getElementById("newTypeInput")) {
+		$("#newTypeInput").val("associate");
+	}
+	getAssociations();
+}
+
 function filterAssociatesForAssociation(parentId, parentName) {
 	filterAssociationId = parentId;
 	filterAssociationName = parentName;
+	filterAssociateCategory = null;
 	type = "associate";
 	if (document.getElementById("typeSelect")) {
 		$("#typeSelect").val("associate");
@@ -1109,6 +1188,7 @@ function goToAssociation(parentId, parentType) {
 	}
 	filterAssociationId = null;
 	filterAssociationName = null;
+	filterAssociateCategory = null;
 	if (document.getElementById("nameStartsWith")) {
 		document.getElementById("nameStartsWith").value = "";
 		nameStartsWithValue = "";
@@ -1762,6 +1842,15 @@ function updateLocation(AssociationObjectId, event) {
 
 function getAssociates() {
 	type = "associate";
+	filterAssociateCategory = null;
+	filterAssociationId = null;
+	filterAssociationName = null;
+	if (document.getElementById("typeSelect")) {
+		$("#typeSelect").val("associate");
+	}
+	if (document.getElementById("newTypeInput")) {
+		$("#newTypeInput").val("associate");
+	}
 	getAssociations();
 }
 
@@ -1820,7 +1909,8 @@ function getAssociations() {
 	}
 	query.equalTo("userId", userId);
 	query.find({
-	success: function(results) {
+	success: function(rawResults) {
+		var processResults = function(results) {
 		for (var i = 0; i < results.length; i++) {
 			var object = results[i];
 			idsArray.push(object.id);
@@ -1984,7 +2074,11 @@ function getAssociations() {
 			output = output + "<div class='col-xs-6 col-sm-5 col-md-4 col-lg-3'>";
 			output = output + "<p><select id='" + listItemId + "changeTypeSelect' onchange='changeType(&apos;" + listItemId + "&apos;)'>";			
 			output = output + "<option value='" + listItemType + "'>" + listItemType + "</option>";
-			output = output + document.getElementById("typeSelect").innerHTML;
+			for (var bt = 0; bt < availableBaseTypes.length; bt++) {
+				if (availableBaseTypes[bt] !== listItemType) {
+					output = output + "<option value='" + availableBaseTypes[bt] + "'>" + availableBaseTypes[bt] + "</option>";
+				}
+			}
 			output = output + "</select></p></div></div>";
 
 			output = output + "<div id='accordion-" + listItemId + "' role='tablist' aria-multiselectable='true'><h2><div data-toggle='collapse' data-parent='#accordion-" + listItemId + "' href='#collapse" + listItemId + "Location' aria-expanded='true' aria-controls='collapse" + listItemId + "Location' class='collapsed'>";
@@ -2066,7 +2160,9 @@ function getAssociations() {
 				output = output + "<div class='row'><div class='col-xs-12 col-sm-12 col-md-12 col-lg-12'>";
 				output = output + "<div style='margin-bottom: 6px; text-align: left;'>";
 				output = output + "<button class='btn btn-xs btn-default' onclick='filterAssociatesForAssociation(&apos;" + listItemId + "&apos;, &apos;" + escapeJsString(listItemName) + "&apos;)'>";
-				output = output + "<i class='glyphicon glyphicon-filter'></i> view all associates for this organization</button></div>";
+				output = output + "<i class='glyphicon glyphicon-filter'></i> view all associates for this organization</button>";
+				output = output + "<button class='btn btn-xs btn-default' style='margin-left:5px;' onclick='filterAssociatesByCategory(&apos;" + escapeJsString(listItemType) + "&apos;)'>";
+				output = output + "<i class='glyphicon glyphicon-filter'></i> view all " + escapeHtml(listItemType) + " associates</button></div>";
 				output = output + "<div id='associate" + listItemId + "'></div>";
 				output = output + "</div></div>";
 				output = output + "<div class='row'><div class='col-xs-10 col-sm-11 col-md-11 col-lg-11'>";
@@ -2219,6 +2315,35 @@ function getAssociations() {
 				console.error("Error loading organizations:", err);
 			}
 		});
+		};
+
+		if (type === "associate" && filterAssociateCategory) {
+			var orgQ = new Parse.Query("Association");
+			orgQ.equalTo("userId", userId);
+			orgQ.equalTo("type", filterAssociateCategory);
+			orgQ.find({
+				success: function(matchingOrgs) {
+					var validOrgIds = matchingOrgs.map(function(o) { return o.id; });
+					var filtered = rawResults.filter(function(assoc) {
+						var ids = assoc.get('associationIds');
+						if (!Array.isArray(ids) || ids.length === 0) {
+							var singleId = assoc.get('associationId');
+							ids = singleId ? [singleId] : [];
+						}
+						for (var m = 0; m < ids.length; m++) {
+							if (validOrgIds.indexOf(ids[m]) !== -1) return true;
+						}
+						return false;
+					});
+					processResults(filtered);
+				},
+				error: function() {
+					processResults(rawResults);
+				}
+			});
+		} else {
+			processResults(rawResults);
+		}
 	},
 	error: function(error) {
 		alert("Error: " + (error.message || error.code));
@@ -2239,8 +2364,17 @@ function checkNames() {
 		return;
 	}
 
+	if (filterAssociateCategory) {
+		checkNamesDiv = "<div><span class='label label-info' style='font-size:13px; padding: 5px 10px; display:inline-block; border-radius:12px;'>" +
+			"<i class='glyphicon glyphicon-filter'></i> <b>" + escapeHtml(filterAssociateCategory) + "</b> associates " +
+			"<a href='javascript:void(0)' onclick='clearAssociateCategoryFilter()' style='color:#fff; text-decoration:none; font-weight:bold; margin-left:8px; cursor:pointer;' title='Show all associates'>×</a>" +
+			"</span></div>";
+		setElementById("checkNamesDiv", checkNamesDiv);
+		return;
+	}
+
 	if (type === "associate") {
-		checkNamesDiv = "<div><i class='glyphicon glyphicon-filter'></i> associate</div>";
+		checkNamesDiv = "<div><i class='glyphicon glyphicon-filter'></i> all associates</div>";
 		setElementById("checkNamesDiv", checkNamesDiv);
 		return;
 	}
