@@ -464,6 +464,10 @@ Parse.Query = function(className) {
           if (Array.isArray(val)) {
             return val.indexOf(eqVal) !== -1;
           }
+          if (eqKey === 'type') {
+            var types = item.get('types');
+            if (Array.isArray(types) && types.indexOf(eqVal) !== -1) return true;
+          }
           if (eqKey === 'associationId') {
             var ids = item.get('associationIds');
             if (Array.isArray(ids) && ids.indexOf(eqVal) !== -1) return true;
@@ -493,6 +497,10 @@ Parse.Query = function(className) {
       for (var neqKey in self._whereNotEqual) {
         var neqVal = self._whereNotEqual[neqKey];
         items = items.filter(function(item) {
+          if (neqKey === 'type') {
+            var types = item.get('types');
+            if (Array.isArray(types) && types.indexOf(neqVal) !== -1) return false;
+          }
           return item.get(neqKey) !== neqVal;
         });
       }

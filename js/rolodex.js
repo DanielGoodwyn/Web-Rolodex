@@ -97,7 +97,7 @@ $(document).ready(function() {
 			var associationObjectId = $(this).closest(".card").attr('id');
 			updateIg(associationObjectId, "focusout");
 		});
-		$(document).delegate('.twitter', 'focusout', function() {
+		$(document).delegate('.twitter, .x', 'focusout', function() {
 			var associationObjectId = $(this).closest(".card").attr('id');
 			updateTwitter(associationObjectId, "focusout");
 		});
@@ -969,6 +969,7 @@ function setTypeSelect() {
 		availableBaseTypes.push('associate');
 
 		if (orgTypes.length === 0) {
+			typeSelectDiv += "<option value='all_associations'>all associations</option>";
 			typeSelectDiv += "<option value='associate'>all associates</option>";
 			typeSelectDiv += "</select>";
 			setElementById("typeSelectDiv", typeSelectDiv);
@@ -981,8 +982,9 @@ function setTypeSelect() {
 		$("#expandCards").show();
 		$("#collapseCards").show();
 
-		// Organization cards optgroup
-		typeSelectDiv += "<optgroup label='Organization Cards'>";
+		// Association cards optgroup
+		typeSelectDiv += "<optgroup label='Association Cards'>";
+		typeSelectDiv += "<option value='all_associations'>all associations</option>";
 		for (var j = 0; j < orgTypes.length; j++) {
 			typeSelectDiv += "<option value='" + orgTypes[j] + "'>" + orgTypes[j] + "</option>";
 		}
@@ -1005,10 +1007,12 @@ function setTypeSelect() {
 			targetVal = "associate_type:" + filterAssociateCategory;
 		} else if (type === "associate") {
 			targetVal = "associate";
+		} else if (type === "all_associations") {
+			targetVal = "all_associations";
 		} else if (type && orgTypes.indexOf(type) !== -1) {
 			targetVal = type;
 		} else {
-			targetVal = orgTypes[0];
+			targetVal = "all_associations";
 		}
 
 		if (document.getElementById("typeSelect")) {
@@ -1032,7 +1036,12 @@ function setType() {
 		selVal = typeSelect.options[typeSelect.selectedIndex].value;
 	}
 
-	if (selVal.indexOf("associate_type:") === 0) {
+	if (selVal === "all_associations") {
+		type = "all_associations";
+		filterAssociateCategory = null;
+		filterAssociationId = null;
+		filterAssociationName = null;
+	} else if (selVal.indexOf("associate_type:") === 0) {
 		type = "associate";
 		filterAssociateCategory = selVal.replace("associate_type:", "");
 		filterAssociationId = null;
@@ -1050,33 +1059,134 @@ function setType() {
 	}
 
 	if (document.getElementById("newTypeInput")) {
-		document.getElementById("newTypeInput").value = type || "";
+		document.getElementById("newTypeInput").value = (type === "all_associations" || type === "associate") ? "" : (type || "");
 	}
 	setSort();
 }
 
-function changeType(AssociationObjectId) {
-	var newValue;
-	var typeSelect = document.getElementById(AssociationObjectId + "changeTypeSelect")
-	newValue = typeSelect.options[typeSelect.selectedIndex].value;
+function toggleCardType(AssociationObjectId, typeName, isChecked) {
 	var Association = Parse.Object.extend("Association");
 	var query = new Parse.Query(Association);
 	query.get(AssociationObjectId, {
-		success: function(Association) {
-			Association.set("type", newValue);
-			Association.save(null, {
-				success: function(Association) {
-					getAssociations();
+		success: function(assoc) {
+			var types = assoc.get('types');
+			if (!Array.isArray(types)) {
+				var legacyT = assoc.get('type');
+				types = legacyT ? [legacyT] : [];
+			}
+			types = types.slice();
+
+			if (isChecked) {
+				if (types.indexOf(typeName) === -1) {
+					types.push(typeName);
+				}
+				// If checking an association type, remove 'associate'
+				if (typeName !== 'associate') {
+					var aIdx = types.indexOf('associate');
+					if (aIdx !== -1) types.splice(aIdx, 1);
+				} else {
+					// If checking 'associate', it is exclusively associate
+					types = ['associate'];
+					var menu = document.querySelector("#" + AssociationObjectId + "typeDropdown ul.dropdown-menu");
+					if (menu) {
+						var cbs = menu.querySelectorAll("input[type='checkbox']");
+						for (var c = 0; c < cbs.length; c++) {
+							if (cbs[c].value !== 'associate') cbs[c].checked = false;
+						}
+					}
+				}
+			} else {
+				var idx = types.indexOf(typeName);
+				if (idx !== -1) {
+					types.splice(idx, 1);
+				}
+			}
+
+			var primaryType = types.length > 0 ? types[0] : "misc";
+			assoc.set("types", types);
+			assoc.set("type", primaryType);
+			assoc.save(null, {
+				success: function() {
+					var labelText = types.length > 0 ? types.join(", ") : "Select type";
+					var labelEl = document.getElementById(AssociationObjectId + "typeLabel");
+					if (labelEl) labelEl.textContent = labelText;
+					var btnEl = document.getElementById(AssociationObjectId + "typeDropdownBtn");
+					if (btnEl) btnEl.title = labelText;
+
+					// If filtering by a specific type that this card no longer has, or converted, reload
+					if (type !== "all_associations" && type !== "associate" && !filterAssociateCategory) {
+						if (types.indexOf(type) === -1) {
+							getAssociations();
+						}
+					} else if (type === "all_associations" && types.indexOf("associate") !== -1) {
+						getAssociations();
+					} else if (type === "associate" && types.indexOf("associate") === -1) {
+						getAssociations();
+					}
 				},
-				error: function(Association, error) {
-					alert("Error: " + error.code + " " + error.message);
+				error: function(object, error) {
+					alert("Error: " + (error.message || error.code));
 				}
 			});
 		},
 		error: function(object, error) {
-			alert("Error: " + error.code + " " + error.message);
+			alert("Error: " + (error.message || error.code));
 		}
 	});
+}
+
+function addNewTypeToCard(AssociationObjectId) {
+	var inputEl = document.getElementById(AssociationObjectId + "newTypeSubInput");
+	if (!inputEl) return;
+	var newT = inputEl.value.trim();
+	if (!newT) return;
+	newT = capitaliseFirstLetter(newT);
+	inputEl.value = "";
+
+	var typeQ = new Parse.Query("Type");
+	typeQ.equalTo("userId", userId);
+	typeQ.equalTo("type", newT);
+	typeQ.first({
+		success: function(existingType) {
+			var applyType = function() {
+				if (availableBaseTypes.indexOf(newT) === -1) {
+					var aPos = availableBaseTypes.indexOf('associate');
+					if (aPos !== -1) {
+						availableBaseTypes.splice(aPos, 0, newT);
+					} else {
+						availableBaseTypes.push(newT);
+					}
+				}
+				toggleCardType(AssociationObjectId, newT, true);
+				setTypeSelect();
+				getAssociations();
+			};
+
+			if (!existingType) {
+				var TypeClass = Parse.Object.extend("Type");
+				var tObj = new TypeClass();
+				tObj.set("type", newT);
+				tObj.set("userId", userId);
+				tObj.save(null, {
+					success: applyType,
+					error: applyType
+				});
+			} else {
+				applyType();
+			}
+		},
+		error: function() {
+			toggleCardType(AssociationObjectId, newT, true);
+		}
+	});
+}
+
+function changeType(AssociationObjectId) {
+	var typeSelect = document.getElementById(AssociationObjectId + "changeTypeSelect");
+	if (typeSelect && typeSelect.options && typeSelect.selectedIndex >= 0) {
+		var newValue = typeSelect.options[typeSelect.selectedIndex].value;
+		toggleCardType(AssociationObjectId, newValue, true);
+	}
 }
 
 function setSort() {
@@ -1226,47 +1336,56 @@ function newAssociation(event) {
 		} else {
 			name = document.getElementById("newNameInput").value;
 		}
-		if (document.getElementById("newTypeInput").value == null || document.getElementById("newTypeInput").value == "") {
-			type = "misc";
-			$("#newTypeInput").val("misc");
-		} else {
-			type = document.getElementById("newTypeInput").value;
+		var rawTypeInput = document.getElementById("newTypeInput").value || "misc";
+		var rawTypes = rawTypeInput.split(",");
+		var parsedTypes = [];
+		for (var rt = 0; rt < rawTypes.length; rt++) {
+			var tTrim = capitaliseFirstLetter(rawTypes[rt].trim());
+			if (tTrim && parsedTypes.indexOf(tTrim) === -1) {
+				parsedTypes.push(tTrim);
+			}
 		}
+		if (parsedTypes.length === 0) parsedTypes = ["misc"];
+		type = parsedTypes[0];
 		$("#newNameInput").val("");
-		$("#typeSelect").val(type);
 		association.set("name", name);
 		association.set("type", type);
+		association.set("types", parsedTypes);
 		association.set("userId", userId);
 		association.save(null, {
 			success: function(association) {
 				scrollToItem = "#" + association.id;
-				var query = new Parse.Query("Type");
-				query.equalTo("type", type);
-				query.equalTo("userId", userId);
-				query.find({
-				success: function(results) {
-					if (results.length!=0) {
-					} else {
-						var Type = Parse.Object.extend("Type");
-						var TypeObject = new Type();
-						TypeObject.set("type", type);
-						TypeObject.set("userId", userId);
-						TypeObject.save(null, {
-							success: function(Type) {
-								newTypeInputValueBool = true;
-								setTypeSelect();
-							},
-							error: function(Type, error) {
-								alert("Error: " + error.code + " " + error.message);
-							}
-						});						
+				var ensureTypes = function(idx) {
+					if (idx >= parsedTypes.length) {
+						setTypeSelect();
+						getAssociations();
+						return;
 					}
-					getAssociations();
-				},
-				error: function(error) {
-					alert("Error: " + error.code + " " + error.message);
-				}
-				});
+					var curT = parsedTypes[idx];
+					var query = new Parse.Query("Type");
+					query.equalTo("type", curT);
+					query.equalTo("userId", userId);
+					query.find({
+						success: function(results) {
+							if (results.length === 0) {
+								var Type = Parse.Object.extend("Type");
+								var TypeObject = new Type();
+								TypeObject.set("type", curT);
+								TypeObject.set("userId", userId);
+								TypeObject.save(null, {
+									success: function() { ensureTypes(idx + 1); },
+									error: function() { ensureTypes(idx + 1); }
+								});
+							} else {
+								ensureTypes(idx + 1);
+							}
+						},
+						error: function() {
+							ensureTypes(idx + 1);
+						}
+					});
+				};
+				ensureTypes(0);
 			},
 			error: function(association, error) {
 				alert("Error: " + error.code + " " + error.message);
@@ -1389,7 +1508,7 @@ function linkParentAssociation(associateId, event) {
 					}
 				}
 				if (!matchedOrg) {
-					alert("Could not find an organization named '" + parentName + "'. Please check the name or create the organization card first.");
+					alert("Could not find an association named '" + parentName + "'. Please check the name or create the association card first.");
 					return;
 				}
 				var orgId = matchedOrg.id;
@@ -1409,7 +1528,7 @@ function linkParentAssociation(associateId, event) {
 								getAssociations();
 							},
 							error: function(obj, err) {
-								alert("Error linking organization: " + (err.message || err.code));
+								alert("Error linking association: " + (err.message || err.code));
 							}
 						});
 					},
@@ -1426,7 +1545,7 @@ function linkParentAssociation(associateId, event) {
 }
 
 function unlinkAssociate(associateId, parentAssociationId, associateName) {
-	var confirmation = confirm("Unlink " + (associateName || "this associate") + " from this organization?");
+	var confirmation = confirm("Unlink " + (associateName || "this associate") + " from this association?");
 	if (!confirmation) return;
 
 	var Association = Parse.Object.extend("Association");
@@ -1725,11 +1844,13 @@ function updateTwitter(AssociationObjectId, event) {
 			success: function(Association) {
 				if (newValue == "") {
 					Association.unset("twitter");
+					Association.unset("x");
 				} else {
 					if (!newValue.match(/^[a-zA-Z]+:\/\//)) {
-						newValue = 'http://' + newValue;
+						newValue = 'https://' + newValue;
 					}
 					Association.set("twitter", newValue);
+					Association.set("x", newValue);
 				}
 				Association.save(null, {
 					success: function(Association) {
@@ -1870,7 +1991,11 @@ function getAssociations() {
 	var neighborhoodArray = [];
 	var distanceArray = [];
 	var query = new Parse.Query("Association");
-	query.equalTo("type", type);
+	if (type === "all_associations") {
+		query.notEqualTo("type", "associate");
+	} else {
+		query.equalTo("type", type);
+	}
 	if (type === "associate" && filterAssociationId) {
 		query.equalTo("associationId", filterAssociationId);
 	}
@@ -1915,11 +2040,16 @@ function getAssociations() {
 			var object = results[i];
 			idsArray.push(object.id);
 			namesArray.push(object.get('name'));
-			typesArray.push(object.get('type'));
+			var objTypes = object.get('types');
+			if (!Array.isArray(objTypes) || objTypes.length === 0) {
+				var legacyT = object.get('type');
+				objTypes = legacyT ? [legacyT] : [];
+			}
+			typesArray.push(objTypes);
 			sitesArray.push(object.get('site'));
 			fbArray.push(object.get('fb'));
 			igArray.push(object.get('ig'));
-			twitterArray.push(object.get('twitter'));
+			twitterArray.push(object.get('x') || object.get('twitter'));
 			ratingArray.push(object.get('rating'));
 			locationArray.push(object.get('location'));
 			geoArray.push(object.get('geo'));
@@ -1930,10 +2060,11 @@ function getAssociations() {
 			var listItemId = "";
 			var listItemName = "";
 			var listItemType = "";
+			var listItemTypes = typesArray[j] || [];
 			var listItemLocation = "";
 			listItemId = idsArray[j];
 			listItemName = namesArray[j];
-			listItemType = typesArray[j];
+			listItemType = listItemTypes.length > 0 ? listItemTypes[0] : "";
 			listItemLocation = locationArray[j];
 			if (listItemLocation == "undefined" || listItemLocation == undefined) {
 				listItemLocation = "";
@@ -2066,20 +2197,36 @@ function getAssociations() {
 
 			output = output + "<div class='row'>";
 
-			output = output + "<div class='col-xs-6 col-sm-6 col-md-8 col-lg-9'>";
+			output = output + "<div class='col-xs-6 col-sm-6 col-md-6 col-lg-7'>";
 			output = output + "<span class='rating'>";
 			output = output + "<input style='background:" + listItemRatingColor + ";' placeholder='my rating (1-100)' type='number' min='0' max='100' step='5' id='" + listItemId + "ratingInput' onchange='updateRating(&apos;" + listItemId + "&apos;)' value='" + listItemRating + "'>";
 			output = output + "</span></div>";
 
-			output = output + "<div class='col-xs-6 col-sm-5 col-md-4 col-lg-3'>";
-			output = output + "<p><select id='" + listItemId + "changeTypeSelect' onchange='changeType(&apos;" + listItemId + "&apos;)'>";			
-			output = output + "<option value='" + listItemType + "'>" + listItemType + "</option>";
+			output = output + "<div class='col-xs-6 col-sm-6 col-md-6 col-lg-5 text-right'>";
+			var displayLabel = listItemTypes.length > 0 ? listItemTypes.join(", ") : "Select type";
+			var displayTooltip = escapeHtml(listItemTypes.join(", "));
+			output = output + "<div class='dropdown' id='" + listItemId + "typeDropdown' style='margin-bottom: 10px; display:inline-block; max-width:100%;'>";
+			output = output + "<button class='btn btn-default btn-sm dropdown-toggle' type='button' id='" + listItemId + "typeDropdownBtn' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' style='max-width:240px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;' title='" + displayTooltip + "'>";
+			output = output + "<span id='" + listItemId + "typeLabel'>" + escapeHtml(displayLabel) + "</span> <span class='caret'></span>";
+			output = output + "</button>";
+			output = output + "<ul class='dropdown-menu dropdown-menu-right' aria-labelledby='" + listItemId + "typeDropdownBtn' style='padding: 8px 12px; min-width: 220px; max-height: 280px; overflow-y: auto; text-align: left;' onclick='event.stopPropagation();'>";
+			output = output + "<li class='dropdown-header' style='padding: 2px 0 6px 0; font-weight: bold; color: #555;'>Card Types (select multiple)</li>";
 			for (var bt = 0; bt < availableBaseTypes.length; bt++) {
-				if (availableBaseTypes[bt] !== listItemType) {
-					output = output + "<option value='" + availableBaseTypes[bt] + "'>" + availableBaseTypes[bt] + "</option>";
-				}
+				var bType = availableBaseTypes[bt];
+				var isChecked = listItemTypes.indexOf(bType) !== -1 ? "checked" : "";
+				output = output + "<li style='margin: 4px 0;'>";
+				output = output + "<label style='font-weight: normal; cursor: pointer; display: block; margin: 0;'>";
+				output = output + "<input type='checkbox' value='" + escapeHtml(bType) + "' " + isChecked + " onchange='toggleCardType(&apos;" + listItemId + "&apos;, &apos;" + escapeJsString(bType) + "&apos;, this.checked)'> ";
+				output = output + escapeHtml(bType);
+				output = output + "</label></li>";
 			}
-			output = output + "</select></p></div></div>";
+			output = output + "<li class='divider' style='margin: 6px 0;'></li>";
+			output = output + "<li><div class='input-group input-group-sm'>";
+			output = output + "<input type='text' class='form-control' placeholder='New type...' id='" + listItemId + "newTypeSubInput' onkeydown='if(event.keyCode===13){event.preventDefault();addNewTypeToCard(&apos;" + listItemId + "&apos;);}'>";
+			output = output + "<span class='input-group-btn'>";
+			output = output + "<button class='btn btn-primary' type='button' title='Add new type' onclick='addNewTypeToCard(&apos;" + listItemId + "&apos;)'>+</button>";
+			output = output + "</span></div></li>";
+			output = output + "</ul></div></div></div>";
 
 			output = output + "<div id='accordion-" + listItemId + "' role='tablist' aria-multiselectable='true'><h2><div data-toggle='collapse' data-parent='#accordion-" + listItemId + "' href='#collapse" + listItemId + "Location' aria-expanded='true' aria-controls='collapse" + listItemId + "Location' class='collapsed'>";
 			output = output + "<i class='glyphicon glyphicon-map-marker'></i> Location<i class='float-left glyphicon glyphicon-collapse-down toggleCollapseGlyphicon'></i></div></h2>";
@@ -2116,7 +2263,7 @@ function getAssociations() {
             output = output + "</div><div class='btn-group' role='group'>";
 			output = output + "<button class='btn btn-default btn-ig' " + igDisplay + " onclick='visit(&apos;" + listItemIg + "&apos;)'>insta <i class='glyphicon glyphicon-new-window'></i></button>";
             output = output + "</div><div class='btn-group' role='group'>";
-			output = output + "<button class='btn btn-default btn-twitter' " + twitterDisplay + " onclick='visit(&apos;" + listItemTwitter + "&apos;)'>tw <i class='glyphicon glyphicon-new-window'></i></button>";
+			output = output + "<button class='btn btn-default btn-twitter btn-x' " + twitterDisplay + " onclick='visit(&apos;" + listItemTwitter + "&apos;)'>x <i class='glyphicon glyphicon-new-window'></i></button>";
 			output = output + "</div></div></div>";
 
 			output = output + "<div class'row'>";
@@ -2136,20 +2283,20 @@ function getAssociations() {
 			output = output + "</div>";
 
             output = output + "<div class='btn-group' role='group'>";
-			output = output + "<input class='twitter corners-left' placeholder='twitter (url)' type='text' id='" + listItemId + "twitterInput' onkeyup='updateTwitter(&apos;" + listItemId + "&apos;, event)' value='" + listItemTwitter + "'>";
+			output = output + "<input class='twitter x corners-left' placeholder='x (url)' type='text' id='" + listItemId + "twitterInput' onkeyup='updateTwitter(&apos;" + listItemId + "&apos;, event)' value='" + listItemTwitter + "'>";
 			output = output + "</div></div></div></div>";
 
 			output = output + "<div></div><div class'row'>";
 
 			output = output + "<div class='clearfix'></div>";
 
-			if (listItemType === 'associate') {
+			if (listItemTypes.indexOf('associate') !== -1) {
 				output = output + "<h2><div data-toggle='collapse' data-parent='#accordion-" + listItemId + "' href='#collapse" + listItemId + "ParentAssoc' aria-expanded='true' aria-controls='collapse" + listItemId + "ParentAssoc' class='collapsed'>";
 				output = output + "<i class='glyphicon glyphicon-briefcase'></i> Associated With<i class='float-left glyphicon glyphicon-collapse-down toggleCollapseGlyphicon'></i></div></h2>";
 				output = output + "<div id='collapse" + listItemId + "ParentAssoc' class='panel-collapse collapse in' role='tabpanel'>";
 				output = output + "<div class='row'><div class='col-xs-12 col-sm-12 col-md-12 col-lg-12'><div id='parentAssoc" + listItemId + "'></div></div></div>";
 				output = output + "<div class='row'><div class='col-xs-10 col-sm-11 col-md-11 col-lg-11'>";
-				output = output + "<input placeholder='Link to organization (example: Dolores Park Church)' type='text' id='newParentInput" + listItemId + "' onkeyup='linkParentAssociation(&apos;" + listItemId + "&apos;, event)' value=''>";
+				output = output + "<input placeholder='Link to association (example: Dolores Park Church)' type='text' id='newParentInput" + listItemId + "' onkeyup='linkParentAssociation(&apos;" + listItemId + "&apos;, event)' value=''>";
 				output = output + "</div><div class='col-xs-2 col-sm-1 col-md-1 col-lg-1'>";
 				output = output + "<button class='linkParent btn btn-primary btn-block'>+</button>";
 				output = output + "</div></div></div>";
@@ -2160,9 +2307,15 @@ function getAssociations() {
 				output = output + "<div class='row'><div class='col-xs-12 col-sm-12 col-md-12 col-lg-12'>";
 				output = output + "<div style='margin-bottom: 6px; text-align: left;'>";
 				output = output + "<button class='btn btn-xs btn-default' onclick='filterAssociatesForAssociation(&apos;" + listItemId + "&apos;, &apos;" + escapeJsString(listItemName) + "&apos;)'>";
-				output = output + "<i class='glyphicon glyphicon-filter'></i> view all associates for this organization</button>";
-				output = output + "<button class='btn btn-xs btn-default' style='margin-left:5px;' onclick='filterAssociatesByCategory(&apos;" + escapeJsString(listItemType) + "&apos;)'>";
-				output = output + "<i class='glyphicon glyphicon-filter'></i> view all " + escapeHtml(listItemType) + " associates</button></div>";
+				output = output + "<i class='glyphicon glyphicon-filter'></i> view all associates for this association</button>";
+				for (var ct = 0; ct < listItemTypes.length; ct++) {
+					var cType = listItemTypes[ct];
+					if (cType && cType !== 'associate') {
+						output = output + "<button class='btn btn-xs btn-default' style='margin-left:5px; margin-top:2px;' onclick='filterAssociatesByCategory(&apos;" + escapeJsString(cType) + "&apos;)'>";
+						output = output + "<i class='glyphicon glyphicon-filter'></i> view all " + escapeHtml(cType) + " associates</button>";
+					}
+				}
+				output = output + "</div>";
 				output = output + "<div id='associate" + listItemId + "'></div>";
 				output = output + "</div></div>";
 				output = output + "<div class='row'><div class='col-xs-10 col-sm-11 col-md-11 col-lg-11'>";
@@ -2207,7 +2360,7 @@ function getAssociations() {
 			getNotes(idsArray[k]);
 		}
 
-		// Query all non-associate organizations to build lookup map & autocomplete
+		// Query all non-associate associations to build lookup map & autocomplete
 		var orgQuery = new Parse.Query("Association");
 		orgQuery.equalTo("userId", userId);
 		orgQuery.notEqualTo("type", "associate");
@@ -2221,7 +2374,8 @@ function getAssociations() {
 					orgMap[orgObj.id] = {
 						id: orgObj.id,
 						name: orgObj.get('name'),
-						type: orgObj.get('type')
+						type: orgObj.get('type'),
+						types: orgObj.get('types') || (orgObj.get('type') ? [orgObj.get('type')] : [])
 					};
 					if (orgObj.get('name')) {
 						orgNames.push(orgObj.get('name'));
@@ -2261,7 +2415,7 @@ function getAssociations() {
 								}
 							}
 
-							// 1. Populate associate buttons for parent organization cards
+							// 1. Populate associate buttons for parent association cards
 							for (var p = 0; p < uniqueParentIds.length; p++) {
 								var pid = uniqueParentIds[p];
 								var aBtn = "<div class='btn-padding float-left'>" +
@@ -2272,22 +2426,22 @@ function getAssociations() {
 								assocHtmlMap[pid] = (assocHtmlMap[pid] || "") + aBtn;
 							}
 
-							// 2. Populate parent organization buttons for associate cards
+							// 2. Populate parent association buttons for associate cards
 							var parentHtml = "";
 							for (var pi = 0; pi < uniqueParentIds.length; pi++) {
 								var pOrgId = uniqueParentIds[pi];
 								var pOrg = orgMap[pOrgId];
-								var pOrgName = pOrg ? pOrg.name : ("Organization #" + pOrgId.substring(0, 5));
-								var pOrgType = pOrg ? pOrg.type : "";
+								var pOrgName = pOrg ? pOrg.name : ("Association #" + pOrgId.substring(0, 5));
+								var pOrgType = (pOrg && pOrg.types && pOrg.types.length > 0) ? pOrg.types[0] : (pOrg ? pOrg.type : "");
 								parentHtml += "<div class='btn-padding float-left'>" +
 									"<div class='btn-group' role='group'>" +
 									"<button class='btn btn-info' onclick='goToAssociation(&apos;" + pOrgId + "&apos;, &apos;" + escapeJsString(pOrgType) + "&apos;)'>" +
 									"<i class='glyphicon glyphicon-briefcase'></i> " + escapeHtml(pOrgName) + "</button>" +
-									"<button class='btn btn-danger' title='Unlink organization' onclick='unlinkAssociate(&apos;" + aId + "&apos;, &apos;" + pOrgId + "&apos;, &apos;" + escapeJsString(aName) + "&apos;)'>×</button>" +
+									"<button class='btn btn-danger' title='Unlink association' onclick='unlinkAssociate(&apos;" + aId + "&apos;, &apos;" + pOrgId + "&apos;, &apos;" + escapeJsString(aName) + "&apos;)'>×</button>" +
 									"</div></div>";
 							}
 							if (parentHtml === "") {
-								parentHtml = "<p class='text-muted' style='margin-bottom:8px;'><i>Not linked to any organization yet.</i></p>";
+								parentHtml = "<p class='text-muted' style='margin-bottom:8px;'><i>Not linked to any association yet.</i></p>";
 							}
 							parentAssocHtmlMap[aId] = parentHtml;
 						}
@@ -2312,7 +2466,7 @@ function getAssociations() {
 				});
 			},
 			error: function(err) {
-				console.error("Error loading organizations:", err);
+				console.error("Error loading associations:", err);
 			}
 		});
 		};
@@ -2369,6 +2523,12 @@ function checkNames() {
 			"<i class='glyphicon glyphicon-filter'></i> <b>" + escapeHtml(filterAssociateCategory) + "</b> associates " +
 			"<a href='javascript:void(0)' onclick='clearAssociateCategoryFilter()' style='color:#fff; text-decoration:none; font-weight:bold; margin-left:8px; cursor:pointer;' title='Show all associates'>×</a>" +
 			"</span></div>";
+		setElementById("checkNamesDiv", checkNamesDiv);
+		return;
+	}
+
+	if (type === "all_associations") {
+		checkNamesDiv = "<div><i class='glyphicon glyphicon-filter'></i> all associations</div>";
 		setElementById("checkNamesDiv", checkNamesDiv);
 		return;
 	}
