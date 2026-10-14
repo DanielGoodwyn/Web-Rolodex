@@ -2144,6 +2144,9 @@ function getAssociations() {
 				assocQuery.ascending("name");
 				assocQuery.find({
 					success: function(assocResults) {
+						var assocHtmlMap = {};
+						var parentAssocHtmlMap = {};
+
 						for (var a = 0; a < assocResults.length; a++) {
 							var aObj = assocResults[a];
 							var aId = aObj.id;
@@ -2154,40 +2157,56 @@ function getAssociations() {
 								parentIds = singlePId ? [singlePId] : [];
 							}
 
-							// 1. Populate associate buttons on parent organization cards
-							for (var p = 0; p < parentIds.length; p++) {
-								var pid = parentIds[p];
-								var targetEl = document.getElementById("associate" + pid);
-								if (targetEl) {
-									var aBtn = "<div class='btn-padding float-left'>" +
-										"<div class='btn-group' role='group'>" +
-										"<button class='btn btn-default' onclick='findAssociate(&apos;" + escapeJsString(aName) + "&apos;)'>" + escapeHtml(aName) + "</button>" +
-										"<button class='btn btn-danger' title='Unlink associate' onclick='unlinkAssociate(&apos;" + aId + "&apos;, &apos;" + pid + "&apos;, &apos;" + escapeJsString(aName) + "&apos;)'>×</button>" +
-										"</div></div>";
-									targetEl.innerHTML += aBtn;
+							// Deduplicate parentIds
+							var uniqueParentIds = [];
+							for (var up = 0; up < parentIds.length; up++) {
+								if (parentIds[up] && uniqueParentIds.indexOf(parentIds[up]) === -1) {
+									uniqueParentIds.push(parentIds[up]);
 								}
 							}
 
-							// 2. Populate parent organization buttons on associate cards
-							var parentAssocEl = document.getElementById("parentAssoc" + aId);
-							if (parentAssocEl) {
-								var parentHtml = "";
-								for (var pi = 0; pi < parentIds.length; pi++) {
-									var pOrgId = parentIds[pi];
-									var pOrg = orgMap[pOrgId];
-									var pOrgName = pOrg ? pOrg.name : ("Organization #" + pOrgId.substring(0, 5));
-									var pOrgType = pOrg ? pOrg.type : "";
-									parentHtml += "<div class='btn-padding float-left'>" +
-										"<div class='btn-group' role='group'>" +
-										"<button class='btn btn-info' onclick='goToAssociation(&apos;" + pOrgId + "&apos;, &apos;" + escapeJsString(pOrgType) + "&apos;)'>" +
-										"<i class='glyphicon glyphicon-briefcase'></i> " + escapeHtml(pOrgName) + "</button>" +
-										"<button class='btn btn-danger' title='Unlink organization' onclick='unlinkAssociate(&apos;" + aId + "&apos;, &apos;" + pOrgId + "&apos;, &apos;" + escapeJsString(aName) + "&apos;)'>×</button>" +
-										"</div></div>";
-								}
-								if (parentHtml === "") {
-									parentHtml = "<p class='text-muted' style='margin-bottom:8px;'><i>Not linked to any organization yet.</i></p>";
-								}
-								parentAssocEl.innerHTML = parentHtml;
+							// 1. Populate associate buttons for parent organization cards
+							for (var p = 0; p < uniqueParentIds.length; p++) {
+								var pid = uniqueParentIds[p];
+								var aBtn = "<div class='btn-padding float-left'>" +
+									"<div class='btn-group' role='group'>" +
+									"<button class='btn btn-default' onclick='findAssociate(&apos;" + escapeJsString(aName) + "&apos;)'>" + escapeHtml(aName) + "</button>" +
+									"<button class='btn btn-danger' title='Unlink associate' onclick='unlinkAssociate(&apos;" + aId + "&apos;, &apos;" + pid + "&apos;, &apos;" + escapeJsString(aName) + "&apos;)'>×</button>" +
+									"</div></div>";
+								assocHtmlMap[pid] = (assocHtmlMap[pid] || "") + aBtn;
+							}
+
+							// 2. Populate parent organization buttons for associate cards
+							var parentHtml = "";
+							for (var pi = 0; pi < uniqueParentIds.length; pi++) {
+								var pOrgId = uniqueParentIds[pi];
+								var pOrg = orgMap[pOrgId];
+								var pOrgName = pOrg ? pOrg.name : ("Organization #" + pOrgId.substring(0, 5));
+								var pOrgType = pOrg ? pOrg.type : "";
+								parentHtml += "<div class='btn-padding float-left'>" +
+									"<div class='btn-group' role='group'>" +
+									"<button class='btn btn-info' onclick='goToAssociation(&apos;" + pOrgId + "&apos;, &apos;" + escapeJsString(pOrgType) + "&apos;)'>" +
+									"<i class='glyphicon glyphicon-briefcase'></i> " + escapeHtml(pOrgName) + "</button>" +
+									"<button class='btn btn-danger' title='Unlink organization' onclick='unlinkAssociate(&apos;" + aId + "&apos;, &apos;" + pOrgId + "&apos;, &apos;" + escapeJsString(aName) + "&apos;)'>×</button>" +
+									"</div></div>";
+							}
+							if (parentHtml === "") {
+								parentHtml = "<p class='text-muted' style='margin-bottom:8px;'><i>Not linked to any organization yet.</i></p>";
+							}
+							parentAssocHtmlMap[aId] = parentHtml;
+						}
+
+						// Apply to DOM
+						for (var orgKey in orgMap) {
+							var orgEl = document.getElementById("associate" + orgKey);
+							if (orgEl) {
+								orgEl.innerHTML = assocHtmlMap[orgKey] || "";
+							}
+						}
+						for (var asKey in parentAssocHtmlMap) {
+							var asEl = document.getElementById("parentAssoc" + asKey);
+							if (asEl) {
+								asEl.innerHTML = parentAssocHtmlMap[asKey];
 							}
 						}
 					},
