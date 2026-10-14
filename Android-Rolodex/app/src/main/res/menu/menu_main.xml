@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_sort"
+        android:title="Sort"
+        android:icon="@android:drawable/ic_menu_sort_by_size"
+        app:showAsAction="ifRoom">
+        <menu>
+            <item
+                android:id="@+id/sort_distance_asc"
+                android:title="Distance (Closest First)" />
+            <item
+                android:id="@+id/sort_distance_desc"
+                android:title="Distance (Farthest First)" />
+            <item
+                android:id="@+id/sort_rating_desc"
+                android:title="Rating (Highest First)" />
+            <item
+                android:id="@+id/sort_name_asc"
+                android:title="Name (A to Z)" />
+            <item
+                android:id="@+id/sort_newest"
+                android:title="Recently Added" />
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/action_account"
+        android:title="Account"
+        android:icon="@android:drawable/ic_menu_myplaces"
+        app:showAsAction="ifRoom" />
+</menu>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "119025024991",
+    "project_id": "rolodex-ade98",
+    "storage_bucket": "rolodex-ade98.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:119025024991:android:3ef186103488998c962c58",
+        "android_client_info": {
+          "package_name": "daniel.rolodex"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBpsdl5rHyL0_mbauMUQVgD89zs7E9eY1U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

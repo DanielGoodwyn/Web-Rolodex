@@ -1,0 +1,38 @@
+<resources>
+    <string name="app_name">Rolodex</string>
+    <string name="title_login">Sign In</string>
+    <string name="title_signup">Create Account</string>
+    <string name="title_account">Account Settings</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="username_hint">Username (e.g. Daniel Goodwyn)</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="sign_in">Sign In</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="dont_have_account">Don\'t have an account? Sign Up</string>
+    <string name="already_have_account">Already have an account? Sign In</string>
+    <string name="log_out">Log Out</string>
+
+    <string name="search_hint">Search cards or associates…</string>
+    <string name="filter_all">All Cards</string>
+    <string name="filter_associations">All Associations</string>
+    <string name="filter_associates">All Associates</string>
+    <string name="sort_distance">Sort: Distance</string>
+    <string name="sort_rating">Sort: Rating</string>
+    <string name="sort_name">Sort: Name</string>
+
+    <string name="add_card">Add Card</string>
+    <string name="card_name">Name</string>
+    <string name="card_rating">Rating (0–100)</string>
+    <string name="card_types">Types (comma-separated)</string>
+    <string name="card_location">Location</string>
+    <string name="notes_title">Notes</string>
+    <string name="add_note">Add Note</string>
+    <string name="associates_title">Associates</string>
+    <string name="associated_with_title">Associated With</string>
+    <string name="add_associate_hint">Add associate (example: Daniel Goodwyn)</string>
+    <string name="link_association_hint">Link to association (example: Dolores Park Church)</string>
+    <string name="open_google_maps">Google Maps</string>
+    <string name="delete_card">Delete Card</string>
+</resources>
