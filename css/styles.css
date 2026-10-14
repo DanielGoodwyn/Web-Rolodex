@@ -379,3 +379,13 @@ hr {
     color: #ea4335;
     margin-right: 2px;
 }
+
+.ui-autocomplete {
+    z-index: 99999 !important;
+    max-height: 220px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    border-radius: 4px;
+}

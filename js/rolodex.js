@@ -1394,9 +1394,11 @@ function newAssociation(event) {
 	}
 }
 
-function newAssociate(event, AssociationObjectId) {
-	if (event.which == 13 || event.keyCode == 13 || event == "click") {
-		var inputEl = document.getElementById('newNameInput' + AssociationObjectId);
+function newAssociate(arg1, arg2) {
+	var event = (arg1 === "click" || (arg1 && (arg1.keyCode || arg1.which))) ? arg1 : arg2;
+	var AssociationObjectId = (event === arg1) ? arg2 : arg1;
+	if (event && (event.which == 13 || event.keyCode == 13 || event == "click")) {
+		var inputEl = document.getElementById('newAssociateInput' + AssociationObjectId) || document.getElementById('newNameInput' + AssociationObjectId);
 		if (!inputEl) return;
 		var rawName = inputEl.value;
 		if (!rawName || !rawName.trim()) return;
@@ -1431,6 +1433,10 @@ function newAssociate(event, AssociationObjectId) {
 					if (!existingAssociate.get('associationId')) {
 						existingAssociate.set('associationId', AssociationObjectId);
 					}
+					var exTypes = existingAssociate.get('types');
+					if (!Array.isArray(exTypes) || exTypes.length === 0) {
+						existingAssociate.set('types', ['associate']);
+					}
 					existingAssociate.save(null, {
 						success: function() {
 							inputEl.value = '';
@@ -1445,6 +1451,7 @@ function newAssociate(event, AssociationObjectId) {
 					var association = new Association();
 					association.set("name", name);
 					association.set("type", "associate");
+					association.set("types", ["associate"]);
 					association.set("userId", userId);
 					association.set("associationId", AssociationObjectId);
 					association.set("associationIds", [AssociationObjectId]);
@@ -1487,8 +1494,10 @@ function newAssociate(event, AssociationObjectId) {
 	}
 }
 
-function linkParentAssociation(associateId, event) {
-	if (event.which == 13 || event.keyCode == 13 || event == "click") {
+function linkParentAssociation(arg1, arg2) {
+	var event = (arg1 === "click" || (arg1 && (arg1.keyCode || arg1.which))) ? arg1 : arg2;
+	var associateId = (event === arg1) ? arg2 : arg1;
+	if (event && (event.which == 13 || event.keyCode == 13 || event == "click")) {
 		var inputEl = document.getElementById('newParentInput' + associateId);
 		if (!inputEl) return;
 		var parentName = inputEl.value;
@@ -2319,9 +2328,9 @@ function getAssociations() {
 				output = output + "<div id='associate" + listItemId + "'></div>";
 				output = output + "</div></div>";
 				output = output + "<div class='row'><div class='col-xs-10 col-sm-11 col-md-11 col-lg-11'>";
-				output = output + "<input placeholder='New Associate (example: Phil Jaber)' type='text' id='newNameInput" + listItemId + "' onkeyup='newAssociate(event, &apos;" + listItemId + "&apos;)' value=''>";
+				output = output + "<input placeholder='Add associate (example: Daniel Goodwyn)' type='text' id='newAssociateInput" + listItemId + "' onkeyup='newAssociate(event, &apos;" + listItemId + "&apos;)' value=''>";
 				output = output + "</div><div class='col-xs-2 col-sm-1 col-md-1 col-lg-1'>";
-				output = output + "<button class='newAssociate btn btn-primary btn-block'>+</button>";
+				output = output + "<button class='newAssociate btn btn-primary btn-block' title='Add associate'>+</button>";
 				output = output + "</div></div></div></div>";
 			}
 
@@ -2384,7 +2393,12 @@ function getAssociations() {
 
 				// Enable autocomplete for link parent inputs
 				try {
-					$("[id^='newParentInput']").autocomplete({ source: orgNames });
+					$("[id^='newParentInput']").autocomplete({
+						source: orgNames,
+						select: function(e, ui) {
+							$(this).val(ui.item.value);
+						}
+					});
 				} catch (e) {}
 
 				// Query all associates
@@ -2396,11 +2410,15 @@ function getAssociations() {
 					success: function(assocResults) {
 						var assocHtmlMap = {};
 						var parentAssocHtmlMap = {};
+						var associateNames = [];
 
 						for (var a = 0; a < assocResults.length; a++) {
 							var aObj = assocResults[a];
 							var aId = aObj.id;
 							var aName = aObj.get('name');
+							if (aName && associateNames.indexOf(aName) === -1) {
+								associateNames.push(aName);
+							}
 							var parentIds = aObj.get('associationIds');
 							if (!Array.isArray(parentIds) || parentIds.length === 0) {
 								var singlePId = aObj.get('associationId');
@@ -2459,6 +2477,16 @@ function getAssociations() {
 								asEl.innerHTML = parentAssocHtmlMap[asKey];
 							}
 						}
+
+						// Enable autocomplete for new associate inputs
+						try {
+							$("[id^='newAssociateInput'], [id^='newNameInput'][id!='newNameInput']").autocomplete({
+								source: associateNames,
+								select: function(e, ui) {
+									$(this).val(ui.item.value);
+								}
+							});
+						} catch (e) {}
 					},
 					error: function(err) {
 						console.error("Error loading associates:", err);
