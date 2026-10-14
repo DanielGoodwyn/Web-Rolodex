@@ -117,16 +117,23 @@ Parse.ObjectClass = function(className, id, data) {
     return val;
   };
 
+  this._unsetFields = [];
+
   this.set = function(key, val) {
     if (val instanceof Parse.GeoPoint) {
       this.data[key] = { latitude: val.latitude, longitude: val.longitude };
     } else {
       this.data[key] = val;
     }
+    var unIdx = this._unsetFields.indexOf(key);
+    if (unIdx !== -1) this._unsetFields.splice(unIdx, 1);
   };
 
   this.unset = function(key) {
     delete this.data[key];
+    if (this._unsetFields.indexOf(key) === -1) {
+      this._unsetFields.push(key);
+    }
   };
 
   this.existed = function() {
@@ -147,6 +154,17 @@ Parse.ObjectClass = function(className, id, data) {
     }
 
     var cleanData = Object.assign({}, self.data);
+    for (var u = 0; u < self._unsetFields.length; u++) {
+      cleanData[self._unsetFields[u]] = firebase.firestore.FieldValue.delete();
+    }
+    self._unsetFields = [];
+
+    for (var dk in cleanData) {
+      if (cleanData[dk] === undefined) {
+        delete cleanData[dk];
+      }
+    }
+
     if (!self.id) {
       cleanData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       db.collection(self.className).add(cleanData).then(function(ref) {
@@ -352,6 +370,7 @@ Parse.Query = function(className) {
   this.className = (typeof className === 'string') ? className : (className.className || 'Association');
   this._whereEqual = {};
   this._whereNotEqual = {};
+  this._whereContainedIn = {};
   this._matches = {};
   this._order = [];
   this._limit = 1000;
@@ -363,6 +382,10 @@ Parse.Query = function(className) {
 
   this.notEqualTo = function(key, val) {
     this._whereNotEqual[key] = val;
+  };
+
+  this.containedIn = function(key, list) {
+    this._whereContainedIn[key] = list;
   };
 
   this.matches = function(key, regexStr) {
@@ -437,8 +460,33 @@ Parse.Query = function(className) {
         if (eqKey === 'userId') continue;
         var eqVal = self._whereEqual[eqKey];
         items = items.filter(function(item) {
-          return item.get(eqKey) === eqVal;
+          var val = item.get(eqKey);
+          if (Array.isArray(val)) {
+            return val.indexOf(eqVal) !== -1;
+          }
+          if (eqKey === 'associationId') {
+            var ids = item.get('associationIds');
+            if (Array.isArray(ids) && ids.indexOf(eqVal) !== -1) return true;
+          }
+          return val === eqVal;
         });
+      }
+
+      // In-memory filter for containedIn
+      for (var cinKey in self._whereContainedIn) {
+        var cinList = self._whereContainedIn[cinKey];
+        if (Array.isArray(cinList)) {
+          items = items.filter(function(item) {
+            var val = item.get(cinKey);
+            if (Array.isArray(val)) {
+              for (var k = 0; k < val.length; k++) {
+                if (cinList.indexOf(val[k]) !== -1) return true;
+              }
+              return false;
+            }
+            return cinList.indexOf(val) !== -1;
+          });
+        }
       }
 
       // In-memory filter for notEqualTo

@@ -6,6 +6,8 @@ var type;
 var sort;
 var order;
 var output;
+var filterAssociationId = null;
+var filterAssociationName = null;
 var currentLocationPointLatitude = 37.776804;
 var currentLocationPointLongitude = -122.416844;
 var currentLocationPoint = new Parse.GeoPoint({latitude: currentLocationPointLatitude, longitude: currentLocationPointLongitude});
@@ -54,6 +56,10 @@ $(document).ready(function() {
 		$(document).delegate('.newAssociate', 'click', function() {
 			var associateObjectId = $(this).closest(".card").attr('id');
 			newAssociate("click", associateObjectId);
+		});
+		$(document).delegate('.linkParent', 'click', function() {
+			var associateObjectId = $(this).closest(".card").attr('id');
+			linkParentAssociation(associateObjectId, "click");
 		});
 		$(document).delegate('#expandCards', 'click', function() {
 			$(".card").find(".toggle-display-card").slideDown();
@@ -949,7 +955,18 @@ function setTypeSelect() {
 	query.ascending("type");
 	query.find({
 	success: function(results) {
-		if (results.length == 0) {
+		for (var i = 0; i < results.length; i++) {
+			var object = results[i];
+			var tVal = object.get('type');
+			if (tVal && userTypeArray.indexOf(tVal) === -1) {
+				userTypeArray.push(tVal);
+			}
+		}
+		if (userTypeArray.indexOf('associate') === -1) {
+			userTypeArray.push('associate');
+		}
+
+		if (userTypeArray.length == 0) {
 			typeSelectDiv = typeSelectDiv + "<option disabled></option>";
 			typeSelectDiv = typeSelectDiv + "</select>";
 			setElementById("typeSelectDiv", typeSelectDiv);
@@ -963,17 +980,15 @@ function setTypeSelect() {
 			$("#checkNamesDiv").show();
 			$("#expandCards").show();
 			$("#collapseCards").show();
-			for (var i = 0; i < results.length; i++) {
-				var object = results[i];
-				userTypeArray.push(object.get('type'));
-				for (var j = 0; j < userTypeArray.length; j++) {
-					var listItemUserType = "";
-					listItemUserType = userTypeArray[j];
-				}
-				typeSelectDiv = typeSelectDiv + "<option value='" + listItemUserType + "'>" + listItemUserType + "</option>";
+			for (var j = 0; j < userTypeArray.length; j++) {
+				var optVal = userTypeArray[j];
+				typeSelectDiv = typeSelectDiv + "<option value='" + optVal + "'>" + optVal + "</option>";
 			}
 			typeSelectDiv = typeSelectDiv + "</select>";
 			setElementById("typeSelectDiv", typeSelectDiv);
+			if (type && userTypeArray.indexOf(type) !== -1) {
+				document.getElementById("typeSelect").value = type;
+			}
 			setType();
 		}
 	},
@@ -988,10 +1003,14 @@ function setType() {
 	if (newTypeInputValueBool) {
 		type = $("#newTypeInput").val();
 		newTypeInputValueBool = false;		
-	} else {
+	} else if (typeSelect && typeSelect.options && typeSelect.selectedIndex >= 0) {
 		type = typeSelect.options[typeSelect.selectedIndex].value;
 	}	
-	document.getElementById("newTypeInput").value = type;
+	if (document.getElementById("newTypeInput")) {
+		document.getElementById("newTypeInput").value = type || "";
+	}
+	filterAssociationId = null;
+	filterAssociationName = null;
 	setSort();
 }
 
@@ -1043,8 +1062,63 @@ function setOrder(string, bool) {
 }
 
 function findAssociate(string) {
-	document.getElementById("nameStartsWith").value = string;
+	filterAssociationId = null;
+	filterAssociationName = null;
+	if (document.getElementById("nameStartsWith")) {
+		document.getElementById("nameStartsWith").value = string;
+	}
 	getAssociates();
+}
+
+function filterAssociatesForAssociation(parentId, parentName) {
+	filterAssociationId = parentId;
+	filterAssociationName = parentName;
+	type = "associate";
+	if (document.getElementById("typeSelect")) {
+		$("#typeSelect").val("associate");
+	}
+	if (document.getElementById("newTypeInput")) {
+		$("#newTypeInput").val("associate");
+	}
+	if (document.getElementById("nameStartsWith")) {
+		document.getElementById("nameStartsWith").value = "";
+		nameStartsWithValue = "";
+	}
+	if (document.getElementById("neighborhoodStartsWith")) {
+		document.getElementById("neighborhoodStartsWith").value = "";
+		neighborhoodStartsWithValue = "";
+	}
+	getAssociations();
+}
+
+function clearAssociationFilter() {
+	filterAssociationId = null;
+	filterAssociationName = null;
+	getAssociations();
+}
+
+function goToAssociation(parentId, parentType) {
+	if (parentType) {
+		type = parentType;
+		if (document.getElementById("typeSelect")) {
+			$("#typeSelect").val(parentType);
+		}
+		if (document.getElementById("newTypeInput")) {
+			$("#newTypeInput").val(parentType);
+		}
+	}
+	filterAssociationId = null;
+	filterAssociationName = null;
+	if (document.getElementById("nameStartsWith")) {
+		document.getElementById("nameStartsWith").value = "";
+		nameStartsWithValue = "";
+	}
+	if (document.getElementById("neighborhoodStartsWith")) {
+		document.getElementById("neighborhoodStartsWith").value = "";
+		neighborhoodStartsWithValue = "";
+	}
+	scrollToItem = '#' + parentId;
+	getAssociations();
 }
 
 function setNameStartsWithValue(bool) {
@@ -1123,51 +1197,185 @@ function newAssociation(event) {
 
 function newAssociate(event, AssociationObjectId) {
 	if (event.which == 13 || event.keyCode == 13 || event == "click") {
-		var Association = Parse.Object.extend("Association");
-		var association = new Association();
-		var name = "";
-		var divElement = "";
-		var Type;
-		name = document.getElementById('newNameInput' + AssociationObjectId).value;
-		association.set("name", name);
-		association.set("type", "associate");
-		association.set("userId", userId);
-		association.set("associationId", AssociationObjectId);
-		association.save(null, {
-			success: function(association) {
-				var query = new Parse.Query("Type");
-				query.equalTo("type", type);
-				query.equalTo("userId", userId);
-				query.find({
-				success: function(results) {
-					if (results.length!=0) {
-					} else {
-						var Type = Parse.Object.extend("Type");
-						var TypeObject = new Type();
-						TypeObject.set("type", type);
-						TypeObject.set("userId", userId);
-						TypeObject.set("associationId", AssociationObjectId);
-						TypeObject.save(null, {
-							success: function(Type) {
-								setTypeSelect();
-							},
-							error: function(Type, error) {
-								alert("Error: " + error.code + " " + error.message);
-							}
-						});
+		var inputEl = document.getElementById('newNameInput' + AssociationObjectId);
+		if (!inputEl) return;
+		var rawName = inputEl.value;
+		if (!rawName || !rawName.trim()) return;
+		var name = capitaliseFirstLetter(rawName.trim());
+
+		var query = new Parse.Query("Association");
+		query.equalTo("type", "associate");
+		query.equalTo("userId", userId);
+		query.find({
+			success: function(results) {
+				var existingAssociate = null;
+				for (var i = 0; i < results.length; i++) {
+					if ((results[i].get('name') || '').trim().toLowerCase() === name.toLowerCase()) {
+						existingAssociate = results[i];
+						break;
 					}
-					getAssociations();
-				},
-				error: function(error) {
-					alert("Error: " + error.code + " " + error.message);
 				}
-				});
+
+				if (existingAssociate) {
+					var ids = existingAssociate.get('associationIds');
+					if (!Array.isArray(ids)) {
+						ids = [];
+					}
+					var singleId = existingAssociate.get('associationId');
+					if (singleId && ids.indexOf(singleId) === -1) {
+						ids.push(singleId);
+					}
+					if (ids.indexOf(AssociationObjectId) === -1) {
+						ids.push(AssociationObjectId);
+					}
+					existingAssociate.set('associationIds', ids);
+					if (!existingAssociate.get('associationId')) {
+						existingAssociate.set('associationId', AssociationObjectId);
+					}
+					existingAssociate.save(null, {
+						success: function() {
+							inputEl.value = '';
+							getAssociations();
+						},
+						error: function(obj, err) {
+							alert("Error saving associate: " + (err.message || err.code));
+						}
+					});
+				} else {
+					var Association = Parse.Object.extend("Association");
+					var association = new Association();
+					association.set("name", name);
+					association.set("type", "associate");
+					association.set("userId", userId);
+					association.set("associationId", AssociationObjectId);
+					association.set("associationIds", [AssociationObjectId]);
+					association.save(null, {
+						success: function(newAssoc) {
+							inputEl.value = '';
+							var typeQuery = new Parse.Query("Type");
+							typeQuery.equalTo("type", "associate");
+							typeQuery.equalTo("userId", userId);
+							typeQuery.find({
+								success: function(typeResults) {
+									if (typeResults.length === 0) {
+										var Type = Parse.Object.extend("Type");
+										var TypeObject = new Type();
+										TypeObject.set("type", "associate");
+										TypeObject.set("userId", userId);
+										TypeObject.save(null, {
+											success: function() {
+												setTypeSelect();
+											}
+										});
+									}
+									getAssociations();
+								},
+								error: function() {
+									getAssociations();
+								}
+							});
+						},
+						error: function(obj, err) {
+							alert("Error creating associate: " + (err.message || err.code));
+						}
+					});
+				}
 			},
-			error: function(association, error) {
-				alert("Error: " + error.code + " " + error.message);
+			error: function(err) {
+				alert("Error searching associates: " + (err.message || err.code));
 			}
 		});
 	}
+}
+
+function linkParentAssociation(associateId, event) {
+	if (event.which == 13 || event.keyCode == 13 || event == "click") {
+		var inputEl = document.getElementById('newParentInput' + associateId);
+		if (!inputEl) return;
+		var parentName = inputEl.value;
+		if (!parentName || !parentName.trim()) return;
+		parentName = parentName.trim();
+
+		var query = new Parse.Query("Association");
+		query.equalTo("userId", userId);
+		query.notEqualTo("type", "associate");
+		query.find({
+			success: function(results) {
+				var matchedOrg = null;
+				for (var i = 0; i < results.length; i++) {
+					if ((results[i].get('name') || '').trim().toLowerCase() === parentName.toLowerCase()) {
+						matchedOrg = results[i];
+						break;
+					}
+				}
+				if (!matchedOrg) {
+					alert("Could not find an organization named '" + parentName + "'. Please check the name or create the organization card first.");
+					return;
+				}
+				var orgId = matchedOrg.id;
+				var aQuery = new Parse.Query("Association");
+				aQuery.get(associateId, {
+					success: function(assocObj) {
+						var ids = assocObj.get('associationIds');
+						if (!Array.isArray(ids)) ids = [];
+						var singleId = assocObj.get('associationId');
+						if (singleId && ids.indexOf(singleId) === -1) ids.push(singleId);
+						if (ids.indexOf(orgId) === -1) ids.push(orgId);
+						assocObj.set('associationIds', ids);
+						if (!assocObj.get('associationId')) assocObj.set('associationId', orgId);
+						assocObj.save(null, {
+							success: function() {
+								inputEl.value = '';
+								getAssociations();
+							},
+							error: function(obj, err) {
+								alert("Error linking organization: " + (err.message || err.code));
+							}
+						});
+					},
+					error: function(obj, err) {
+						alert("Error: " + (err.message || err.code));
+					}
+				});
+			},
+			error: function(err) {
+				alert("Error: " + (err.message || err.code));
+			}
+		});
+	}
+}
+
+function unlinkAssociate(associateId, parentAssociationId, associateName) {
+	var confirmation = confirm("Unlink " + (associateName || "this associate") + " from this organization?");
+	if (!confirmation) return;
+
+	var Association = Parse.Object.extend("Association");
+	var query = new Parse.Query(Association);
+	query.get(associateId, {
+		success: function(associateObj) {
+			var ids = associateObj.get('associationIds');
+			if (!Array.isArray(ids) || ids.length === 0) {
+				var singleId = associateObj.get('associationId');
+				ids = singleId ? [singleId] : [];
+			}
+			ids = ids.filter(function(id) {
+				return id !== parentAssociationId;
+			});
+			associateObj.set('associationIds', ids);
+			associateObj.set('associationId', ids.length > 0 ? ids[0] : null);
+			associateObj.save(null, {
+				success: function() {
+					getAssociations();
+				},
+				error: function(obj, err) {
+					alert("Error unlinking associate: " + (err.message || err.code));
+				}
+			});
+		},
+		error: function(obj, err) {
+			alert("Error: " + (err.message || err.code));
+		}
+	});
 }
 
 function newNote(AssociationObjectId, event) {
@@ -1574,6 +1782,9 @@ function getAssociations() {
 	var distanceArray = [];
 	var query = new Parse.Query("Association");
 	query.equalTo("type", type);
+	if (type === "associate" && filterAssociationId) {
+		query.equalTo("associationId", filterAssociationId);
+	}
 	if (nameStartsWithValue != null && nameStartsWithValue !== "") {
 		query.matches("name", "(" + capitaliseFirstLetter(nameStartsWithValue) + "|" + nameStartsWithValue.toLowerCase() + ")" + ".*");
 	}
@@ -1838,17 +2049,32 @@ function getAssociations() {
 
 			output = output + "<div class='clearfix'></div>";
 
-			output = output + "<h2><div data-toggle='collapse' data-parent='#accordion-" + listItemId + "' href='#collapse" + listItemId + "Associates' aria-expanded='true' aria-controls='collapse" + listItemId + "Associates' class='collapsed'>";
-			output = output + "<i class='glyphicon glyphicon-user'></i> Associates<i class='float-left glyphicon glyphicon-collapse-down toggleCollapseGlyphicon'></i></div></h2>";
-			output = output + "<div id='collapse" + listItemId + "Associates' class='panel-collapse collapse in' role='tabpanel' aria-labelledby='headingOne'>";
-
-			output = output + "<div class='row'><div class='col-xs-12 col-sm-12 col-md-12 col-lg-12'><div id='associate" + listItemId + "'></div></div></div>";
-			output = output + "<div class='row'><div class='col-xs-10 col-sm-11 col-md-11 col-lg-11'>";
-			output = output + "<input placeholder='New Associate (example: Phil Jaber)' type='text' id='newNameInput" + listItemId + "' onkeyup='newAssociate(event, &apos;" + listItemId + "&apos;)' value=''>";
-			
-			output = output + "</div><div class='col-xs-2 col-sm-1 col-md-1 col-lg-1'>";
-			output = output + "<button class='newAssociate btn btn-primary btn-block'>+</button>";
-			output = output + "</div></div></div></div>";
+			if (listItemType === 'associate') {
+				output = output + "<h2><div data-toggle='collapse' data-parent='#accordion-" + listItemId + "' href='#collapse" + listItemId + "ParentAssoc' aria-expanded='true' aria-controls='collapse" + listItemId + "ParentAssoc' class='collapsed'>";
+				output = output + "<i class='glyphicon glyphicon-briefcase'></i> Associated With<i class='float-left glyphicon glyphicon-collapse-down toggleCollapseGlyphicon'></i></div></h2>";
+				output = output + "<div id='collapse" + listItemId + "ParentAssoc' class='panel-collapse collapse in' role='tabpanel'>";
+				output = output + "<div class='row'><div class='col-xs-12 col-sm-12 col-md-12 col-lg-12'><div id='parentAssoc" + listItemId + "'></div></div></div>";
+				output = output + "<div class='row'><div class='col-xs-10 col-sm-11 col-md-11 col-lg-11'>";
+				output = output + "<input placeholder='Link to organization (example: Dolores Park Church)' type='text' id='newParentInput" + listItemId + "' onkeyup='linkParentAssociation(&apos;" + listItemId + "&apos;, event)' value=''>";
+				output = output + "</div><div class='col-xs-2 col-sm-1 col-md-1 col-lg-1'>";
+				output = output + "<button class='linkParent btn btn-primary btn-block'>+</button>";
+				output = output + "</div></div></div>";
+			} else {
+				output = output + "<h2><div data-toggle='collapse' data-parent='#accordion-" + listItemId + "' href='#collapse" + listItemId + "Associates' aria-expanded='true' aria-controls='collapse" + listItemId + "Associates' class='collapsed'>";
+				output = output + "<i class='glyphicon glyphicon-user'></i> Associates<i class='float-left glyphicon glyphicon-collapse-down toggleCollapseGlyphicon'></i></div></h2>";
+				output = output + "<div id='collapse" + listItemId + "Associates' class='panel-collapse collapse in' role='tabpanel' aria-labelledby='headingOne'>";
+				output = output + "<div class='row'><div class='col-xs-12 col-sm-12 col-md-12 col-lg-12'>";
+				output = output + "<div style='margin-bottom: 6px; text-align: left;'>";
+				output = output + "<button class='btn btn-xs btn-default' onclick='filterAssociatesForAssociation(&apos;" + listItemId + "&apos;, &apos;" + escapeJsString(listItemName) + "&apos;)'>";
+				output = output + "<i class='glyphicon glyphicon-filter'></i> view all associates for this organization</button></div>";
+				output = output + "<div id='associate" + listItemId + "'></div>";
+				output = output + "</div></div>";
+				output = output + "<div class='row'><div class='col-xs-10 col-sm-11 col-md-11 col-lg-11'>";
+				output = output + "<input placeholder='New Associate (example: Phil Jaber)' type='text' id='newNameInput" + listItemId + "' onkeyup='newAssociate(event, &apos;" + listItemId + "&apos;)' value=''>";
+				output = output + "</div><div class='col-xs-2 col-sm-1 col-md-1 col-lg-1'>";
+				output = output + "<button class='newAssociate btn btn-primary btn-block'>+</button>";
+				output = output + "</div></div></div></div>";
+			}
 
 			output = output + "<div class='clearfix'></div>";
 
@@ -1879,52 +2105,99 @@ function getAssociations() {
 		checkNames();
 		scrollTo(scrollToItem);
 		scrollToItem = "";
-		var associationIdsArray = [];
-		var associateIdsArray = [];
-		var associationNamesArray = [];
-		var associationId = "";
-		var associateId = "";
-		var associateName = "";
-		var query = new Parse.Query("Association");
-		query.equalTo("type", "associate");
-		query.equalTo("userId", userId);
-		query.ascending("name");
-		query.find({
-			success: function(results) {
-				for (var i = 0; i < results.length; i++) {
-					var object = results[i];
-					associationIdsArray.push(object.get('associationId'));
-					associateIdsArray.push(object.id);
-					associationNamesArray.push(object.get('name'));
-					associateName = associationNamesArray[i];
-					associateId = associateIdsArray[i];
-					associationId = associationIdsArray[i];
-					if (document.getElementById("associate" + associationId)) {
-						setElementById("associate" + associationId, document.getElementById("associate" + associationId).innerHTML + "<div class='btn-padding float-left'><div class='btn-group btn-group' role='group'><div class='btn-group' role='group'><button class='btn btn-default' onclick='findAssociate(&apos;" + associateName + "&apos;)'>" + associateName + "</button></div><div class='btn-group' role='group'><button class='btn btn-danger' onclick='deleteAssociation(&apos;" + associateId + "&apos;)'>×</button></div></div></div>");
+
+		// Load notes for every card rendered on this page
+		for (var k = 0; k < idsArray.length; k++) {
+			getNotes(idsArray[k]);
+		}
+
+		// Query all non-associate organizations to build lookup map & autocomplete
+		var orgQuery = new Parse.Query("Association");
+		orgQuery.equalTo("userId", userId);
+		orgQuery.notEqualTo("type", "associate");
+		orgQuery.ascending("name");
+		orgQuery.find({
+			success: function(orgResults) {
+				var orgMap = {};
+				var orgNames = [];
+				for (var o = 0; o < orgResults.length; o++) {
+					var orgObj = orgResults[o];
+					orgMap[orgObj.id] = {
+						id: orgObj.id,
+						name: orgObj.get('name'),
+						type: orgObj.get('type')
+					};
+					if (orgObj.get('name')) {
+						orgNames.push(orgObj.get('name'));
 					}
 				}
-				var noteIdsArray = [];
-				var noteId = [];
-				var query = new Parse.Query("Association");
-				query.equalTo("userId", userId);
-				query.notEqualTo("type", "associate");
-				query.ascending("name");
-				query.find({
-					success: function(results) {
-						for (var i = 0; i < results.length; i++) {
-							var object = results[i];
-							noteIdsArray.push(object.id);
-							noteId = noteIdsArray[i];
-							getNotes(noteId);
+
+				// Enable autocomplete for link parent inputs
+				try {
+					$("[id^='newParentInput']").autocomplete({ source: orgNames });
+				} catch (e) {}
+
+				// Query all associates
+				var assocQuery = new Parse.Query("Association");
+				assocQuery.equalTo("type", "associate");
+				assocQuery.equalTo("userId", userId);
+				assocQuery.ascending("name");
+				assocQuery.find({
+					success: function(assocResults) {
+						for (var a = 0; a < assocResults.length; a++) {
+							var aObj = assocResults[a];
+							var aId = aObj.id;
+							var aName = aObj.get('name');
+							var parentIds = aObj.get('associationIds');
+							if (!Array.isArray(parentIds) || parentIds.length === 0) {
+								var singlePId = aObj.get('associationId');
+								parentIds = singlePId ? [singlePId] : [];
+							}
+
+							// 1. Populate associate buttons on parent organization cards
+							for (var p = 0; p < parentIds.length; p++) {
+								var pid = parentIds[p];
+								var targetEl = document.getElementById("associate" + pid);
+								if (targetEl) {
+									var aBtn = "<div class='btn-padding float-left'>" +
+										"<div class='btn-group' role='group'>" +
+										"<button class='btn btn-default' onclick='findAssociate(&apos;" + escapeJsString(aName) + "&apos;)'>" + escapeHtml(aName) + "</button>" +
+										"<button class='btn btn-danger' title='Unlink associate' onclick='unlinkAssociate(&apos;" + aId + "&apos;, &apos;" + pid + "&apos;, &apos;" + escapeJsString(aName) + "&apos;)'>×</button>" +
+										"</div></div>";
+									targetEl.innerHTML += aBtn;
+								}
+							}
+
+							// 2. Populate parent organization buttons on associate cards
+							var parentAssocEl = document.getElementById("parentAssoc" + aId);
+							if (parentAssocEl) {
+								var parentHtml = "";
+								for (var pi = 0; pi < parentIds.length; pi++) {
+									var pOrgId = parentIds[pi];
+									var pOrg = orgMap[pOrgId];
+									var pOrgName = pOrg ? pOrg.name : ("Organization #" + pOrgId.substring(0, 5));
+									var pOrgType = pOrg ? pOrg.type : "";
+									parentHtml += "<div class='btn-padding float-left'>" +
+										"<div class='btn-group' role='group'>" +
+										"<button class='btn btn-info' onclick='goToAssociation(&apos;" + pOrgId + "&apos;, &apos;" + escapeJsString(pOrgType) + "&apos;)'>" +
+										"<i class='glyphicon glyphicon-briefcase'></i> " + escapeHtml(pOrgName) + "</button>" +
+										"<button class='btn btn-danger' title='Unlink organization' onclick='unlinkAssociate(&apos;" + aId + "&apos;, &apos;" + pOrgId + "&apos;, &apos;" + escapeJsString(aName) + "&apos;)'>×</button>" +
+										"</div></div>";
+								}
+								if (parentHtml === "") {
+									parentHtml = "<p class='text-muted' style='margin-bottom:8px;'><i>Not linked to any organization yet.</i></p>";
+								}
+								parentAssocEl.innerHTML = parentHtml;
+							}
 						}
 					},
-					error: function(error) {
-						alert("Error: " + (error.message || error.code));
+					error: function(err) {
+						console.error("Error loading associates:", err);
 					}
 				});
 			},
-			error: function(error) {
-				alert("Error: " + (error.message || error.code));
+			error: function(err) {
+				console.error("Error loading organizations:", err);
 			}
 		});
 	},
@@ -1937,6 +2210,15 @@ function getAssociations() {
 function checkNames() {
 	var checkNamesDiv = "";
 	var typeId;
+
+	if (filterAssociationId && filterAssociationName) {
+		checkNamesDiv = "<div><span class='label label-info' style='font-size:13px; padding: 5px 10px; display:inline-block; border-radius:12px;'>" +
+			"<i class='glyphicon glyphicon-filter'></i> associates of <b>" + escapeHtml(filterAssociationName) + "</b> " +
+			"<a href='javascript:void(0)' onclick='clearAssociationFilter()' style='color:#fff; text-decoration:none; font-weight:bold; margin-left:8px; cursor:pointer;' title='Clear filter'>×</a>" +
+			"</span></div>";
+		setElementById("checkNamesDiv", checkNamesDiv);
+		return;
+	}
 
 	if (type === "associate") {
 		checkNamesDiv = "<div><i class='glyphicon glyphicon-filter'></i> associate</div>";
@@ -1982,6 +2264,21 @@ function capitaliseFirstLetter(string) {
 	return string.toLowerCase().replace(/(?:^|[\s\-_.])([a-z0-9])/g, function(match) {
 		return match.toUpperCase();
 	});
+}
+
+function escapeJsString(str) {
+	if (str === null || str === undefined) return '';
+	return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+function escapeHtml(str) {
+	if (str === null || str === undefined) return '';
+	return String(str)
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;');
 }
 
 function visit(string) {
