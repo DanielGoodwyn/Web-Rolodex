@@ -53,11 +53,11 @@ This document provides complete context, architectural background, operational p
 
 ```text
 /Users/danielgoodwyn/src/Rolodex/
-├── index.html               # Main Rolodex dashboard & cards view
+├── index.html               # Main Rolodex web dashboard & cards view
 ├── login.html               # Login, Sign Up, Google Auth, Password Reset, Profile Settings
 ├── about.html               # About & documentation page
 ├── .htaccess                # Apache rewrite rules for clean URLs & caching
-├── deploy_rolodex.exp       # Expect/SFTP script to deploy files to IONOS host
+├── deploy_rolodex.exp       # Expect/SFTP script to deploy web files to IONOS host
 ├── .env                     # Deployment credentials (SFTP password)
 ├── css/
 │   └── styles.css           # Custom styling (Bootstrap 3 extensions, Google Maps buttons)
@@ -65,22 +65,52 @@ This document provides complete context, architectural background, operational p
 │   ├── firebase-config.js   # Firebase credentials & initialization
 │   ├── database-adapter.js  # Parse SDK emulation on Firebase Auth & Firestore
 │   └── rolodex.js           # Core application UI and event logic
-└── images/
-    ├── hood.png             # Neighborhood icon
-    └── rolodex.png          # Rolodex logo & default avatar
+├── images/
+│   ├── hood.png             # Neighborhood icon
+│   └── rolodex.png          # Rolodex logo & default avatar
+└── Android-Rolodex/         # Native Android application (Kotlin, Material 3, Firebase)
+    ├── app/
+    │   ├── build.gradle     # Android application Gradle configuration (compileSdk 34)
+    │   ├── google-services.json # Firebase project configuration (rolodex-ade98)
+    │   └── src/main/
+    │       ├── AndroidManifest.xml
+    │       ├── java/daniel/rolodex/
+    │       │   ├── RolodexApp.kt            # App init & offline persistence
+    │       │   ├── data/
+    │       │   │   ├── models/              # Association, Note, CardType
+    │       │   │   ├── repository/          # AuthRepository, RolodexRepository
+    │       │   │   └── location/            # LocationHelper (GPS, Haversine, Geocoder)
+    │       │   └── ui/
+    │       │       ├── auth/                # LoginActivity, ForgotPasswordDialog
+    │       │       ├── main/                # MainActivity, CardsAdapter, NotesAdapter, AddCardBottomSheet
+    │       │       └── account/             # AccountActivity
+    │       └── res/                         # Material 3 layouts, drawables, colors, themes
+    ├── build.gradle         # Root Gradle build script (AGP 8.7.0, Kotlin 2.0.21)
+    ├── settings.gradle
+    └── gradlew              # Gradle wrapper executable
 ```
 
 ---
 
 ## 4. Operational Instructions for New Agents
 
-### Deploying to Production
-Whenever you modify files, deploy them directly to IONOS production host using the automated script:
+### Building the Native Android App
+To compile the native Android application:
+```bash
+cd /Users/danielgoodwyn/src/Rolodex/Android-Rolodex
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew assembleDebug
+# Build release bundle:
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew bundleDebug
+```
+Built artifacts are placed in `Android-Rolodex/app/build/outputs/apk/debug/app-debug.apk` and `Android-Rolodex/app/build/outputs/bundle/debug/app-debug.aab`.
+
+### Deploying the Web App to Production
+Whenever you modify web files, deploy them directly to IONOS production host using the automated script:
 ```bash
 cd /Users/danielgoodwyn/src/Rolodex
 ./deploy_rolodex.exp
 ```
-*Note: If updating JS or CSS files, make sure to bump the cachebuster version (e.g. from `?v=8` to `?v=9`) across `index.html`, `login.html`, and `about.html` so browsers load the latest code immediately.*
+*Note: If updating JS or CSS files, make sure to bump the cachebuster version (e.g. from `?v=15` to `?v=16`) across `index.html`, `login.html`, and `about.html` so browsers load the latest code immediately.*
 
 ### Git Workflow
 Keep git cleanly synced with GitHub:
