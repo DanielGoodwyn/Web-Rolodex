@@ -182,31 +182,47 @@ class FirebaseAuthService: ObservableObject {
         let callbackScheme = "rolodex-app"
 
         return try await withCheckedThrowingContinuation { continuation in
+            var hasResumed = false
+            let lock = NSLock()
+
+            let safeResume: (Result<Void, Error>) -> Void = { result in
+                lock.lock()
+                defer { lock.unlock() }
+                guard !hasResumed else { return }
+                hasResumed = true
+                switch result {
+                case .success:
+                    continuation.resume()
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+
             let session = ASWebAuthenticationSession(
                 url: authURL,
                 callbackURLScheme: callbackScheme
             ) { [weak self] callbackURL, error in
                 if let error = error {
                     if (error as NSError).code == ASWebAuthenticationSessionError.canceledLogin.rawValue {
-                        continuation.resume()
+                        safeResume(.success(()))
                         return
                     }
-                    continuation.resume(throwing: error)
+                    safeResume(.failure(error))
                     return
                 }
 
                 guard let callbackURL = callbackURL else {
-                    continuation.resume(throwing: NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid callback URL"]))
+                    safeResume(.failure(NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid callback URL"])))
                     return
                 }
 
                 if let user = self?.parseUser(from: callbackURL) {
                     Task { @MainActor [weak self] in
                         self?.saveUser(user)
-                        continuation.resume()
+                        safeResume(.success(()))
                     }
                 } else {
-                    continuation.resume(throwing: NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Authentication failed to return valid user profile."]))
+                    safeResume(.failure(NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Authentication failed to return valid user profile."])))
                 }
             }
 

@@ -179,9 +179,6 @@
         }
 
         window.location.href = callback;
-        setTimeout(function() {
-          window.location.replace(callback);
-        }, 500);
       }).catch(function(err) {
         isCompleting = false;
         setStatus("Error: " + err.message, false);
