@@ -12,17 +12,43 @@ class FirestoreService: ObservableObject {
     @Published var errorMessage: String? = nil
 
     private var syncTask: Task<Void, Never>?
+    private let cacheKeyAssociations = "rolodex_cached_associations"
+    private let cacheKeyNotes = "rolodex_cached_notes"
+
+    init() {
+        loadLocalCache()
+    }
+
+    private func loadLocalCache() {
+        if let data = UserDefaults.standard.data(forKey: cacheKeyAssociations),
+           let list = try? JSONDecoder().decode([Association].self, from: data), !list.isEmpty {
+            self.associations = list
+            self.updateAssociateLookups()
+        }
+        if let data = UserDefaults.standard.data(forKey: cacheKeyNotes),
+           let notes = try? JSONDecoder().decode([String: [Note]].self, from: data) {
+            self.notesCache = notes
+        }
+    }
+
+    func persistLocalCache() {
+        if let data = try? JSONEncoder().encode(self.associations) {
+            UserDefaults.standard.set(data, forKey: cacheKeyAssociations)
+        }
+        if let data = try? JSONEncoder().encode(self.notesCache) {
+            UserDefaults.standard.set(data, forKey: cacheKeyNotes)
+        }
+    }
 
     // MARK: - Realtime Sync
     func startRealtimeSync(for userId: String) {
         stopRealtimeSync()
         syncTask = Task { [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 1_800_000_000) // 1.8s
+                try? await Task.sleep(nanoseconds: 6_000_000_000) // 6s
                 if Task.isCancelled { break }
                 guard let self = self else { break }
                 await self.fetchAssociations(for: userId)
-                await self.fetchAllNotes(for: userId)
             }
         }
     }
@@ -40,7 +66,7 @@ class FirestoreService: ObservableObject {
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        if let token = FirebaseAuthService.shared.currentUser?.idToken {
+        if let token = await FirebaseAuthService.shared.refreshIdTokenIfNeeded() {
             request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
@@ -59,8 +85,13 @@ class FirestoreService: ObservableObject {
 
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: query)
-            let (data, _) = try await URLSession.shared.data(for: request)
-            let rawList = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] ?? []
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+                return
+            }
+            guard let rawList = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+                return
+            }
 
             var parsed: [Association] = []
             for item in rawList {
@@ -98,11 +129,12 @@ class FirestoreService: ObservableObject {
                     }
                 }
                 self.associations = parsed
-                updateAssociateLookups()
-                await fetchUserTypes(for: userId)
+                self.updateAssociateLookups()
+                self.persistLocalCache()
+                await self.fetchUserTypes(for: userId)
             }
         } catch {
-            self.errorMessage = error.localizedDescription
+            // Ignore error to avoid wiping cache
         }
     }
 
@@ -192,6 +224,7 @@ class FirestoreService: ObservableObject {
             }
             notes.sort { ($0.name ?? "").lowercased() < ($1.name ?? "").lowercased() }
             self.notesCache[associationId] = notes
+            self.persistLocalCache()
         } catch {
             // Ignore error
         }
@@ -205,7 +238,7 @@ class FirestoreService: ObservableObject {
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        if let token = FirebaseAuthService.shared.currentUser?.idToken {
+        if let token = await FirebaseAuthService.shared.refreshIdTokenIfNeeded() {
             request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
@@ -224,8 +257,13 @@ class FirestoreService: ObservableObject {
 
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: query)
-            let (data, _) = try await URLSession.shared.data(for: request)
-            let rawList = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] ?? []
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+                return
+            }
+            guard let rawList = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+                return
+            }
 
             var newCache: [String: [Note]] = [:]
             for item in rawList {
@@ -249,6 +287,7 @@ class FirestoreService: ObservableObject {
             }
             if newCache != self.notesCache {
                 self.notesCache = newCache
+                self.persistLocalCache()
             }
         } catch {
             // Ignore error
@@ -367,7 +406,7 @@ class FirestoreService: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "PATCH"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        if let token = FirebaseAuthService.shared.currentUser?.idToken {
+        if let token = await FirebaseAuthService.shared.refreshIdTokenIfNeeded() {
             request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         request.httpBody = try JSONSerialization.data(withJSONObject: ["fields": fields])
@@ -376,6 +415,7 @@ class FirestoreService: ObservableObject {
 
         if let idx = associations.firstIndex(where: { $0.id == id }) {
             associations[idx].rating = newRating
+            persistLocalCache()
         }
     }
 
@@ -404,22 +444,28 @@ class FirestoreService: ObservableObject {
             fields["neighborhood"] = ["stringValue": hood]
             maskFields.append("neighborhood")
         }
-        if let site = card.site {
+        if let site = card.websiteUrl, !site.trimmingCharacters(in: .whitespaces).isEmpty {
             fields["site"] = ["stringValue": site]
-            maskFields.append("site")
         }
-        if let fb = card.fb {
+        maskFields.append("site")
+
+        if let fb = card.facebookUrl, !fb.trimmingCharacters(in: .whitespaces).isEmpty {
             fields["fb"] = ["stringValue": fb]
-            maskFields.append("fb")
         }
-        if let ig = card.ig {
+        maskFields.append("fb")
+
+        if let ig = card.instagramUrl, !ig.trimmingCharacters(in: .whitespaces).isEmpty {
             fields["ig"] = ["stringValue": ig]
-            maskFields.append("ig")
         }
-        if let twitter = card.twitter {
+        maskFields.append("ig")
+
+        if let twitter = card.twitterUrl, !twitter.trimmingCharacters(in: .whitespaces).isEmpty {
             fields["twitter"] = ["stringValue": twitter]
-            maskFields.append("twitter")
+            fields["x"] = ["stringValue": twitter]
         }
+        maskFields.append("twitter")
+        maskFields.append("x")
+
         if let geo = card.geo {
             fields["geo"] = [
                 "mapValue": [
@@ -438,7 +484,7 @@ class FirestoreService: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "PATCH"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        if let token = FirebaseAuthService.shared.currentUser?.idToken {
+        if let token = await FirebaseAuthService.shared.refreshIdTokenIfNeeded() {
             request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         request.httpBody = try JSONSerialization.data(withJSONObject: ["fields": fields])
@@ -448,10 +494,74 @@ class FirestoreService: ObservableObject {
         if let idx = associations.firstIndex(where: { $0.id == card.id }) {
             associations[idx] = card
             updateAssociateLookups()
+            persistLocalCache()
         }
 
         for t in card.allTypes {
             await ensureTypeExists(t, userId: card.userId)
+        }
+    }
+
+    // MARK: - Update Single Link
+    func updateLink(id: String, type: String, value: String?) async throws {
+        let fieldName: String
+        switch type.lowercased() {
+        case "site", "web", "www": fieldName = "site"
+        case "fb", "facebook": fieldName = "fb"
+        case "ig", "insta", "instagram": fieldName = "ig"
+        case "twitter", "x": fieldName = "twitter"
+        default: fieldName = type
+        }
+
+        let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines)
+        var mask = "updateMask.fieldPaths=\(fieldName)&updateMask.fieldPaths=updatedAt"
+        var fields: [String: Any] = [
+            "updatedAt": ["timestampValue": ISO8601DateFormatter().string(from: Date())]
+        ]
+
+        var formattedVal: String? = nil
+        if let val = trimmed, !val.isEmpty {
+            var f = val
+            if !f.lowercased().hasPrefix("http://") && !f.lowercased().hasPrefix("https://") {
+                f = "https://\(f)"
+            }
+            formattedVal = f
+            fields[fieldName] = ["stringValue": f]
+            if fieldName == "twitter" {
+                mask += "&updateMask.fieldPaths=x"
+                fields["x"] = ["stringValue": f]
+            }
+        } else if fieldName == "twitter" {
+            mask += "&updateMask.fieldPaths=x"
+        }
+
+        guard let url = URL(string: "\(FirebaseConfig.firestoreBaseURL)/Association/\(id)?\(mask)") else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = await FirebaseAuthService.shared.refreshIdTokenIfNeeded() {
+            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["fields": fields])
+        _ = try await URLSession.shared.data(for: request)
+
+        if let idx = associations.firstIndex(where: { $0.id == id }) {
+            switch fieldName {
+            case "site":
+                associations[idx].site = formattedVal
+                associations[idx].web = formattedVal
+            case "fb":
+                associations[idx].fb = formattedVal
+                associations[idx].facebook = formattedVal
+            case "ig":
+                associations[idx].ig = formattedVal
+                associations[idx].instagram = formattedVal
+            case "twitter":
+                associations[idx].twitter = formattedVal
+                associations[idx].x = formattedVal
+            default: break
+            }
+            persistLocalCache()
         }
     }
 
@@ -460,9 +570,13 @@ class FirestoreService: ObservableObject {
         guard let url = URL(string: "\(FirebaseConfig.firestoreBaseURL)/Association/\(id)") else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
+        if let token = await FirebaseAuthService.shared.refreshIdTokenIfNeeded() {
+            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
         _ = try await URLSession.shared.data(for: request)
         associations.removeAll { $0.id == id }
         updateAssociateLookups()
+        persistLocalCache()
     }
 
     // MARK: - Add Note
@@ -480,6 +594,9 @@ class FirestoreService: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = await FirebaseAuthService.shared.refreshIdTokenIfNeeded() {
+            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
         request.httpBody = try JSONSerialization.data(withJSONObject: ["fields": fields])
 
         let (data, _) = try await URLSession.shared.data(for: request)
@@ -490,6 +607,7 @@ class FirestoreService: ObservableObject {
             var current = notesCache[associationId] ?? []
             current.append(newNote)
             notesCache[associationId] = current
+            persistLocalCache()
         }
     }
 
@@ -498,8 +616,12 @@ class FirestoreService: ObservableObject {
         guard let url = URL(string: "\(FirebaseConfig.firestoreBaseURL)/Note/\(id)") else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
+        if let token = await FirebaseAuthService.shared.refreshIdTokenIfNeeded() {
+            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
         _ = try await URLSession.shared.data(for: request)
         notesCache[associationId]?.removeAll { $0.id == id }
+        persistLocalCache()
     }
 
     // MARK: - Link Associate

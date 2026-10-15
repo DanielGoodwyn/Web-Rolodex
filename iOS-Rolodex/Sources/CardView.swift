@@ -16,9 +16,14 @@ struct CardView: View {
     let onAddNote: (Association, String) -> Void
     let onDeleteNote: (Note) -> Void
     let onSearch: (String) -> Void
+    var onUpdateLink: ((Association, String, String?) -> Void)? = nil
 
     @State private var newAssociateText = ""
     @State private var newNoteText = ""
+    @State private var webText = ""
+    @State private var fbText = ""
+    @State private var igText = ""
+    @State private var xText = ""
     @State private var showDeleteAlert = false
     @State private var showRatingSheet = false
     @State private var showEditSheet = false
@@ -160,27 +165,64 @@ struct CardView: View {
                         }
                     }
 
-                    // Links (Web, FB, Insta, X)
-                    let links = [
-                        card.websiteUrl.map { (title: "Web", url: $0, color: Theme.primary) },
-                        card.facebookUrl.map { (title: "Facebook", url: $0, color: Theme.facebookBlue) },
-                        card.instagramUrl.map { (title: "Insta", url: $0, color: Theme.instagramPink) },
-                        card.twitterUrl.map { (title: "X", url: $0, color: Theme.xBlack) }
-                    ].compactMap { $0 }
+                    // Links (Web, FB, Insta, X) Section
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "link")
+                                .font(.caption.bold())
+                            Text("Links")
+                                .font(.caption.bold())
+                        }
+                        .foregroundColor(.secondary)
 
-                    if !links.isEmpty {
-                        HStack(spacing: 8) {
-                            ForEach(links, id: \.title) { item in
-                                Link(destination: URL(string: formatUrl(item.url)) ?? URL(string: "https://danielgoodwyn.com")!) {
-                                    Text(item.title)
-                                        .font(.caption.bold())
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 4)
+                        // Action Buttons (Web, FB, Insta, X)
+                        let activeLinks = [
+                            card.websiteUrl.map { (title: "Web", url: $0, color: Theme.primary) },
+                            card.facebookUrl.map { (title: "FB", url: $0, color: Theme.facebookBlue) },
+                            card.instagramUrl.map { (title: "Insta", url: $0, color: Theme.instagramPink) },
+                            card.twitterUrl.map { (title: "X", url: $0, color: Theme.xBlack) }
+                        ].compactMap { $0 }
+
+                        if !activeLinks.isEmpty {
+                            HStack(spacing: 8) {
+                                ForEach(activeLinks, id: \.title) { item in
+                                    Button(action: { openExternalUrl(item.url) }) {
+                                        HStack(spacing: 4) {
+                                            Text(item.title)
+                                                .font(.caption.bold())
+                                            Image(systemName: "arrow.up.right.square")
+                                                .font(.system(size: 10))
+                                        }
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 5)
+                                        .background(item.color.opacity(0.12))
                                         .overlay(
-                                            RoundedRectangle(cornerRadius: 12)
+                                            RoundedRectangle(cornerRadius: 8)
                                                 .stroke(item.color.opacity(0.6), lineWidth: 1)
                                         )
                                         .foregroundColor(item.color)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                        }
+
+                        // Inline URL textboxes matching Web: www (url), fb (url), insta (url), x (url)
+                        VStack(spacing: 6) {
+                            HStack(spacing: 6) {
+                                linkTextField(placeholder: "www (url)", text: $webText) {
+                                    commitLink(type: "site", value: webText)
+                                }
+                                linkTextField(placeholder: "fb (url)", text: $fbText) {
+                                    commitLink(type: "fb", value: fbText)
+                                }
+                            }
+                            HStack(spacing: 6) {
+                                linkTextField(placeholder: "insta (url)", text: $igText) {
+                                    commitLink(type: "ig", value: igText)
+                                }
+                                linkTextField(placeholder: "x (url)", text: $xText) {
+                                    commitLink(type: "twitter", value: xText)
                                 }
                             }
                         }
@@ -350,14 +392,55 @@ struct CardView: View {
                 onUpdateCard(updatedCard)
             }
         }
+        .onAppear {
+            syncLinksFromCard()
+        }
+        .onChange(of: card) { _ in
+            syncLinksFromCard()
+        }
     }
 
-    private func formatUrl(_ raw: String) -> String {
+    private func syncLinksFromCard() {
+        webText = card.websiteUrl ?? ""
+        fbText = card.facebookUrl ?? ""
+        igText = card.instagramUrl ?? ""
+        xText = card.twitterUrl ?? ""
+    }
+
+    @ViewBuilder
+    private func linkTextField(placeholder: String, text: Binding<String>, onCommit: @escaping () -> Void) -> some View {
+        TextField(placeholder, text: text)
+            .font(.system(size: 11))
+            .autocapitalization(.none)
+            .disableAutocorrection(true)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .background(Color(uiColor: .systemGray6))
+            .cornerRadius(6)
+            .overlay(
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+            )
+            .onSubmit(onCommit)
+    }
+
+    private func commitLink(type: String, value: String) {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        onUpdateLink?(card, type, trimmed.isEmpty ? nil : trimmed)
+    }
+
+    private func openExternalUrl(_ raw: String) {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !trimmed.hasPrefix("http://") && !trimmed.hasPrefix("https://") {
-            return "https://\(trimmed)"
+        guard !trimmed.isEmpty else { return }
+        var full = trimmed
+        if !full.lowercased().hasPrefix("http://") && !full.lowercased().hasPrefix("https://") {
+            full = "https://\(full)"
         }
-        return trimmed
+        guard let encoded = full.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed.union(.init(charactersIn: ":/?#[]@!$&'()*+,;="))),
+              let url = URL(string: encoded) else {
+            return
+        }
+        UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
 
     private func openGoogleMaps(for address: String) {

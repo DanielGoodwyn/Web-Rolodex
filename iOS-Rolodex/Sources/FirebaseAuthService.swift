@@ -32,13 +32,52 @@ class FirebaseAuthService: ObservableObject {
     private func loadCachedUser() {
         if let data = UserDefaults.standard.data(forKey: userDefaultsKey),
            let user = try? JSONDecoder().decode(User.self, from: data) {
-            // Only restore if user has a valid authenticated idToken
+            // Restore user and refresh token asynchronously
             if let token = user.idToken, !token.isEmpty {
                 self.currentUser = user
+                Task {
+                    _ = await self.refreshIdTokenIfNeeded()
+                }
             } else {
                 UserDefaults.standard.removeObject(forKey: userDefaultsKey)
                 self.currentUser = nil
             }
+        }
+    }
+
+    func refreshIdTokenIfNeeded() async -> String? {
+        guard let user = currentUser else { return nil }
+        guard let refresh = user.refreshToken, !refresh.isEmpty else {
+            return user.idToken
+        }
+
+        guard let url = URL(string: "https://securetoken.googleapis.com/v1/token?key=\(FirebaseConfig.apiKey)") else {
+            return user.idToken
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        let body = "grant_type=refresh_token&refresh_token=\(refresh)"
+        request.httpBody = body.data(using: .utf8)
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+                return user.idToken
+            }
+            guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let newIdToken = json["id_token"] as? String else {
+                return user.idToken
+            }
+            let newRefreshToken = json["refresh_token"] as? String ?? refresh
+            var updated = user
+            updated.idToken = newIdToken
+            updated.refreshToken = newRefreshToken
+            self.saveUser(updated)
+            return newIdToken
+        } catch {
+            return user.idToken
         }
     }
 

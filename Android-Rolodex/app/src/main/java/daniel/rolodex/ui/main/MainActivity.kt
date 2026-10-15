@@ -235,6 +235,15 @@ class MainActivity : AppCompatActivity() {
             },
             onFindAssociate = { name ->
                 binding.searchView.setQuery(name, true)
+            },
+            onUpdateLink = { card, type, value ->
+                lifecycleScope.launch {
+                    try {
+                        repository.updateLink(card.id, type, value)
+                    } catch (e: Exception) {
+                        Toast.makeText(this@MainActivity, "Error updating link: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         )
 

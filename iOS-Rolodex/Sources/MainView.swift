@@ -144,6 +144,11 @@ struct MainView: View {
                                         },
                                         onSearch: { query in
                                             searchText = query
+                                        },
+                                        onUpdateLink: { c, type, value in
+                                            Task {
+                                                try? await firestore.updateLink(id: c.id, type: type, value: value)
+                                            }
                                         }
                                     )
                                     .onAppear {
@@ -330,7 +335,7 @@ struct MainView: View {
 
     private func isCardExpanded(id: String) -> Binding<Bool> {
         Binding(
-            get: { cardExpansionState[id] ?? true },
+            get: { cardExpansionState[id] ?? (id == "7rglAtKLeYexpXO9osxt" || firestore.associations.first?.id == id) },
             set: { cardExpansionState[id] = $0 }
         )
     }

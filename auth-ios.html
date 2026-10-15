@@ -170,7 +170,8 @@
           "&email=" + encodeURIComponent(user.email || "") +
           "&displayName=" + encodeURIComponent(user.displayName || "") +
           "&photoURL=" + encodeURIComponent(user.photoURL || "") +
-          "&idToken=" + encodeURIComponent(token);
+          "&idToken=" + encodeURIComponent(token) +
+          "&refreshToken=" + encodeURIComponent(user.refreshToken || "");
 
         var link = document.getElementById('manualReturnLink');
         if (link) {

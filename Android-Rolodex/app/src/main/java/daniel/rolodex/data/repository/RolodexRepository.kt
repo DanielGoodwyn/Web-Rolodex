@@ -140,6 +140,31 @@ class RolodexRepository {
         ).await()
     }
 
+    suspend fun updateLink(cardId: String, type: String, value: String?) {
+        val fieldName = when (type.lowercase()) {
+            "site", "web", "www" -> "site"
+            "fb", "facebook" -> "fb"
+            "ig", "insta", "instagram" -> "ig"
+            "twitter", "x" -> "twitter"
+            else -> type
+        }
+        val trimmed = value?.trim()?.ifEmpty { null }
+        val formatted = if (trimmed != null) {
+            if (!trimmed.startsWith("http://", ignoreCase = true) && !trimmed.startsWith("https://", ignoreCase = true)) {
+                "https://$trimmed"
+            } else trimmed
+        } else null
+
+        val updates = mutableMapOf<String, Any?>(
+            fieldName to formatted,
+            "updatedAt" to FieldValue.serverTimestamp()
+        )
+        if (fieldName == "twitter") {
+            updates["x"] = formatted
+        }
+        db.collection(COLLECTION_ASSOCIATION).document(cardId).update(updates).await()
+    }
+
     suspend fun updateCard(association: Association) {
         val updates = mutableMapOf<String, Any?>(
             "name" to association.name,
@@ -152,6 +177,7 @@ class RolodexRepository {
             "fb" to association.facebookUrl,
             "ig" to association.instagramUrl,
             "twitter" to association.twitterUrl,
+            "x" to association.twitterUrl,
             "updatedAt" to FieldValue.serverTimestamp()
         )
         if (association.geo != null) {

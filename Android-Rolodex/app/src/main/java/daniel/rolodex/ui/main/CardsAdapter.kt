@@ -17,6 +17,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import daniel.rolodex.R
 import daniel.rolodex.data.models.Association
 import daniel.rolodex.data.models.Note
+import android.widget.EditText
+import android.widget.Toast
+import android.view.inputmethod.EditorInfo
 import daniel.rolodex.databinding.ItemCardBinding
 
 class CardsAdapter(
@@ -28,7 +31,8 @@ class CardsAdapter(
     private val onUnlinkAssociate: (Association, String) -> Unit,
     private val onAddNote: (Association, String) -> Unit,
     private val onDeleteNote: (Note) -> Unit,
-    private val onFindAssociate: (String) -> Unit
+    private val onFindAssociate: (String) -> Unit,
+    private val onUpdateLink: (Association, String, String?) -> Unit = { _, _, _ -> }
 ) : ListAdapter<Association, CardsAdapter.CardViewHolder>(CardDiffCallback()) {
 
     var allAssociateNames: List<String> = emptyList()
@@ -164,36 +168,80 @@ class CardsAdapter(
             }
 
             // Links (Web, FB, Insta, X)
-            var hasLinks = false
             val webUrl = card.websiteUrl
             if (!webUrl.isNullOrBlank()) {
                 binding.btnWeb.visibility = View.VISIBLE
                 binding.btnWeb.setOnClickListener { openUrl(webUrl, context) }
-                hasLinks = true
-            } else binding.btnWeb.visibility = View.GONE
+            } else {
+                binding.btnWeb.visibility = View.GONE
+            }
 
             val fbUrl = card.facebookUrl
             if (!fbUrl.isNullOrBlank()) {
                 binding.btnFacebook.visibility = View.VISIBLE
                 binding.btnFacebook.setOnClickListener { openUrl(fbUrl, context) }
-                hasLinks = true
-            } else binding.btnFacebook.visibility = View.GONE
+            } else {
+                binding.btnFacebook.visibility = View.GONE
+            }
 
             val igUrl = card.instagramUrl
             if (!igUrl.isNullOrBlank()) {
                 binding.btnInstagram.visibility = View.VISIBLE
                 binding.btnInstagram.setOnClickListener { openUrl(igUrl, context) }
-                hasLinks = true
-            } else binding.btnInstagram.visibility = View.GONE
+            } else {
+                binding.btnInstagram.visibility = View.GONE
+            }
 
             val xUrl = card.twitterUrl
             if (!xUrl.isNullOrBlank()) {
                 binding.btnX.visibility = View.VISIBLE
                 binding.btnX.setOnClickListener { openUrl(xUrl, context) }
-                hasLinks = true
-            } else binding.btnX.visibility = View.GONE
+            } else {
+                binding.btnX.visibility = View.GONE
+            }
 
-            binding.linksContainer.visibility = if (hasLinks) View.VISIBLE else View.GONE
+            val hasAnyButtons = !webUrl.isNullOrBlank() || !fbUrl.isNullOrBlank() || !igUrl.isNullOrBlank() || !xUrl.isNullOrBlank()
+            binding.linksButtonsScroll.visibility = if (hasAnyButtons) View.VISIBLE else View.GONE
+
+            // Pre-fill inputs when not actively focused
+            if (!binding.etLinkWeb.hasFocus()) {
+                binding.etLinkWeb.setText(webUrl.orEmpty())
+            }
+            if (!binding.etLinkFb.hasFocus()) {
+                binding.etLinkFb.setText(fbUrl.orEmpty())
+            }
+            if (!binding.etLinkIg.hasFocus()) {
+                binding.etLinkIg.setText(igUrl.orEmpty())
+            }
+            if (!binding.etLinkX.hasFocus()) {
+                binding.etLinkX.setText(xUrl.orEmpty())
+            }
+
+            fun setupLinkInput(editText: EditText, currentVal: String?, type: String) {
+                editText.setOnFocusChangeListener { _, hasFocus ->
+                    if (!hasFocus) {
+                        val newText = editText.text.toString().trim()
+                        if (newText != (currentVal ?: "")) {
+                            onUpdateLink(card, type, newText.ifEmpty { null })
+                        }
+                    }
+                }
+                editText.setOnEditorActionListener { _, actionId, _ ->
+                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        editText.clearFocus()
+                        val newText = editText.text.toString().trim()
+                        if (newText != (currentVal ?: "")) {
+                            onUpdateLink(card, type, newText.ifEmpty { null })
+                        }
+                        true
+                    } else false
+                }
+            }
+
+            setupLinkInput(binding.etLinkWeb, webUrl, "site")
+            setupLinkInput(binding.etLinkFb, fbUrl, "fb")
+            setupLinkInput(binding.etLinkIg, igUrl, "ig")
+            setupLinkInput(binding.etLinkX, xUrl, "twitter")
 
             // Associates / Associated With
             if (card.isAssociate) {
@@ -257,13 +305,16 @@ class CardsAdapter(
         private fun openUrl(url: String?, context: Context) {
             if (url.isNullOrBlank()) return
             var finalUrl = url.trim()
-            if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
+            if (!finalUrl.startsWith("http://", ignoreCase = true) && !finalUrl.startsWith("https://", ignoreCase = true)) {
                 finalUrl = "https://$finalUrl"
             }
             try {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(finalUrl)))
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(finalUrl)).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(intent)
             } catch (e: Exception) {
-                // Ignore
+                Toast.makeText(context, "Could not open link: $finalUrl", Toast.LENGTH_SHORT).show()
             }
         }
 

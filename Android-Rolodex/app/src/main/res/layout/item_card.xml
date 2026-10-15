@@ -179,57 +179,165 @@
 
             <!-- Links (Web, FB, Insta, X) Section -->
             <LinearLayout
-                android:id="@+id/linksContainer"
+                android:id="@+id/linksSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnWeb"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
+                <!-- Links Section Title -->
+                <TextView
+                    android:id="@+id/tvLinksTitle"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:layout_marginEnd="6dp"
-                    android:text="Web"
-                    android:textSize="11sp"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
+                    android:layout_height="wrap_content"
+                    android:text="Links"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_secondary" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnFacebook"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:layout_marginEnd="6dp"
-                    android:text="FB"
-                    android:textColor="@color/facebook_blue"
-                    android:textSize="11sp"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
+                <!-- Action Buttons (Web, FB, Insta, X) -->
+                <HorizontalScrollView
+                    android:id="@+id/linksButtonsScroll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:scrollbars="none">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnInstagram"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:layout_marginEnd="6dp"
-                    android:text="Insta"
-                    android:textColor="@color/instagram_gradient"
-                    android:textSize="11sp"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
+                    <LinearLayout
+                        android:id="@+id/linksContainer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnX"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="X"
-                    android:textColor="@color/x_black"
-                    android:textSize="11sp"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnWeb"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="6dp"
+                            android:text="Web"
+                            android:textColor="@color/primary"
+                            android:textSize="11sp"
+                            android:visibility="gone"
+                            tools:visibility="visible" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnFacebook"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="6dp"
+                            android:text="FB"
+                            android:textColor="@color/facebook_blue"
+                            android:textSize="11sp"
+                            android:visibility="gone"
+                            tools:visibility="visible" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnInstagram"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="6dp"
+                            android:text="Insta"
+                            android:textColor="@color/instagram_gradient"
+                            android:textSize="11sp"
+                            android:visibility="gone"
+                            tools:visibility="visible" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnX"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="X"
+                            android:textColor="@color/x_black"
+                            android:textSize="11sp"
+                            android:visibility="gone"
+                            tools:visibility="visible" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <!-- URL Inputs (www, fb, insta, x) matching Web -->
+                <LinearLayout
+                    android:id="@+id/layoutLinkInputsRow1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/etLinkWeb"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/bg_link_input"
+                        android:hint="www (url)"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_hint"
+                        android:textSize="11sp"
+                        android:paddingHorizontal="8dp"
+                        android:inputType="textUri"
+                        android:imeOptions="actionDone"
+                        android:singleLine="true" />
+
+                    <EditText
+                        android:id="@+id/etLinkFb"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/bg_link_input"
+                        android:hint="fb (url)"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_hint"
+                        android:textSize="11sp"
+                        android:paddingHorizontal="8dp"
+                        android:inputType="textUri"
+                        android:imeOptions="actionDone"
+                        android:singleLine="true" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layoutLinkInputsRow2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/etLinkIg"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/bg_link_input"
+                        android:hint="insta (url)"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_hint"
+                        android:textSize="11sp"
+                        android:paddingHorizontal="8dp"
+                        android:inputType="textUri"
+                        android:imeOptions="actionDone"
+                        android:singleLine="true" />
+
+                    <EditText
+                        android:id="@+id/etLinkX"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/bg_link_input"
+                        android:hint="x (url)"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_hint"
+                        android:textSize="11sp"
+                        android:paddingHorizontal="8dp"
+                        android:inputType="textUri"
+                        android:imeOptions="actionDone"
+                        android:singleLine="true" />
+                </LinearLayout>
             </LinearLayout>
 
             <!-- Divider -->
