@@ -78,7 +78,7 @@
                 android:paddingTop="2dp"
                 android:paddingEnd="8dp"
                 android:paddingBottom="2dp"
-                android:textColor="#333333"
+                android:textColor="@color/badge_text"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 tools:text="95" />
@@ -157,7 +157,7 @@
                         style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="wrap_content"
                         android:layout_height="38dp"
-                        android:backgroundTint="#E8F0FE"
+                        android:backgroundTint="@color/google_maps_bg"
                         android:text="@string/open_google_maps"
                         android:textColor="@color/google_maps"
                         android:textSize="12sp"
@@ -217,6 +217,7 @@
                             android:layout_marginEnd="6dp"
                             android:text="Web"
                             android:textColor="@color/primary"
+                            app:strokeColor="@color/primary"
                             android:textSize="11sp"
                             android:visibility="gone"
                             tools:visibility="visible" />
@@ -229,6 +230,7 @@
                             android:layout_marginEnd="6dp"
                             android:text="FB"
                             android:textColor="@color/facebook_blue"
+                            app:strokeColor="@color/facebook_blue"
                             android:textSize="11sp"
                             android:visibility="gone"
                             tools:visibility="visible" />
@@ -241,6 +243,7 @@
                             android:layout_marginEnd="6dp"
                             android:text="Insta"
                             android:textColor="@color/instagram_gradient"
+                            app:strokeColor="@color/instagram_gradient"
                             android:textSize="11sp"
                             android:visibility="gone"
                             tools:visibility="visible" />
@@ -252,6 +255,7 @@
                             android:layout_height="36dp"
                             android:text="X"
                             android:textColor="@color/x_black"
+                            app:strokeColor="@color/x_black"
                             android:textSize="11sp"
                             android:visibility="gone"
                             tools:visibility="visible" />
@@ -386,6 +390,8 @@
                         android:layout_height="wrap_content"
                         android:imeOptions="actionDone"
                         android:inputType="textPersonName|textCapWords"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_hint"
                         android:textSize="13sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -450,6 +456,8 @@
                         android:layout_height="wrap_content"
                         android:imeOptions="actionDone"
                         android:inputType="textCapSentences"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_hint"
                         android:textSize="13sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 

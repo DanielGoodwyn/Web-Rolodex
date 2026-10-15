@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#90CAF9</color>
+    <color name="primary_dark">#42A5F5</color>
+    <color name="primary_light">#1E3A5F</color>
+    <color name="accent">#FFB74D</color>
+
+    <color name="background">#121212</color>
+    <color name="surface">#1E1E1E</color>
+    <color name="card_background">#1E1E1E</color>
+
+    <color name="text_primary">#F0F0F0</color>
+    <color name="text_secondary">#AAAAAA</color>
+    <color name="text_hint">#757575</color>
+    <color name="divider">#2E2E2E</color>
+
+    <!-- Rating Indicator Colors -->
+    <color name="rating_excellent">#4CAF50</color>
+    <color name="rating_great">#8BC34A</color>
+    <color name="rating_good">#CDDC39</color>
+    <color name="rating_average">#FFEB3B</color>
+    <color name="rating_below_average">#FFC107</color>
+    <color name="rating_poor">#FF9800</color>
+    <color name="rating_bad">#F44336</color>
+    <color name="rating_neutral">#37474F</color>
+
+    <!-- Rating Badge Text -->
+    <color name="badge_text">#121212</color>
+
+    <!-- Input Colors -->
+    <color name="input_bg">#252525</color>
+    <color name="input_stroke">#424242</color>
+    <color name="search_bg">#252525</color>
+    <color name="search_stroke">#3D3D3D</color>
+
+    <!-- Social / Action Colors -->
+    <color name="google_maps">#8AB4F8</color>
+    <color name="google_maps_bg">#1A2B4C</color>
+    <color name="web_link">#90CAF9</color>
+    <color name="web_btn_bg">#1A2B4C</color>
+    <color name="facebook_blue">#64B5F6</color>
+    <color name="fb_btn_bg">#15294A</color>
+    <color name="instagram_gradient">#FF6090</color>
+    <color name="ig_btn_bg">#3B1A24</color>
+    <color name="x_black">#FFFFFF</color>
+    <color name="x_btn_bg">#252525</color>
+    <color name="delete_red">#EF5350</color>
+
+    <!-- Chip Colors for Dynamic Associate Chips -->
+    <color name="chip_associate_bg">#1E3A5F</color>
+    <color name="chip_associate_text">#90CAF9</color>
+</resources>

@@ -2,6 +2,7 @@ package daniel.rolodex.ui.main
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
@@ -64,11 +65,11 @@ class CardsAdapter(
             } else if (card.displayRating > 0) {
                 binding.tvRatingBadge.visibility = View.VISIBLE
                 binding.tvRatingBadge.text = card.displayRating.toString()
-                binding.tvRatingBadge.setBackgroundColor(getRatingColor(card.displayRating, context))
+                binding.tvRatingBadge.backgroundTintList = ColorStateList.valueOf(getRatingColor(card.displayRating, context))
             } else {
                 binding.tvRatingBadge.visibility = View.VISIBLE
                 binding.tvRatingBadge.text = "-"
-                binding.tvRatingBadge.setBackgroundColor(ContextCompat.getColor(context, R.color.rating_neutral))
+                binding.tvRatingBadge.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.rating_neutral))
             }
 
             // Rating click -> dialog
@@ -84,7 +85,7 @@ class CardsAdapter(
 
                 fun updateDialogBadge(v: Int) {
                     tvDialogBadge.text = v.toString()
-                    tvDialogBadge.setBackgroundColor(getRatingColor(v.toLong(), context))
+                    tvDialogBadge.backgroundTintList = ColorStateList.valueOf(getRatingColor(v.toLong(), context))
                 }
 
                 updateDialogBadge(currentRating.toInt())
@@ -141,8 +142,8 @@ class CardsAdapter(
                 val chip = Chip(context).apply {
                     text = type
                     isClickable = false
-                    setChipBackgroundColorResource(R.color.primary_light)
-                    setTextColor(ContextCompat.getColor(context, R.color.primary_dark))
+                    setChipBackgroundColorResource(R.color.chip_associate_bg)
+                    setTextColor(ContextCompat.getColor(context, R.color.chip_associate_text))
                 }
                 binding.chipGroupCardTypes.addView(chip)
             }
@@ -255,6 +256,9 @@ class CardsAdapter(
                     val chip = Chip(context).apply {
                         text = parentName
                         isCloseIconVisible = true
+                        setChipBackgroundColorResource(R.color.chip_associate_bg)
+                        setTextColor(ContextCompat.getColor(context, R.color.chip_associate_text))
+                        closeIconTint = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.chip_associate_text))
                         setOnCloseIconClickListener { onUnlinkAssociate(card, parentId) }
                         setOnClickListener { onFindAssociate(parentName) }
                     }
@@ -271,6 +275,9 @@ class CardsAdapter(
                     val chip = Chip(context).apply {
                         text = assocName
                         isCloseIconVisible = true
+                        setChipBackgroundColorResource(R.color.chip_associate_bg)
+                        setTextColor(ContextCompat.getColor(context, R.color.chip_associate_text))
+                        closeIconTint = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.chip_associate_text))
                         setOnCloseIconClickListener { onUnlinkAssociate(card, assocId) }
                         setOnClickListener { onFindAssociate(assocName) }
                     }

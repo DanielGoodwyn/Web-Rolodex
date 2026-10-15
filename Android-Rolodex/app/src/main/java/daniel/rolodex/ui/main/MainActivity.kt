@@ -142,6 +142,12 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
+
+        binding.toolbar.post {
+            for (i in 0 until binding.toolbar.menu.size()) {
+                binding.toolbar.menu.getItem(i).icon?.setTint(ContextCompat.getColor(this, R.color.text_primary))
+            }
+        }
     }
 
     private fun setupRecyclerView() {
@@ -250,6 +256,9 @@ class MainActivity : AppCompatActivity() {
         binding.recyclerViewCards.layoutManager = LinearLayoutManager(this)
         binding.recyclerViewCards.adapter = adapter
 
+        binding.swipeRefresh.setColorSchemeColors(ContextCompat.getColor(this, R.color.primary))
+        binding.swipeRefresh.setProgressBackgroundColorSchemeColor(ContextCompat.getColor(this, R.color.surface))
+
         binding.swipeRefresh.setOnRefreshListener {
             fetchUserLocation()
             authRepository.currentUser?.uid?.let { loadAllNotes(it) }
@@ -258,6 +267,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupSearchView() {
+        val searchEditText = binding.searchView.findViewById<android.widget.EditText>(androidx.appcompat.R.id.search_src_text)
+        searchEditText?.setTextColor(ContextCompat.getColor(this, R.color.text_primary))
+        searchEditText?.setHintTextColor(ContextCompat.getColor(this, R.color.text_hint))
+
+        val searchMagIcon = binding.searchView.findViewById<android.widget.ImageView>(androidx.appcompat.R.id.search_mag_icon)
+        searchMagIcon?.setColorFilter(ContextCompat.getColor(this, R.color.text_secondary))
+
+        val searchCloseBtn = binding.searchView.findViewById<android.widget.ImageView>(androidx.appcompat.R.id.search_close_btn)
+        searchCloseBtn?.setColorFilter(ContextCompat.getColor(this, R.color.text_secondary))
+
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 searchQuery = query.orEmpty()

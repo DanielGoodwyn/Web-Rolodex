@@ -31,7 +31,7 @@
             android:layout_height="48dp"
             android:background="@drawable/bg_rating_badge"
             android:gravity="center"
-            android:textColor="#222222"
+            android:textColor="@color/badge_text"
             android:textSize="24sp"
             android:textStyle="bold"
             tools:text="85" />
