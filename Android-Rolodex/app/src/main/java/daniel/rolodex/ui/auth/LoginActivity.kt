@@ -30,19 +30,24 @@ class LoginActivity : AppCompatActivity() {
     private val googleSignInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                val idToken = account?.idToken
-                if (idToken != null) {
-                    firebaseAuthWithGoogle(idToken)
-                } else {
-                    showError("Google Sign-In failed: missing ID token")
-                }
-            } catch (e: Exception) {
-                showError("Google Sign-In error: ${e.message}")
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            val idToken = account?.idToken
+            if (idToken != null) {
+                firebaseAuthWithGoogle(idToken)
+            } else {
+                setLoading(false)
+                showError("Google Sign-In failed: missing ID token")
             }
+        } catch (e: ApiException) {
+            setLoading(false)
+            if (e.statusCode != 12501 && e.statusCode != 16) {
+                showError("Google Sign-In failed (${e.statusCode}): ${e.message}")
+            }
+        } catch (e: Exception) {
+            setLoading(false)
+            showError("Google Sign-In error: ${e.message}")
         }
     }
 
@@ -51,9 +56,10 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Configure Google Sign-In
+        // Configure Google Sign-In with official Web Client ID
+        val webClientId = getString(R.string.default_web_client_id)
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("119025024991-8l2u8q7q930511874283182181734891.apps.googleusercontent.com") // or default web client
+            .requestIdToken(webClientId)
             .requestEmail()
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
@@ -115,7 +121,21 @@ class LoginActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val credential = GoogleAuthProvider.getCredential(idToken, null)
-                FirebaseAuth.getInstance().signInWithCredential(credential).await()
+                val authResult = FirebaseAuth.getInstance().signInWithCredential(credential).await()
+                val user = authResult.user
+                if (user != null) {
+                    val formattedName = authRepository.capitaliseFirstLetter(user.displayName ?: "")
+                    val userData = hashMapOf<String, Any?>(
+                        "username" to formattedName.lowercase(),
+                        "displayName" to formattedName,
+                        "email" to user.email,
+                        "pic" to (user.photoUrl?.toString() ?: "images/rolodex.png")
+                    )
+                    com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                        .collection("users").document(user.uid)
+                        .set(userData, com.google.firebase.firestore.SetOptions.merge())
+                        .await()
+                }
                 navigateToMain()
             } catch (e: Exception) {
                 setLoading(false)

@@ -7,20 +7,38 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:119025024991:android:3ef186103488998c962c58",
+        "mobilesdk_app_id": "1:119025024991:android:2e881d4d019513b4f10e6a",
         "android_client_info": {
           "package_name": "daniel.rolodex"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "119025024991-lk3g14m5huj79629fe2jkk1letg689nn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "daniel.rolodex",
+            "certificate_hash": "35c8a1dd876b3bc42165d19a9dd35e276e2434e3"
+          }
+        },
+        {
+          "client_id": "119025024991-mjc3sccrc9i57lu8tnfggdclld4j40e0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyBpsdl5rHyL0_mbauMUQVgD89zs7E9eY1U"
+          "current_key": "AIzaSyDwpRfAU_LkSa0p8uo6nrtDGK-8xTKquRE"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "119025024991-mjc3sccrc9i57lu8tnfggdclld4j40e0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
