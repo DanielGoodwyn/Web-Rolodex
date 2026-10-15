@@ -1,12 +1,14 @@
 name: Rolodex
 options:
-  bundleIdPrefix: com.danielgoodwyn
+  bundleIdPrefix: daniel
   deploymentTarget:
     iOS: "16.0"
 settings:
   base:
     SWIFT_VERSION: "5.0"
+    DEVELOPMENT_TEAM: "3YH5RQ572Q"
     CODE_SIGN_STYLE: Automatic
+    CODE_SIGN_IDENTITY: "Apple Development"
     GENERATE_INFOPLIST_FILE: YES
     CURRENT_PROJECT_VERSION: 1
     MARKETING_VERSION: 1.0.0
@@ -20,7 +22,7 @@ targets:
       - Resources
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.danielgoodwyn.rolodex
+        PRODUCT_BUNDLE_IDENTIFIER: daniel.rolodex
         INFOPLIST_KEY_CFBundleDisplayName: Rolodex
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Rolodex uses your location to show nearby associations and your current neighborhood."
         INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription: "Rolodex uses your location to show nearby associations and your current neighborhood."
@@ -30,6 +32,6 @@ targets:
       path: Resources/Info.plist
       properties:
         CFBundleURLTypes:
-          - CFBundleURLName: com.danielgoodwyn.rolodex
+          - CFBundleURLName: daniel.rolodex
             CFBundleURLSchemes:
               - rolodex-app
