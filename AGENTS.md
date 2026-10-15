@@ -68,31 +68,72 @@ This document provides complete context, architectural background, operational p
 ├── images/
 │   ├── hood.png             # Neighborhood icon
 │   └── rolodex.png          # Rolodex logo & default avatar
-└── Android-Rolodex/         # Native Android application (Kotlin, Material 3, Firebase)
-    ├── app/
-    │   ├── build.gradle     # Android application Gradle configuration (compileSdk 34)
-    │   ├── google-services.json # Firebase project configuration (rolodex-ade98)
-    │   └── src/main/
-    │       ├── AndroidManifest.xml
-    │       ├── java/daniel/rolodex/
-    │       │   ├── RolodexApp.kt            # App init & offline persistence
-    │       │   ├── data/
-    │       │   │   ├── models/              # Association, Note, CardType
-    │       │   │   ├── repository/          # AuthRepository, RolodexRepository
-    │       │   │   └── location/            # LocationHelper (GPS, Haversine, Geocoder)
-    │       │   └── ui/
-    │       │       ├── auth/                # LoginActivity, ForgotPasswordDialog
-    │       │       ├── main/                # MainActivity, CardsAdapter, NotesAdapter, AddCardBottomSheet
-    │       │       └── account/             # AccountActivity
-    │       └── res/                         # Material 3 layouts, drawables, colors, themes
-    ├── build.gradle         # Root Gradle build script (AGP 8.7.0, Kotlin 2.0.21)
-    ├── settings.gradle
-    └── gradlew              # Gradle wrapper executable
+├── Android-Rolodex/         # Native Android application (Kotlin, Material 3, Firebase)
+│   ├── app/
+│   │   ├── build.gradle     # Android application Gradle configuration (compileSdk 34)
+│   │   ├── google-services.json # Firebase project configuration (rolodex-ade98)
+│   │   └── src/main/
+│   │       ├── AndroidManifest.xml
+│   │       ├── java/daniel/rolodex/
+│   │       │   ├── RolodexApp.kt            # App init & offline persistence
+│   │       │   ├── data/
+│   │       │   │   ├── models/              # Association, Note, CardType
+│   │       │   │   ├── repository/          # AuthRepository, RolodexRepository
+│   │       │   │   └── location/            # LocationHelper (GPS, Haversine, Geocoder)
+│   │       │   └── ui/
+│   │       │       ├── auth/                # LoginActivity, ForgotPasswordDialog
+│   │       │       ├── main/                # MainActivity, CardsAdapter, NotesAdapter, AddCardBottomSheet
+│   │       │       └── account/             # AccountActivity
+│   │       └── res/                         # Material 3 layouts, drawables, colors, themes
+│   ├── build.gradle         # Root Gradle build script (AGP 8.7.0, Kotlin 2.0.21)
+│   ├── settings.gradle
+│   └── gradlew              # Gradle wrapper executable
+└── iOS-Rolodex/             # Native iOS application (Swift 5.0, SwiftUI, iOS 16+)
+    ├── project.yml          # XcodeGen specification
+    ├── Rolodex.xcodeproj    # Generated Xcode project
+    ├── Resources/
+    │   ├── Assets.xcassets  # AppIcon (1024x1024), hood.png, rolodex.png
+    │   └── GoogleService-Info.plist # Firebase project configuration (rolodex-ade98)
+    └── Sources/
+        ├── RolodexApp.swift # SwiftUI App entry point
+        ├── ContentView.swift# Root auth switcher
+        ├── MainView.swift   # Main dashboard, search, filter chips, location, sort
+        ├── CardView.swift   # Interactive expandable cards, ratings, Google/Apple Maps
+        ├── AddCardView.swift# Card creation with OSM geocoding & rating slider
+        ├── LoginView.swift  # Authentication view
+        ├── AccountView.swift# Profile management & sign out
+        ├── Association.swift# Association, LinkedItem, and GeoPoint models
+        ├── Note.swift       # Note model
+        ├── User.swift       # Auth user model
+        ├── Theme.swift      # Brand palette and 1-100 rating color tiers
+        ├── FirebaseConfig.swift # Unified Firebase project IDs and endpoints
+        ├── FirebaseAuthService.swift # REST Authentication service
+        ├── FirestoreService.swift    # REST Firestore queries, CRUD, 2-way linking
+        └── LocationManager.swift     # CoreLocation, Nominatim reverse geocode & Haversine
 ```
 
 ---
 
 ## 4. Operational Instructions for New Agents
+
+### Building the Native iOS App
+The iOS app uses `xcodegen` and pure Swift with zero heavy third-party framework dependencies (compiles in ~3 seconds):
+```bash
+cd /Users/danielgoodwyn/src/Rolodex/iOS-Rolodex
+
+# Regenerate project if project.yml changed:
+xcodegen generate
+
+# Build for iOS Simulator:
+xcodebuild -project Rolodex.xcodeproj -scheme Rolodex -destination "generic/platform=iOS Simulator" -configuration Debug build CODE_SIGNING_ALLOWED=NO
+
+# Install and run on booted simulator (e.g. iPhone 18 Pro):
+xcrun simctl install booted /Users/danielgoodwyn/Library/Developer/Xcode/DerivedData/Rolodex-*/Build/Products/Debug-iphonesimulator/Rolodex.app
+xcrun simctl launch booted daniel.rolodex
+
+# Build for physical device (Team: FKK74MDS69):
+xcodebuild -project Rolodex.xcodeproj -scheme Rolodex -destination "id=00008150-00196C9036D3C01C" -configuration Debug build
+```
 
 ### Building the Native Android App
 To compile the native Android application:

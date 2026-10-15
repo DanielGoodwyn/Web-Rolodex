@@ -1,0 +1,387 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		087970FD1A8AA36C39E5F230 /* AccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 179D3900A2A7A2A5C935269D /* AccountView.swift */; };
+		08CF8EC53E90ADFE671F719B /* FirestoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FC1EC74A919C21F9FC89314 /* FirestoreService.swift */; };
+		10D6BBD00E23DA48C8B4BF80 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA871F0DFD163AE8B05D025 /* MainView.swift */; };
+		2A5A0AE24BC9799D8693480F /* Association.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD937340FF0398B78A2C12D9 /* Association.swift */; };
+		2E2D34BEAF6DDFCB820FD221 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40586B3D5B301CB99A7A726E /* ContentView.swift */; };
+		34479E5359A118009337C510 /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A3B571A7EAE5A62811B9D6 /* CardView.swift */; };
+		3733C40C46453130341D9469 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F44E0C81F9269165D3BF26ED /* Assets.xcassets */; };
+		66CD8AC9CCBFF23A26E2EE47 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C187F9DDA1ACCA87B64553D1 /* LoginView.swift */; };
+		7ADB83F0866F7F340BB639DE /* RolodexApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11266E4D3EB83E090130668A /* RolodexApp.swift */; };
+		85B1CD8E7E073A934EB48071 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E681B4FC7F3A4E9BC3DB81A /* Note.swift */; };
+		879B42F737AE509576220313 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F4559E560DF5CFE521C12E0A /* GoogleService-Info.plist */; };
+		9EB297C425BCA8A5E0F82FD5 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6613B25A1740F8E609012C36 /* User.swift */; };
+		C1AD45B90FE8929173ABE79E /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8ED52144ED500250A9E0955 /* LocationManager.swift */; };
+		C6A977FDD21128B26DEEEC95 /* AddCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA028A00ACC90C4E0EF7677F /* AddCardView.swift */; };
+		D2D96AC1ACA515F63A0B81AB /* FirebaseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = C21D3638411AB8084574E2A6 /* FirebaseConfig.swift */; };
+		D52A447827BF1C2EF974B600 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09CFE76177223B939F08B65C /* Theme.swift */; };
+		F2148F6A9512AF935F0A6284 /* FirebaseAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D49E301F17A95AE022A2872 /* FirebaseAuthService.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		09CFE76177223B939F08B65C /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		0BA871F0DFD163AE8B05D025 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		11266E4D3EB83E090130668A /* RolodexApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RolodexApp.swift; sourceTree = "<group>"; };
+		179D3900A2A7A2A5C935269D /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
+		3FC1EC74A919C21F9FC89314 /* FirestoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreService.swift; sourceTree = "<group>"; };
+		40586B3D5B301CB99A7A726E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		6613B25A1740F8E609012C36 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		68A3B571A7EAE5A62811B9D6 /* CardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardView.swift; sourceTree = "<group>"; };
+		6D49E301F17A95AE022A2872 /* FirebaseAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseAuthService.swift; sourceTree = "<group>"; };
+		75DBE5D49CDD2DC19AF0FE83 /* Rolodex.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Rolodex.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7E681B4FC7F3A4E9BC3DB81A /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
+		A8ED52144ED500250A9E0955 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		AA028A00ACC90C4E0EF7677F /* AddCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCardView.swift; sourceTree = "<group>"; };
+		C187F9DDA1ACCA87B64553D1 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		C21D3638411AB8084574E2A6 /* FirebaseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseConfig.swift; sourceTree = "<group>"; };
+		CD937340FF0398B78A2C12D9 /* Association.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Association.swift; sourceTree = "<group>"; };
+		F44E0C81F9269165D3BF26ED /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F4559E560DF5CFE521C12E0A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		14DE8FC1C5AAF3E5BD9CA1CB /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F44E0C81F9269165D3BF26ED /* Assets.xcassets */,
+				F4559E560DF5CFE521C12E0A /* GoogleService-Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		EB094AC915487B24E44F2879 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				75DBE5D49CDD2DC19AF0FE83 /* Rolodex.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F2E30F76516397056A3AE066 = {
+			isa = PBXGroup;
+			children = (
+				14DE8FC1C5AAF3E5BD9CA1CB /* Resources */,
+				F42F4900019A4709B0330A5D /* Sources */,
+				EB094AC915487B24E44F2879 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F42F4900019A4709B0330A5D /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				179D3900A2A7A2A5C935269D /* AccountView.swift */,
+				AA028A00ACC90C4E0EF7677F /* AddCardView.swift */,
+				CD937340FF0398B78A2C12D9 /* Association.swift */,
+				68A3B571A7EAE5A62811B9D6 /* CardView.swift */,
+				40586B3D5B301CB99A7A726E /* ContentView.swift */,
+				6D49E301F17A95AE022A2872 /* FirebaseAuthService.swift */,
+				C21D3638411AB8084574E2A6 /* FirebaseConfig.swift */,
+				3FC1EC74A919C21F9FC89314 /* FirestoreService.swift */,
+				A8ED52144ED500250A9E0955 /* LocationManager.swift */,
+				C187F9DDA1ACCA87B64553D1 /* LoginView.swift */,
+				0BA871F0DFD163AE8B05D025 /* MainView.swift */,
+				7E681B4FC7F3A4E9BC3DB81A /* Note.swift */,
+				11266E4D3EB83E090130668A /* RolodexApp.swift */,
+				09CFE76177223B939F08B65C /* Theme.swift */,
+				6613B25A1740F8E609012C36 /* User.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F5AEB3A75FC838E6A950474E /* Rolodex */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3A57471E4640B11E1CEE9BA5 /* Build configuration list for PBXNativeTarget "Rolodex" */;
+			buildPhases = (
+				982ADF601016CCADD1E7690D /* Sources */,
+				7FDF892D142F310464BC17E2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Rolodex;
+			packageProductDependencies = (
+			);
+			productName = Rolodex;
+			productReference = 75DBE5D49CDD2DC19AF0FE83 /* Rolodex.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7A9DD3F218E60C0A38EF385E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					F5AEB3A75FC838E6A950474E = {
+						DevelopmentTeam = FKK74MDS69;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 8ECD9AA7962DD236EDE9A48C /* Build configuration list for PBXProject "Rolodex" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = F2E30F76516397056A3AE066;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = EB094AC915487B24E44F2879 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F5AEB3A75FC838E6A950474E /* Rolodex */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7FDF892D142F310464BC17E2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3733C40C46453130341D9469 /* Assets.xcassets in Resources */,
+				879B42F737AE509576220313 /* GoogleService-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		982ADF601016CCADD1E7690D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				087970FD1A8AA36C39E5F230 /* AccountView.swift in Sources */,
+				C6A977FDD21128B26DEEEC95 /* AddCardView.swift in Sources */,
+				2A5A0AE24BC9799D8693480F /* Association.swift in Sources */,
+				34479E5359A118009337C510 /* CardView.swift in Sources */,
+				2E2D34BEAF6DDFCB820FD221 /* ContentView.swift in Sources */,
+				F2148F6A9512AF935F0A6284 /* FirebaseAuthService.swift in Sources */,
+				D2D96AC1ACA515F63A0B81AB /* FirebaseConfig.swift in Sources */,
+				08CF8EC53E90ADFE671F719B /* FirestoreService.swift in Sources */,
+				C1AD45B90FE8929173ABE79E /* LocationManager.swift in Sources */,
+				66CD8AC9CCBFF23A26E2EE47 /* LoginView.swift in Sources */,
+				10D6BBD00E23DA48C8B4BF80 /* MainView.swift in Sources */,
+				85B1CD8E7E073A934EB48071 /* Note.swift in Sources */,
+				7ADB83F0866F7F340BB639DE /* RolodexApp.swift in Sources */,
+				D52A447827BF1C2EF974B600 /* Theme.swift in Sources */,
+				9EB297C425BCA8A5E0F82FD5 /* User.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		27ABD677D6697783D2C84BE7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = FKK74MDS69;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		DCF2B886D955428FC722ED7A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Rolodex;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Rolodex uses your location to show nearby associations and your current neighborhood.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Rolodex uses your location to show nearby associations and your current neighborhood.";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = daniel.rolodex;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		EE6A8CFF14898FC4048AEBE1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Rolodex;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Rolodex uses your location to show nearby associations and your current neighborhood.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Rolodex uses your location to show nearby associations and your current neighborhood.";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = daniel.rolodex;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F6FB6B6449D5B5EF3B1EC3A8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = FKK74MDS69;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3A57471E4640B11E1CEE9BA5 /* Build configuration list for PBXNativeTarget "Rolodex" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DCF2B886D955428FC722ED7A /* Debug */,
+				EE6A8CFF14898FC4048AEBE1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		8ECD9AA7962DD236EDE9A48C /* Build configuration list for PBXProject "Rolodex" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F6FB6B6449D5B5EF3B1EC3A8 /* Debug */,
+				27ABD677D6697783D2C84BE7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 7A9DD3F218E60C0A38EF385E /* Project object */;
+}
