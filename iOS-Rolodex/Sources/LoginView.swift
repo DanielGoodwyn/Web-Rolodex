@@ -36,6 +36,48 @@ struct LoginView: View {
 
                 // Input Card
                 VStack(spacing: 16) {
+                    // Google Sign In Button
+                    Button(action: {
+                        Task {
+                            do {
+                                try await authService.signInWithGoogle()
+                            } catch {
+                                authService.errorMessage = error.localizedDescription
+                            }
+                        }
+                    }) {
+                        HStack(spacing: 12) {
+                            GoogleLogoIcon()
+                            Text("Sign in with Google")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(13)
+                        .background(Color(uiColor: .systemBackground))
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color(uiColor: .systemGray4), lineWidth: 1)
+                        )
+                        .shadow(color: Color.black.opacity(0.04), radius: 2, x: 0, y: 1)
+                    }
+                    .disabled(authService.isLoading)
+
+                    // OR Divider
+                    HStack(spacing: 12) {
+                        Rectangle()
+                            .fill(Color(uiColor: .systemGray4))
+                            .frame(height: 1)
+                        Text("OR")
+                            .font(.caption.bold())
+                            .foregroundColor(.secondary)
+                        Rectangle()
+                            .fill(Color(uiColor: .systemGray4))
+                            .frame(height: 1)
+                    }
+                    .padding(.vertical, 2)
+
                     if isSignUp {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Username")
@@ -100,7 +142,7 @@ struct LoginView: View {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             } else {
-                                Text(isSignUp ? "Sign Up" : "Sign In")
+                                Text(isSignUp ? "Sign Up with Email" : "Sign In with Email")
                                     .font(.headline)
                                     .foregroundColor(.white)
                             }
@@ -128,30 +170,6 @@ struct LoginView: View {
                     Text(isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up")
                         .font(.subheadline)
                         .foregroundColor(Theme.primary)
-                }
-
-                // Quick test sign in
-                Button(action: {
-                    let testUser = User(
-                        uid: "vfcmXNHTrYMj7ovOiwx2VU9dcwp2",
-                        email: "danielgoodwyn@gmail.com",
-                        displayName: "Daniel Goodwyn",
-                        photoURL: nil,
-                        idToken: nil,
-                        refreshToken: nil
-                    )
-                    authService.saveUserPublic(testUser)
-                }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "person.badge.key.fill")
-                        Text("Sign In as Daniel Goodwyn")
-                    }
-                    .font(.caption.bold())
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(Theme.primaryLight.opacity(0.5))
-                    .foregroundColor(Theme.primaryDark)
-                    .cornerRadius(20)
                 }
 
                 Spacer()
@@ -209,3 +227,17 @@ struct LoginView: View {
         }
     }
 }
+
+struct GoogleLogoIcon: View {
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Color(uiColor: .systemGray6))
+                .frame(width: 22, height: 22)
+            Text("G")
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundColor(Color(red: 0.26, green: 0.52, blue: 0.96))
+        }
+    }
+}
+

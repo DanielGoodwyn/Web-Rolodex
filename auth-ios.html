@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Rolodex — Sign in with Google</title>
+  <!-- Firebase SDK v8 -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="js/firebase-config.js?v=16"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #f1f5f9;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 32px 24px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+    }
+    .logo {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 6px 0;
+    }
+    p {
+      font-size: 14px;
+      color: #64748b;
+      margin: 0 0 24px 0;
+    }
+    .btn-google {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      padding: 13px 16px;
+      background: #ffffff;
+      color: #1f2937;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      transition: all 0.15s ease;
+    }
+    .btn-google:active {
+      background: #f8fafc;
+      transform: scale(0.99);
+    }
+    .status {
+      margin-top: 18px;
+      font-size: 13px;
+      color: #475569;
+      min-height: 20px;
+    }
+    .spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #cbd5e1;
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 12px auto 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img src="images/rolodex.png" class="logo" alt="Rolodex">
+    <h2>Rolodex</h2>
+    <p>Sign in with your Google account to access your personal directory.</p>
+
+    <button id="googleBtn" class="btn-google" onclick="startSignIn()">
+      <svg width="18" height="18" viewBox="0 0 18 18">
+        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
+        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+        <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.347 2.827.957 4.039l3.007-2.332z"/>
+        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+      </svg>
+      <span>Continue with Google</span>
+    </button>
+
+    <div id="spinner" class="spinner"></div>
+    <div id="status" class="status"></div>
+  </div>
+
+  <script>
+    firebase.initializeApp(firebaseConfig);
+    var auth = firebase.auth();
+
+    function setStatus(text, showSpinner) {
+      document.getElementById('status').innerText = text;
+      document.getElementById('spinner').style.display = showSpinner ? 'block' : 'none';
+    }
+
+    // Check if returning from redirect
+    auth.getRedirectResult().then(function(result) {
+      if (result && result.user) {
+        completeAuth(result.user);
+      }
+    }).catch(function(err) {
+      setStatus(err.message, false);
+    });
+
+    function startSignIn() {
+      setStatus("Redirecting to Google...", true);
+      var provider = new firebase.auth.GoogleAuthProvider();
+      provider.addScope('email');
+      provider.addScope('profile');
+      auth.signInWithRedirect(provider);
+    }
+
+    function completeAuth(user) {
+      setStatus("Signing in as " + (user.displayName || user.email) + "...", true);
+      user.getIdToken().then(function(token) {
+        var callback = "rolodex-app://auth?" +
+          "uid=" + encodeURIComponent(user.uid) +
+          "&email=" + encodeURIComponent(user.email || "") +
+          "&displayName=" + encodeURIComponent(user.displayName || "") +
+          "&photoURL=" + encodeURIComponent(user.photoURL || "") +
+          "&idToken=" + encodeURIComponent(token);
+        window.location.href = callback;
+      }).catch(function(err) {
+        setStatus(err.message, false);
+      });
+    }
+
+    // Auto-trigger on initial load if not already processing
+    var hasRedirected = sessionStorage.getItem('google_redirect_in_progress');
+    if (!hasRedirected && !window.location.hash.includes('access_token')) {
+      sessionStorage.setItem('google_redirect_in_progress', 'true');
+      setTimeout(startSignIn, 400);
+    } else {
+      sessionStorage.removeItem('google_redirect_in_progress');
+    }
+  </script>
+</body>
+</html>

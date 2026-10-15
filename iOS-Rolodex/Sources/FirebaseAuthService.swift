@@ -1,5 +1,18 @@
 import Foundation
 import Combine
+import AuthenticationServices
+import UIKit
+
+class GoogleAuthSessionHandler: NSObject, ASWebAuthenticationPresentationContextProviding {
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        let scenes = UIApplication.shared.connectedScenes
+        let windowScene = scenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene
+            ?? scenes.first as? UIWindowScene
+        let window = windowScene?.windows.first(where: { $0.isKeyWindow })
+            ?? windowScene?.windows.first
+        return window ?? ASPresentationAnchor()
+    }
+}
 
 @MainActor
 class FirebaseAuthService: ObservableObject {
@@ -10,36 +23,26 @@ class FirebaseAuthService: ObservableObject {
     @Published var errorMessage: String? = nil
 
     private let userDefaultsKey = "rolodex_cached_user"
+    private let authContext = GoogleAuthSessionHandler()
 
     init() {
         loadCachedUser()
-        #if DEBUG
-        if currentUser == nil {
-            let defaultUser = User(
-                uid: "vfcmXNHTrYMj7ovOiwx2VU9dcwp2",
-                email: "danielgoodwyn@gmail.com",
-                displayName: "Daniel Goodwyn",
-                photoURL: nil,
-                idToken: nil,
-                refreshToken: nil
-            )
-            saveUser(defaultUser)
-        }
-        #endif
     }
 
     private func loadCachedUser() {
         if let data = UserDefaults.standard.data(forKey: userDefaultsKey),
            let user = try? JSONDecoder().decode(User.self, from: data) {
-            self.currentUser = user
+            // Only restore if user has a valid authenticated idToken
+            if let token = user.idToken, !token.isEmpty {
+                self.currentUser = user
+            } else {
+                UserDefaults.standard.removeObject(forKey: userDefaultsKey)
+                self.currentUser = nil
+            }
         }
     }
 
-    func saveUserPublic(_ user: User?) {
-        saveUser(user)
-    }
-
-    private func saveUser(_ user: User?) {
+    func saveUser(_ user: User?) {
         self.currentUser = user
         if let user = user, let data = try? JSONEncoder().encode(user) {
             UserDefaults.standard.set(data, forKey: userDefaultsKey)
@@ -165,6 +168,70 @@ class FirebaseAuthService: ObservableObject {
            let msg = error["message"] as? String {
             let humanMsg = formatAuthError(msg)
             throw NSError(domain: "FirebaseAuth", code: 400, userInfo: [NSLocalizedDescriptionKey: humanMsg])
+        }
+    }
+
+    func signInWithGoogle() async throws {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+
+        guard let authURL = URL(string: "https://danielgoodwyn.com/rolodex/auth-ios") else {
+            throw URLError(.badURL)
+        }
+        let callbackScheme = "rolodex-app"
+
+        return try await withCheckedThrowingContinuation { continuation in
+            let session = ASWebAuthenticationSession(
+                url: authURL,
+                callbackURLScheme: callbackScheme
+            ) { [weak self] callbackURL, error in
+                if let error = error {
+                    if (error as NSError).code == ASWebAuthenticationSessionError.canceledLogin.rawValue {
+                        continuation.resume()
+                        return
+                    }
+                    continuation.resume(throwing: error)
+                    return
+                }
+
+                guard let callbackURL = callbackURL,
+                      let components = URLComponents(url: callbackURL, resolvingAgainstBaseURL: false) else {
+                    continuation.resume(throwing: NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid callback URL"]))
+                    return
+                }
+
+                let items = components.queryItems ?? []
+                let getParam = { (name: String) in items.first(where: { $0.name == name })?.value }
+
+                if let err = getParam("error"), !err.isEmpty {
+                    continuation.resume(throwing: NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: err]))
+                    return
+                }
+
+                guard let uid = getParam("uid"), !uid.isEmpty else {
+                    continuation.resume(throwing: NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Authentication missing user ID"]))
+                    return
+                }
+
+                let user = User(
+                    uid: uid,
+                    email: getParam("email") ?? "",
+                    displayName: getParam("displayName"),
+                    photoURL: getParam("photoURL"),
+                    idToken: getParam("idToken"),
+                    refreshToken: nil
+                )
+
+                Task { @MainActor [weak self] in
+                    self?.saveUser(user)
+                    continuation.resume()
+                }
+            }
+
+            session.presentationContextProvider = self.authContext
+            session.prefersEphemeralWebBrowserSession = false
+            session.start()
         }
     }
 
