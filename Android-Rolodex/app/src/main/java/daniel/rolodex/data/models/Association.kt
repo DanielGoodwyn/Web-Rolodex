@@ -11,17 +11,22 @@ data class Association(
     var id: String = "",
     var name: String = "",
     var type: String? = null,
-    var types: List<String> = emptyList(),
-    var rating: Long = 0,
+    var types: List<String>? = null,
+    var rating: Long? = 0,
     var location: String? = null,
     var neighborhood: String? = null,
+    var site: String? = null,
     var web: String? = null,
+    var fb: String? = null,
     var facebook: String? = null,
+    var ig: String? = null,
     var instagram: String? = null,
     var twitter: String? = null,
+    var x: String? = null,
+    var geo: Map<String, Any?>? = null,
     var userId: String = "",
     var associationId: String? = null,
-    var associationIds: List<String> = emptyList(),
+    var associationIds: List<String>? = null,
     var createdAt: Timestamp? = null,
     var updatedAt: Timestamp? = null,
 
@@ -36,8 +41,37 @@ data class Association(
     var linkedParentNames: List<Pair<String, String>> = emptyList()
 ) {
     val isAssociate: Boolean
-        get() = type == "associate" || types.contains("associate")
+        get() = type == "associate" || (types?.contains("associate") == true)
 
     val allTypes: List<String>
-        get() = if (types.isNotEmpty()) types else if (!type.isNullOrBlank()) listOf(type!!) else emptyList()
+        get() {
+            val list = types?.filter { it.isNotBlank() }
+            if (!list.isNullOrEmpty()) return list
+            if (!type.isNullOrBlank()) return listOf(type!!)
+            return emptyList()
+        }
+
+    val safeAssociationIds: List<String>
+        get() = associationIds ?: emptyList()
+
+    val displayRating: Long
+        get() = rating ?: 0
+
+    val websiteUrl: String?
+        get() = site?.takeIf { it.isNotBlank() } ?: web?.takeIf { it.isNotBlank() }
+
+    val facebookUrl: String?
+        get() = fb?.takeIf { it.isNotBlank() } ?: facebook?.takeIf { it.isNotBlank() }
+
+    val instagramUrl: String?
+        get() = ig?.takeIf { it.isNotBlank() } ?: instagram?.takeIf { it.isNotBlank() }
+
+    val twitterUrl: String?
+        get() = twitter?.takeIf { it.isNotBlank() } ?: x?.takeIf { it.isNotBlank() }
+
+    val latitude: Double?
+        get() = (geo?.get("latitude") as? Number)?.toDouble()
+
+    val longitude: Double?
+        get() = (geo?.get("longitude") as? Number)?.toDouble()
 }

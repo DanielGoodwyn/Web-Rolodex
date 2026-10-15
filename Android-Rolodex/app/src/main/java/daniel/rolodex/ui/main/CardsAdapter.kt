@@ -53,8 +53,17 @@ class CardsAdapter(
             binding.tvCardName.text = card.name
 
             // Rating badge & color
-            binding.tvRatingBadge.text = card.rating.toString()
-            binding.tvRatingBadge.setBackgroundColor(getRatingColor(card.rating, context))
+            if (card.isAssociate) {
+                binding.tvRatingBadge.visibility = View.GONE
+            } else if (card.displayRating > 0) {
+                binding.tvRatingBadge.visibility = View.VISIBLE
+                binding.tvRatingBadge.text = card.displayRating.toString()
+                binding.tvRatingBadge.setBackgroundColor(getRatingColor(card.displayRating, context))
+            } else {
+                binding.tvRatingBadge.visibility = View.VISIBLE
+                binding.tvRatingBadge.text = "-"
+                binding.tvRatingBadge.setBackgroundColor(ContextCompat.getColor(context, R.color.rating_neutral))
+            }
 
             // Expand / Collapse
             binding.expandableBodyLayout.visibility = if (card.isExpanded) View.VISIBLE else View.GONE
@@ -111,27 +120,31 @@ class CardsAdapter(
 
             // Links (Web, FB, Insta, X)
             var hasLinks = false
-            if (!card.web.isNullOrBlank()) {
+            val webUrl = card.websiteUrl
+            if (!webUrl.isNullOrBlank()) {
                 binding.btnWeb.visibility = View.VISIBLE
-                binding.btnWeb.setOnClickListener { openUrl(card.web, context) }
+                binding.btnWeb.setOnClickListener { openUrl(webUrl, context) }
                 hasLinks = true
             } else binding.btnWeb.visibility = View.GONE
 
-            if (!card.facebook.isNullOrBlank()) {
+            val fbUrl = card.facebookUrl
+            if (!fbUrl.isNullOrBlank()) {
                 binding.btnFacebook.visibility = View.VISIBLE
-                binding.btnFacebook.setOnClickListener { openUrl(card.facebook, context) }
+                binding.btnFacebook.setOnClickListener { openUrl(fbUrl, context) }
                 hasLinks = true
             } else binding.btnFacebook.visibility = View.GONE
 
-            if (!card.instagram.isNullOrBlank()) {
+            val igUrl = card.instagramUrl
+            if (!igUrl.isNullOrBlank()) {
                 binding.btnInstagram.visibility = View.VISIBLE
-                binding.btnInstagram.setOnClickListener { openUrl(card.instagram, context) }
+                binding.btnInstagram.setOnClickListener { openUrl(igUrl, context) }
                 hasLinks = true
             } else binding.btnInstagram.visibility = View.GONE
 
-            if (!card.twitter.isNullOrBlank()) {
+            val xUrl = card.twitterUrl
+            if (!xUrl.isNullOrBlank()) {
                 binding.btnX.visibility = View.VISIBLE
-                binding.btnX.setOnClickListener { openUrl(card.twitter, context) }
+                binding.btnX.setOnClickListener { openUrl(xUrl, context) }
                 hasLinks = true
             } else binding.btnX.visibility = View.GONE
 

@@ -1,12 +1,11 @@
 package daniel.rolodex.data.repository
 
+import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
 import daniel.rolodex.data.models.Association
-import daniel.rolodex.data.models.CardType
 import daniel.rolodex.data.models.Note
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -16,18 +15,32 @@ import kotlinx.coroutines.tasks.await
 class RolodexRepository {
     private val db = FirebaseFirestore.getInstance()
 
+    companion object {
+        private const val TAG = "RolodexRepository"
+        const val COLLECTION_ASSOCIATION = "Association"
+        const val COLLECTION_NOTE = "Note"
+        const val COLLECTION_TYPE = "Type"
+        const val COLLECTION_USERS = "users"
+    }
+
     fun getAssociationsFlow(userId: String): Flow<List<Association>> = callbackFlow {
-        val query = db.collection("associations")
+        val query = db.collection(COLLECTION_ASSOCIATION)
             .whereEqualTo("userId", userId)
 
         val listener: ListenerRegistration = query.addSnapshotListener { snapshot, error ->
             if (error != null) {
+                Log.e(TAG, "Error listening to Association updates", error)
                 close(error)
                 return@addSnapshotListener
             }
             if (snapshot != null) {
                 val list = snapshot.documents.mapNotNull { doc ->
-                    doc.toObject(Association::class.java)?.apply { id = doc.id }
+                    try {
+                        doc.toObject(Association::class.java)?.apply { id = doc.id }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error deserializing document ${doc.id}", e)
+                        null
+                    }
                 }
                 trySend(list)
             }
@@ -36,19 +49,23 @@ class RolodexRepository {
     }
 
     suspend fun getNotesForAssociation(associationId: String, userId: String): List<Note> {
-        val snap = db.collection("notes")
+        val snap = db.collection(COLLECTION_NOTE)
             .whereEqualTo("userId", userId)
             .whereEqualTo("associationId", associationId)
-            .orderBy("name", Query.Direction.ASCENDING)
             .get()
             .await()
         return snap.documents.mapNotNull { doc ->
-            doc.toObject(Note::class.java)?.apply { id = doc.id }
-        }
+            try {
+                doc.toObject(Note::class.java)?.apply { id = doc.id }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error deserializing note ${doc.id}", e)
+                null
+            }
+        }.sortedBy { it.displayName.lowercase() }
     }
 
     suspend fun getUserTypes(userId: String): List<String> {
-        val snap = db.collection("types")
+        val snap = db.collection(COLLECTION_TYPE)
             .whereEqualTo("userId", userId)
             .get()
             .await()
@@ -61,23 +78,26 @@ class RolodexRepository {
         val data = hashMapOf<String, Any?>(
             "name" to association.name,
             "type" to association.type,
-            "types" to association.types,
-            "rating" to association.rating,
+            "types" to association.allTypes,
+            "rating" to association.displayRating,
             "location" to association.location,
             "neighborhood" to association.neighborhood,
-            "web" to association.web,
-            "facebook" to association.facebook,
-            "instagram" to association.instagram,
-            "twitter" to association.twitter,
+            "site" to association.websiteUrl,
+            "fb" to association.facebookUrl,
+            "ig" to association.instagramUrl,
+            "twitter" to association.twitterUrl,
             "userId" to association.userId,
             "associationId" to association.associationId,
-            "associationIds" to association.associationIds,
+            "associationIds" to association.safeAssociationIds,
             "createdAt" to FieldValue.serverTimestamp(),
             "updatedAt" to FieldValue.serverTimestamp()
         )
-        val docRef = db.collection("associations").add(data).await()
+        if (association.geo != null) {
+            data["geo"] = association.geo
+        }
 
-        // Ensure types are recorded in "types" collection
+        val docRef = db.collection(COLLECTION_ASSOCIATION).add(data).await()
+
         for (t in association.allTypes) {
             if (t.isNotBlank()) {
                 ensureTypeExists(t, association.userId)
@@ -87,7 +107,7 @@ class RolodexRepository {
     }
 
     suspend fun updateRating(cardId: String, rating: Long) {
-        db.collection("associations").document(cardId).update(
+        db.collection(COLLECTION_ASSOCIATION).document(cardId).update(
             mapOf(
                 "rating" to rating,
                 "updatedAt" to FieldValue.serverTimestamp()
@@ -95,7 +115,12 @@ class RolodexRepository {
         ).await()
     }
 
-    suspend fun updateLocation(cardId: String, location: String, neighborhood: String?) {
+    suspend fun updateLocation(
+        cardId: String,
+        location: String,
+        neighborhood: String?,
+        geo: Map<String, Any?>? = null
+    ) {
         val updates = mutableMapOf<String, Any?>(
             "location" to location,
             "updatedAt" to FieldValue.serverTimestamp()
@@ -103,12 +128,15 @@ class RolodexRepository {
         if (neighborhood != null) {
             updates["neighborhood"] = neighborhood
         }
-        db.collection("associations").document(cardId).update(updates).await()
+        if (geo != null) {
+            updates["geo"] = geo
+        }
+        db.collection(COLLECTION_ASSOCIATION).document(cardId).update(updates).await()
     }
 
     suspend fun updateCardTypes(cardId: String, types: List<String>, userId: String) {
         val primaryType = types.firstOrNull { it != "associate" } ?: types.firstOrNull() ?: ""
-        db.collection("associations").document(cardId).update(
+        db.collection(COLLECTION_ASSOCIATION).document(cardId).update(
             mapOf(
                 "types" to types,
                 "type" to primaryType,
@@ -124,7 +152,7 @@ class RolodexRepository {
     }
 
     suspend fun deleteCard(cardId: String) {
-        db.collection("associations").document(cardId).delete().await()
+        db.collection(COLLECTION_ASSOCIATION).document(cardId).delete().await()
     }
 
     suspend fun addNote(associationId: String, userId: String, name: String, note: String): String {
@@ -136,12 +164,12 @@ class RolodexRepository {
             "createdAt" to FieldValue.serverTimestamp(),
             "updatedAt" to FieldValue.serverTimestamp()
         )
-        val doc = db.collection("notes").add(data).await()
+        val doc = db.collection(COLLECTION_NOTE).add(data).await()
         return doc.id
     }
 
     suspend fun deleteNote(noteId: String) {
-        db.collection("notes").document(noteId).delete().await()
+        db.collection(COLLECTION_NOTE).document(noteId).delete().await()
     }
 
     // Two-way associate linking
@@ -151,12 +179,12 @@ class RolodexRepository {
         userId: String
     ) {
         val formattedName = AuthRepository().capitaliseFirstLetter(associateName.trim())
-        val snap = db.collection("associations")
+        val snap = db.collection(COLLECTION_ASSOCIATION)
             .whereEqualTo("userId", userId)
             .get()
             .await()
 
-        var existingAssociate = snap.documents.firstOrNull { doc ->
+        val existingAssociate = snap.documents.firstOrNull { doc ->
             val docName = doc.getString("name") ?: ""
             val docType = doc.getString("type") ?: ""
             val docTypes = (doc.get("types") as? List<*>)?.mapNotNull { it?.toString() } ?: emptyList()
@@ -174,7 +202,7 @@ class RolodexRepository {
             if (!existingIds.contains(associationId)) {
                 existingIds.add(associationId)
             }
-            db.collection("associations").document(existingAssociate.id).update(
+            db.collection(COLLECTION_ASSOCIATION).document(existingAssociate.id).update(
                 mapOf(
                     "associationIds" to existingIds,
                     "associationId" to (existingAssociate.getString("associationId") ?: associationId),
@@ -197,7 +225,7 @@ class RolodexRepository {
     }
 
     suspend fun unlinkAssociate(associateId: String, associationId: String) {
-        val doc = db.collection("associations").document(associateId).get().await()
+        val doc = db.collection(COLLECTION_ASSOCIATION).document(associateId).get().await()
         if (doc.exists()) {
             val ids = (doc.get("associationIds") as? List<*>)?.mapNotNull { it?.toString() }?.toMutableList()
                 ?: mutableListOf()
@@ -207,7 +235,7 @@ class RolodexRepository {
             }
             ids.remove(associationId)
             val newSingleId = ids.firstOrNull()
-            db.collection("associations").document(associateId).update(
+            db.collection(COLLECTION_ASSOCIATION).document(associateId).update(
                 mapOf(
                     "associationIds" to ids,
                     "associationId" to newSingleId,
@@ -218,17 +246,18 @@ class RolodexRepository {
     }
 
     private suspend fun ensureTypeExists(typeName: String, userId: String) {
-        val snap = db.collection("types")
+        val snap = db.collection(COLLECTION_TYPE)
             .whereEqualTo("userId", userId)
             .whereEqualTo("type", typeName)
             .limit(1)
             .get()
             .await()
         if (snap.isEmpty) {
-            db.collection("types").add(
+            db.collection(COLLECTION_TYPE).add(
                 hashMapOf(
                     "type" to typeName,
-                    "userId" to userId
+                    "userId" to userId,
+                    "createdAt" to FieldValue.serverTimestamp()
                 )
             ).await()
         }

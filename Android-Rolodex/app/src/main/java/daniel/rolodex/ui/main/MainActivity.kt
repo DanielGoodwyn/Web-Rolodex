@@ -172,7 +172,7 @@ class MainActivity : AppCompatActivity() {
                     try {
                         repository.deleteNote(note.id)
                         val uid = authRepository.currentUser?.uid ?: return@launch
-                        loadNotesForCard(note.associationId, uid)
+                        note.associationId?.let { loadNotesForCard(it, uid) }
                     } catch (e: Exception) {
                         Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
@@ -235,6 +235,7 @@ class MainActivity : AppCompatActivity() {
                         if (!loc.isNullOrBlank()) {
                             val coords = locationHelper.geocodeAddress(loc)
                             if (coords != null) {
+                                newCard.geo = mapOf("latitude" to coords.first, "longitude" to coords.second)
                                 newCard.neighborhood = locationHelper.reverseGeocodeNeighborhood(coords.first, coords.second)
                             }
                         }
@@ -279,7 +280,7 @@ class MainActivity : AppCompatActivity() {
 
         for (card in allCards) {
             if (card.isAssociate) {
-                val pIds = card.associationIds.ifEmpty {
+                val pIds = card.safeAssociationIds.ifEmpty {
                     card.associationId?.let { listOf(it) } ?: emptyList()
                 }
                 card.linkedParentNames = pIds.mapNotNull { pid ->
@@ -287,7 +288,7 @@ class MainActivity : AppCompatActivity() {
                 }
             } else {
                 val linkedAssocs = associateCards.filter { a ->
-                    val aIds = a.associationIds.ifEmpty {
+                    val aIds = a.safeAssociationIds.ifEmpty {
                         a.associationId?.let { listOf(it) } ?: emptyList()
                     }
                     aIds.contains(card.id)
@@ -369,8 +370,16 @@ class MainActivity : AppCompatActivity() {
         val uLoc = userLocation
         if (uLoc != null) {
             for (card in filtered) {
-                // If coordinates or location available, compute distance
-                // Note: distanceMiles can be set from geocoded cache
+                val lat = card.latitude
+                val lng = card.longitude
+                if (lat != null && lng != null) {
+                    card.distanceMiles = locationHelper.calculateHaversineDistanceMiles(
+                        uLoc.latitude,
+                        uLoc.longitude,
+                        lat,
+                        lng
+                    )
+                }
             }
         }
 
@@ -378,7 +387,7 @@ class MainActivity : AppCompatActivity() {
         filtered = when (sortOrder) {
             SortOrder.DISTANCE_ASC -> filtered.sortedBy { it.distanceMiles ?: Double.MAX_VALUE }
             SortOrder.DISTANCE_DESC -> filtered.sortedByDescending { it.distanceMiles ?: -1.0 }
-            SortOrder.RATING_DESC -> filtered.sortedByDescending { it.rating }
+            SortOrder.RATING_DESC -> filtered.sortedByDescending { it.displayRating }
             SortOrder.NAME_ASC -> filtered.sortedBy { it.name.lowercase() }
             SortOrder.NEWEST -> filtered.sortedByDescending { it.createdAt?.seconds ?: 0L }
         }

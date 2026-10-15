@@ -8,10 +8,16 @@ import com.google.firebase.firestore.IgnoreExtraProperties
 data class Note(
     @DocumentId
     var id: String = "",
-    var name: String = "",
-    var note: String = "",
-    var associationId: String = "",
-    var userId: String = "",
+    var name: String? = "",
+    var note: String? = "",
+    var associationId: String? = "",
+    var userId: String? = "",
     var createdAt: Timestamp? = null,
     var updatedAt: Timestamp? = null
-)
+) {
+    val displayName: String
+        get() = name ?: ""
+
+    val displayNote: String
+        get() = note ?: ""
+}

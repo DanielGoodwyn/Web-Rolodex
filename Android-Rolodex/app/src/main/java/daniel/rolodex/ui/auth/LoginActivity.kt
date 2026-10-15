@@ -30,6 +30,10 @@ class LoginActivity : AppCompatActivity() {
     private val googleSignInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
+        if (result.resultCode != Activity.RESULT_OK) {
+            setLoading(false)
+            return@registerForActivityResult
+        }
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
         try {
             val account = task.getResult(ApiException::class.java)
@@ -42,11 +46,13 @@ class LoginActivity : AppCompatActivity() {
             }
         } catch (e: ApiException) {
             setLoading(false)
+            android.util.Log.e("LoginActivity", "Google Sign-In ApiException: statusCode=${e.statusCode}, message=${e.message}", e)
             if (e.statusCode != 12501 && e.statusCode != 16) {
-                showError("Google Sign-In failed (${e.statusCode}): ${e.message}")
+                showError("Google Sign-In error (${e.statusCode}): ${e.message}")
             }
         } catch (e: Exception) {
             setLoading(false)
+            android.util.Log.e("LoginActivity", "Google Sign-In general error", e)
             showError("Google Sign-In error: ${e.message}")
         }
     }
@@ -80,8 +86,11 @@ class LoginActivity : AppCompatActivity() {
         }
 
         binding.btnGoogleSignIn.setOnClickListener {
-            val signInIntent = googleSignInClient.signInIntent
-            googleSignInLauncher.launch(signInIntent)
+            setLoading(true)
+            googleSignInClient.signOut().addOnCompleteListener {
+                val signInIntent = googleSignInClient.signInIntent
+                googleSignInLauncher.launch(signInIntent)
+            }
         }
 
         binding.btnSubmit.setOnClickListener {

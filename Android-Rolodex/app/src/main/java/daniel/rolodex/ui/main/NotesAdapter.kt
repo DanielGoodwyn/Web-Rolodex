@@ -23,9 +23,10 @@ class NotesAdapter(
 
     inner class NoteViewHolder(private val binding: ItemNoteBinding) :
         RecyclerView.ViewHolder(binding.root) {
-
         fun bind(note: Note) {
-            val display = if (note.name.isNotBlank()) "${note.name}: ${note.note}" else note.note
+            val nameStr = note.displayName
+            val noteStr = note.displayNote
+            val display = if (nameStr.isNotBlank()) "$nameStr: $noteStr" else noteStr
             binding.tvNoteContent.text = display
             binding.btnDeleteNote.setOnClickListener {
                 onDeleteNote(note)
