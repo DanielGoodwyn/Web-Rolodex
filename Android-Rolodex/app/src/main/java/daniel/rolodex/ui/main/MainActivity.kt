@@ -207,6 +207,13 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
         })
+
+        binding.hoodHeaderLayout.setOnClickListener {
+            val hood = binding.tvCurrentNeighborhood.text.toString()
+            if (hood.isNotBlank()) {
+                binding.searchView.setQuery(hood, true)
+            }
+        }
     }
 
     private fun setupFilterChips() {

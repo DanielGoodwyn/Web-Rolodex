@@ -84,6 +84,54 @@ class LocationHelper(private val context: Context) {
     }
 
     suspend fun reverseGeocodeNeighborhood(lat: Double, lon: Double): String? = withContext(Dispatchers.IO) {
+        // 1. Query OpenStreetMap Nominatim reverse geocode first (identical to web app logic)
+        try {
+            val url = "https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon"
+            val request = Request.Builder()
+                .url(url)
+                .header("User-Agent", "Rolodex-Android/1.0")
+                .header("Accept-Language", "en")
+                .build()
+            val response = httpClient.newCall(request).execute()
+            val body = response.body?.string()
+            if (!body.isNullOrBlank()) {
+                val json = JSONObject(body)
+                val address = json.optJSONObject("address")
+                if (address != null) {
+                    // Specific neighborhood candidates matching web extractNeighborhoodFromAddress
+                    val neighborhoodKeys = listOf(
+                        "neighbourhood",
+                        "neighborhood",
+                        "quarter",
+                        "suburb",
+                        "city_district",
+                        "district",
+                        "residential",
+                        "subdivision",
+                        "borough"
+                    )
+                    for (key in neighborhoodKeys) {
+                        val value = address.optString(key)
+                        if (!value.isNullOrBlank()) {
+                            return@withContext value
+                        }
+                    }
+
+                    // Broader locality fallbacks if no neighborhood is designated
+                    val fallbackKeys = listOf("city", "town", "village", "municipality", "county")
+                    for (key in fallbackKeys) {
+                        val value = address.optString(key)
+                        if (!value.isNullOrBlank()) {
+                            return@withContext value
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // Fall back to Android system Geocoder
+        }
+
+        // 2. Fall back to Android system Geocoder
         try {
             if (Geocoder.isPresent()) {
                 val geocoder = Geocoder(context, Locale.getDefault())
@@ -97,34 +145,9 @@ class LocationHelper(private val context: Context) {
                 }
             }
         } catch (e: Exception) {
-            // Fall back to Nominatim
-        }
-
-        // Free OpenStreetMap Nominatim reverse geocode
-        try {
-            val url = "https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon"
-            val request = Request.Builder()
-                .url(url)
-                .header("User-Agent", "Rolodex-Android/1.0")
-                .build()
-            val response = httpClient.newCall(request).execute()
-            val body = response.body?.string()
-            if (!body.isNullOrBlank()) {
-                val json = JSONObject(body)
-                val address = json.optJSONObject("address")
-                if (address != null) {
-                    return@withContext address.optString("neighbourhood").ifBlank {
-                        address.optString("suburb").ifBlank {
-                            address.optString("city_district").ifBlank {
-                                address.optString("city", "")
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (e: Exception) {
             // Ignore
         }
+
         null
     }
 
