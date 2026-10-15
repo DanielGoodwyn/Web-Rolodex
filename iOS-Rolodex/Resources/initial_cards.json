@@ -1,0 +1,266 @@
+[
+  {
+    "id": "7rglAtKLeYexpXO9osxt",
+    "name": "Blue Bottle Coffee",
+    "type": "Coffee Shops",
+    "types": [
+      "Coffee Shops"
+    ],
+    "rating": 96,
+    "location": "2453 Fillmore Street, San Francisco, CA 94115",
+    "neighborhood": "Pacific Heights",
+    "site": "https://bluebottlecoffee.com/",
+    "web": "https://bluebottlecoffee.com/",
+    "fb": "https://facebook.com/bluebottlecoffee",
+    "facebook": "https://facebook.com/bluebottlecoffee",
+    "ig": "https://www.instagram.com/bluebottle/",
+    "instagram": "https://www.instagram.com/bluebottle/",
+    "twitter": "https://x.com/bluebottleroast",
+    "x": "https://x.com/bluebottleroast",
+    "geo": {
+      "latitude": 37.7920384,
+      "longitude": -122.4347649
+    },
+    "userId": "vfcmXNHTrYMj7ovOiwx2VU9dcwp2",
+    "associationId": null,
+    "associationIds": []
+  },
+  {
+    "id": "CswkVFce7vVCiM3VywMq",
+    "name": "Dolores Park Church",
+    "type": "Churches",
+    "types": [
+      "Churches"
+    ],
+    "rating": 95,
+    "location": "455 Dorland Street, San Francisco, CA 94143",
+    "neighborhood": "Mission",
+    "site": "https://www.doloresparkchurch.org/",
+    "web": "https://www.doloresparkchurch.org/",
+    "fb": "http://facebook.com/dolores.parkchurch",
+    "facebook": "http://facebook.com/dolores.parkchurch",
+    "ig": "https://www.instagram.com/dpc.sf",
+    "instagram": "https://www.instagram.com/dpc.sf",
+    "twitter": null,
+    "x": null,
+    "geo": {
+      "latitude": 37.7620825,
+      "longitude": -122.4257798
+    },
+    "userId": "vfcmXNHTrYMj7ovOiwx2VU9dcwp2",
+    "associationId": null,
+    "associationIds": []
+  },
+  {
+    "id": "E6goLhfGPGxpYhYbH996",
+    "name": "Mona Lisa Restaurant",
+    "type": "Date Spots",
+    "types": [
+      "Date Spots"
+    ],
+    "rating": 98,
+    "location": "414 Columbus Avenue, San Francisco, CA 94133",
+    "neighborhood": "Telegraph Hill",
+    "site": "https://monalisasf.com/",
+    "web": "https://monalisasf.com/",
+    "fb": null,
+    "facebook": null,
+    "ig": null,
+    "instagram": null,
+    "twitter": null,
+    "x": null,
+    "geo": {
+      "latitude": 37.7989554,
+      "longitude": -122.4080374
+    },
+    "userId": "vfcmXNHTrYMj7ovOiwx2VU9dcwp2",
+    "associationId": null,
+    "associationIds": []
+  },
+  {
+    "id": "P3t2O0fhLXqZGqIISeRf",
+    "name": "Philz Coffee - Castro",
+    "type": "Coffee Shops",
+    "types": [
+      "Coffee Shops",
+      "Date Spots"
+    ],
+    "rating": 90,
+    "location": "549 Castro Street, San Francisco, CA 94114",
+    "neighborhood": "Mission",
+    "site": null,
+    "web": null,
+    "fb": null,
+    "facebook": null,
+    "ig": "https://www.instagram.com/philzcoffee",
+    "instagram": "https://www.instagram.com/philzcoffee",
+    "twitter": "https://www.x.com/philzcoffee",
+    "x": "https://www.x.com/philzcoffee",
+    "geo": {
+      "latitude": 37.7601012,
+      "longitude": -122.434786
+    },
+    "userId": "vfcmXNHTrYMj7ovOiwx2VU9dcwp2",
+    "associationId": null,
+    "associationIds": []
+  },
+  {
+    "id": "bNZVPVb9e6LY5z7zKZVN",
+    "name": "John Lloyd",
+    "type": "associate",
+    "types": [
+      "associate"
+    ],
+    "rating": null,
+    "location": null,
+    "neighborhood": null,
+    "site": null,
+    "web": null,
+    "fb": null,
+    "facebook": null,
+    "ig": null,
+    "instagram": null,
+    "twitter": null,
+    "x": null,
+    "geo": null,
+    "userId": "vfcmXNHTrYMj7ovOiwx2VU9dcwp2",
+    "associationId": "CswkVFce7vVCiM3VywMq",
+    "associationIds": [
+      "CswkVFce7vVCiM3VywMq"
+    ]
+  },
+  {
+    "id": "gzncyu1eVmjDkQ6fJzut",
+    "name": "Hand of Help Church",
+    "type": "Churches",
+    "types": [
+      "Churches"
+    ],
+    "rating": 98,
+    "location": "3535 Balboa Street, San Francisco, CA 94121",
+    "neighborhood": "Richmond District",
+    "site": null,
+    "web": null,
+    "fb": null,
+    "facebook": null,
+    "ig": null,
+    "instagram": null,
+    "twitter": null,
+    "x": null,
+    "geo": {
+      "latitude": 37.7754522,
+      "longitude": -122.496978
+    },
+    "userId": "vfcmXNHTrYMj7ovOiwx2VU9dcwp2",
+    "associationId": null,
+    "associationIds": []
+  },
+  {
+    "id": "rMydEZLKs64iInHDAvtn",
+    "name": "Dolores Park",
+    "type": "Date Spots",
+    "types": [
+      "Date Spots"
+    ],
+    "rating": 92,
+    "location": "Mission Dolores Park, San Francisco, CA 94114",
+    "neighborhood": "Mission",
+    "site": null,
+    "web": null,
+    "fb": null,
+    "facebook": null,
+    "ig": null,
+    "instagram": null,
+    "twitter": null,
+    "x": null,
+    "geo": {
+      "latitude": 37.7597203,
+      "longitude": -122.4271323
+    },
+    "userId": "vfcmXNHTrYMj7ovOiwx2VU9dcwp2",
+    "associationId": null,
+    "associationIds": []
+  },
+  {
+    "id": "rw01Cqi5b4YVhcCOJFnj",
+    "name": "Daniel Goodwyn",
+    "type": "associate",
+    "types": [
+      "associate"
+    ],
+    "rating": null,
+    "location": null,
+    "neighborhood": null,
+    "site": null,
+    "web": null,
+    "fb": null,
+    "facebook": null,
+    "ig": null,
+    "instagram": null,
+    "twitter": null,
+    "x": null,
+    "geo": null,
+    "userId": "vfcmXNHTrYMj7ovOiwx2VU9dcwp2",
+    "associationId": "CswkVFce7vVCiM3VywMq",
+    "associationIds": [
+      "CswkVFce7vVCiM3VywMq",
+      "gzncyu1eVmjDkQ6fJzut",
+      "vyrZc9h618SCWWbe0HqB",
+      "xNRfV8Y42lrnbLCApWQ8",
+      "E6goLhfGPGxpYhYbH996",
+      "rMydEZLKs64iInHDAvtn"
+    ]
+  },
+  {
+    "id": "vyrZc9h618SCWWbe0HqB",
+    "name": "Philz Coffee - Financial District",
+    "type": "Coffee Shops",
+    "types": [
+      "Coffee Shops"
+    ],
+    "rating": 94,
+    "location": "1 Front Street, San Francisco, CA 94111",
+    "neighborhood": "Financial District",
+    "site": null,
+    "web": null,
+    "fb": null,
+    "facebook": null,
+    "ig": "https://www.instagram.com/philzcoffee",
+    "instagram": "https://www.instagram.com/philzcoffee",
+    "twitter": "https://www.x.com/philzcoffee",
+    "x": "https://www.x.com/philzcoffee",
+    "geo": {
+      "latitude": 37.7918825,
+      "longitude": -122.3988519
+    },
+    "userId": "vfcmXNHTrYMj7ovOiwx2VU9dcwp2",
+    "associationId": null,
+    "associationIds": []
+  },
+  {
+    "id": "xNRfV8Y42lrnbLCApWQ8",
+    "name": "Philz Coffee - Embarcadero",
+    "type": "Coffee Shops",
+    "types": [
+      "Coffee Shops"
+    ],
+    "rating": 95,
+    "location": "5 Embarcadero Center, San Francisco, CA 94111",
+    "neighborhood": "San Francisco",
+    "site": null,
+    "web": null,
+    "fb": null,
+    "facebook": null,
+    "ig": "https://www.instagram.com/philzcoffee",
+    "instagram": "https://www.instagram.com/philzcoffee",
+    "twitter": "https://www.x.com/philzcoffee",
+    "x": "https://www.x.com/philzcoffee",
+    "geo": {
+      "latitude": 37.7945298,
+      "longitude": -122.3951458
+    },
+    "userId": "vfcmXNHTrYMj7ovOiwx2VU9dcwp2",
+    "associationId": null,
+    "associationIds": []
+  }
+]

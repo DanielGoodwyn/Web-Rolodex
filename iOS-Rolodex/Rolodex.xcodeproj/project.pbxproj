@@ -14,6 +14,7 @@
 		2E2D34BEAF6DDFCB820FD221 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40586B3D5B301CB99A7A726E /* ContentView.swift */; };
 		34479E5359A118009337C510 /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A3B571A7EAE5A62811B9D6 /* CardView.swift */; };
 		3733C40C46453130341D9469 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F44E0C81F9269165D3BF26ED /* Assets.xcassets */; };
+		3788366AD98F58924063986C /* initial_cards.json in Resources */ = {isa = PBXBuildFile; fileRef = 9A0E4B5BD0D59B27787A506F /* initial_cards.json */; };
 		3F36663B0ED62E86D6466D12 /* EditCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E916B5B25AC9039B7CB007B1 /* EditCardView.swift */; };
 		66CD8AC9CCBFF23A26E2EE47 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C187F9DDA1ACCA87B64553D1 /* LoginView.swift */; };
 		7ADB83F0866F7F340BB639DE /* RolodexApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11266E4D3EB83E090130668A /* RolodexApp.swift */; };
@@ -24,6 +25,7 @@
 		C6A977FDD21128B26DEEEC95 /* AddCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA028A00ACC90C4E0EF7677F /* AddCardView.swift */; };
 		D2D96AC1ACA515F63A0B81AB /* FirebaseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = C21D3638411AB8084574E2A6 /* FirebaseConfig.swift */; };
 		D52A447827BF1C2EF974B600 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09CFE76177223B939F08B65C /* Theme.swift */; };
+		D5C3125C403B81EEC641A69F /* initial_notes.json in Resources */ = {isa = PBXBuildFile; fileRef = ED6ABD1E061783602DAD6D22 /* initial_notes.json */; };
 		F2148F6A9512AF935F0A6284 /* FirebaseAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D49E301F17A95AE022A2872 /* FirebaseAuthService.swift */; };
 /* End PBXBuildFile section */
 
@@ -40,12 +42,14 @@
 		6D49E301F17A95AE022A2872 /* FirebaseAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseAuthService.swift; sourceTree = "<group>"; };
 		75DBE5D49CDD2DC19AF0FE83 /* Rolodex.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Rolodex.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E681B4FC7F3A4E9BC3DB81A /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
+		9A0E4B5BD0D59B27787A506F /* initial_cards.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = initial_cards.json; sourceTree = "<group>"; };
 		A8ED52144ED500250A9E0955 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		AA028A00ACC90C4E0EF7677F /* AddCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCardView.swift; sourceTree = "<group>"; };
 		C187F9DDA1ACCA87B64553D1 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		C21D3638411AB8084574E2A6 /* FirebaseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseConfig.swift; sourceTree = "<group>"; };
 		CD937340FF0398B78A2C12D9 /* Association.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Association.swift; sourceTree = "<group>"; };
 		E916B5B25AC9039B7CB007B1 /* EditCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditCardView.swift; sourceTree = "<group>"; };
+		ED6ABD1E061783602DAD6D22 /* initial_notes.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = initial_notes.json; sourceTree = "<group>"; };
 		F44E0C81F9269165D3BF26ED /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F4559E560DF5CFE521C12E0A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -57,6 +61,8 @@
 				F44E0C81F9269165D3BF26ED /* Assets.xcassets */,
 				F4559E560DF5CFE521C12E0A /* GoogleService-Info.plist */,
 				57D0F1E307F92E1A87E970A9 /* Info.plist */,
+				9A0E4B5BD0D59B27787A506F /* initial_cards.json */,
+				ED6ABD1E061783602DAD6D22 /* initial_notes.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -163,6 +169,8 @@
 			files = (
 				3733C40C46453130341D9469 /* Assets.xcassets in Resources */,
 				879B42F737AE509576220313 /* GoogleService-Info.plist in Resources */,
+				3788366AD98F58924063986C /* initial_cards.json in Resources */,
+				D5C3125C403B81EEC641A69F /* initial_notes.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

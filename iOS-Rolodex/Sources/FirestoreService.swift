@@ -24,10 +24,22 @@ class FirestoreService: ObservableObject {
            let list = try? JSONDecoder().decode([Association].self, from: data), !list.isEmpty {
             self.associations = list
             self.updateAssociateLookups()
+        } else if let bundleURL = Bundle.main.url(forResource: "initial_cards", withExtension: "json"),
+                  let data = try? Data(contentsOf: bundleURL),
+                  let list = try? JSONDecoder().decode([Association].self, from: data), !list.isEmpty {
+            self.associations = list
+            self.updateAssociateLookups()
+            self.persistLocalCache()
         }
+
         if let data = UserDefaults.standard.data(forKey: cacheKeyNotes),
-           let notes = try? JSONDecoder().decode([String: [Note]].self, from: data) {
+           let notes = try? JSONDecoder().decode([String: [Note]].self, from: data), !notes.isEmpty {
             self.notesCache = notes
+        } else if let bundleURL = Bundle.main.url(forResource: "initial_notes", withExtension: "json"),
+                  let data = try? Data(contentsOf: bundleURL),
+                  let notes = try? JSONDecoder().decode([String: [Note]].self, from: data), !notes.isEmpty {
+            self.notesCache = notes
+            self.persistLocalCache()
         }
     }
 
@@ -140,6 +152,11 @@ class FirestoreService: ObservableObject {
 
     // MARK: - Two-way Associate Resolution
     func updateAssociateLookups() {
+        let types = Set(associations.flatMap { $0.allTypes }).filter { $0.lowercased() != "associate" }.sorted()
+        if !types.isEmpty {
+            self.userTypes = types
+        }
+
         let associateCards = associations.filter { $0.isAssociate }
         let orgCards = associations.filter { !$0.isAssociate }
 
