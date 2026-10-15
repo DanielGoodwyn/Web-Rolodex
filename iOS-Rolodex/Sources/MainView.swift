@@ -49,19 +49,23 @@ struct MainView: View {
                         Button(action: {
                             searchText = hood
                         }) {
-                            HStack(spacing: 4) {
+                            HStack(spacing: 5) {
                                 Image("hood")
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(width: 14, height: 14)
+                                    .frame(width: 15, height: 15)
                                 Text(hood)
                                     .font(.caption.bold())
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(.primary)
                             }
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
                             .background(Color(uiColor: .systemGray6))
                             .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.primary.opacity(0.12), lineWidth: 1)
+                            )
                         }
                         .buttonStyle(.plain)
 

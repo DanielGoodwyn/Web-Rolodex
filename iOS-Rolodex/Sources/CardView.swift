@@ -65,7 +65,12 @@ struct CardView: View {
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
                                     .background(Theme.ratingColor(for: card.displayRating))
-                                    .cornerRadius(4)
+                                    .cornerRadius(6)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .stroke(Color.white.opacity(0.35), lineWidth: 1)
+                                    )
+                                    .shadow(color: Theme.ratingColor(for: card.displayRating).opacity(0.3), radius: 3, x: 0, y: 1)
                             } else {
                                 Text("-")
                                     .font(.caption.bold())
@@ -73,7 +78,7 @@ struct CardView: View {
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
                                     .background(Color(uiColor: .systemGray5))
-                                    .cornerRadius(4)
+                                    .cornerRadius(6)
                             }
                         }
                         .buttonStyle(.plain)
@@ -130,23 +135,31 @@ struct CardView: View {
 
                             HStack(spacing: 10) {
                                 Button(action: { openGoogleMaps(for: loc) }) {
-                                    Label("Google Maps", systemImage: "map")
+                                    Label("Google Maps", systemImage: "map.fill")
                                         .font(.caption.bold())
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, 6)
                                         .background(Theme.googleMapsBlue.opacity(0.12))
                                         .foregroundColor(Theme.googleMapsBlue)
-                                        .cornerRadius(6)
+                                        .cornerRadius(8)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(Theme.googleMapsBlue.opacity(0.35), lineWidth: 1)
+                                        )
                                 }
 
                                 Button(action: { openAppleMaps(for: loc) }) {
-                                    Label("Apple Maps", systemImage: "location.north.line")
+                                    Label("Apple Maps", systemImage: "location.north.line.fill")
                                         .font(.caption.bold())
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, 6)
                                         .background(Color.secondary.opacity(0.12))
                                         .foregroundColor(.primary)
-                                        .cornerRadius(6)
+                                        .cornerRadius(8)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                                        )
                                 }
 
                                 Spacer()
@@ -176,30 +189,33 @@ struct CardView: View {
                         .foregroundColor(.secondary)
 
                         // Action Buttons (Web, FB, Insta, X)
-                        let activeLinks = [
-                            card.websiteUrl.map { (title: "Web", url: $0, color: Theme.primary) },
-                            card.facebookUrl.map { (title: "FB", url: $0, color: Theme.facebookBlue) },
-                            card.instagramUrl.map { (title: "Insta", url: $0, color: Theme.instagramPink) },
-                            card.twitterUrl.map { (title: "X", url: $0, color: Theme.xBlack) }
+                        let activeLinks: [(title: String, icon: String, url: String, color: Color)] = [
+                            card.websiteUrl.map { (title: "Web", icon: "globe", url: $0, color: Theme.primary) },
+                            card.facebookUrl.map { (title: "FB", icon: "person.2.fill", url: $0, color: Theme.facebookBlue) },
+                            card.instagramUrl.map { (title: "Insta", icon: "camera.fill", url: $0, color: Theme.instagramPink) },
+                            card.twitterUrl.map { (title: "X", icon: "xmark", url: $0, color: Theme.xBlack) }
                         ].compactMap { $0 }
 
                         if !activeLinks.isEmpty {
                             HStack(spacing: 8) {
                                 ForEach(activeLinks, id: \.title) { item in
                                     Button(action: { openExternalUrl(item.url) }) {
-                                        HStack(spacing: 4) {
+                                        HStack(spacing: 5) {
+                                            Image(systemName: item.icon)
+                                                .font(.caption)
                                             Text(item.title)
                                                 .font(.caption.bold())
-                                            Image(systemName: "arrow.up.right.square")
-                                                .font(.system(size: 10))
+                                            Image(systemName: "arrow.up.right")
+                                                .font(.system(size: 9, weight: .bold))
                                         }
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, 5)
                                         .background(item.color.opacity(0.12))
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 8)
-                                                .stroke(item.color.opacity(0.6), lineWidth: 1)
+                                                .stroke(item.color.opacity(0.4), lineWidth: 1)
                                         )
+                                        .cornerRadius(8)
                                         .foregroundColor(item.color)
                                     }
                                     .buttonStyle(.plain)
