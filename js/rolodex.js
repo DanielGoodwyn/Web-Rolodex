@@ -635,6 +635,9 @@ function setCurrentUser() {
 		userId = currentUser.id;
 		setElementById("usernameDiv", "<b>" + capitaliseFirstLetter(username) + "</b>");
 		getProfilePicture();
+		if (typeof setupRealtimeListeners === 'function') {
+			setupRealtimeListeners();
+		}
 	} else {
 		if (typeof Parse !== 'undefined' && Parse._authResolving) {
 			return; // Wait for Firebase Auth state to resolve before redirecting
@@ -1612,54 +1615,52 @@ function newNote(AssociationObjectId, event) {
 }
 
 function getNotes(AssociationObjectId) {
-	if (document.getElementById("notes" + AssociationObjectId)) {
-		setElementById("notes" + AssociationObjectId, "");
-	}
-	var namesArray = [];
-	var notesArray = [];
-	var idsArray = [];
-	var notesDiv = "";
+	var notesContainer = document.getElementById("notes" + AssociationObjectId);
+	if (!notesContainer) return;
+
+	var activeEl = document.activeElement;
+	var isTypingInThisNote = activeEl && notesContainer.contains(activeEl);
+
 	var query = new Parse.Query("Note");
 	query.ascending("name");
 	query.equalTo("userId", userId);
 	query.equalTo("associationId", AssociationObjectId);
 	query.find({
 		success: function(results) {
+			if (!document.getElementById("notes" + AssociationObjectId)) return;
+			if (isTypingInThisNote) {
+				$(activeEl).one('blur', function() {
+					getNotes(AssociationObjectId);
+				});
+				return;
+			}
+			var fullNotesHtml = "";
 			for (var i = 0; i < results.length; i++) {
 				var object = results[i];
-				namesArray.push(object.get('name'));
-				notesArray.push(object.get('note'));
-				idsArray.push(object.id);
-				var notesDivContent = "";
-				var noteName = namesArray[i];
-				var note = notesArray[i];
-				var noteObjectId = idsArray[i];
+				var noteName = object.get('name') || "";
+				var note = object.get('note') || "";
+				var noteObjectId = object.id;
 
-				notesDivContent = notesDivContent + "<div class='row'>";
+				fullNotesHtml += "<div class='row'>";
+				fullNotesHtml += "<div class='col-xs-4 col-sm-3 col-md-2 col-lg-2'>";
+				fullNotesHtml += "<input id=&apos;" + noteObjectId + "noteNameInput&apos; ";
+				fullNotesHtml += "placeholder='Note Type' onkeyup='updateNote(&apos;" + noteObjectId + "&apos;, event)' value='" + escapeHtml(noteName) + "'>";
+				fullNotesHtml += "</div>";
 
-				notesDivContent = notesDivContent + "<div class='col-xs-4 col-sm-3 col-md-2 col-lg-2'>";
-				notesDivContent = notesDivContent + "<input id=&apos;" + noteObjectId + "noteNameInput&apos; ";
-				notesDivContent = notesDivContent + "placeholder='Note Type' onkeyup='updateNote(&apos;" + noteObjectId + "&apos;, event)' value='" + noteName + "'>";
-				notesDivContent = notesDivContent + "</div>";
+				fullNotesHtml += "<div class='col-xs-6 col-sm-8 col-md-9 col-lg-9'>";
+				fullNotesHtml += "<input id=&apos;" + noteObjectId + "noteInput&apos; ";
+				fullNotesHtml += "onkeyup='updateNote(&apos;" + noteObjectId + "&apos;, event)' ";
+				fullNotesHtml += "placeholder='Note' value='" + escapeHtml(note) + "'>";
+				fullNotesHtml += "</div>";
 
-				notesDivContent = notesDivContent + "<div class='col-xs-6 col-sm-8 col-md-9 col-lg-9'>";
-				notesDivContent = notesDivContent + "<input id=&apos;" + noteObjectId + "noteInput&apos; ";
-				notesDivContent = notesDivContent + "onkeyup='updateNote(&apos;" + noteObjectId + "&apos;, event)'";
-				notesDivContent = notesDivContent + "placeholder='Note' value='" + note + "'>";
-				notesDivContent = notesDivContent + "</div>";
-
-				notesDivContent = notesDivContent + "<div class='col-xs-2 col-sm-1 col-md-1 col-lg-1'>";
-				notesDivContent = notesDivContent + "<button class='btn btn-danger btn-block' onclick='deleteNote(&apos;" + noteObjectId + "&apos;)'>×</button>";
-				notesDivContent = notesDivContent + "</div></div>";
-
-				if (document.getElementById("notes" + AssociationObjectId)) {					
-					notesDiv = document.getElementById("notes" + AssociationObjectId).innerHTML;					
-					setElementById("notes" + AssociationObjectId, notesDiv + notesDivContent);
-				}
+				fullNotesHtml += "<div class='col-xs-2 col-sm-1 col-md-1 col-lg-1'>";
+				fullNotesHtml += "<button class='btn btn-danger btn-block' onclick='deleteNote(&apos;" + noteObjectId + "&apos;)'>×</button>";
+				fullNotesHtml += "</div></div>";
 			}
+			setElementById("notes" + AssociationObjectId, fullNotesHtml);
 		},
 		error: function(error) {
-			alert("Error: " + error.code + " " + error.message);
+			console.error("Error loading notes: " + (error ? error.message : ""));
 		}
 	});
 }
@@ -2159,29 +2160,7 @@ function getAssociations() {
 				listItemTwitter = "";
 				twitterDisplay = "style='display:none;'";
 			}
-			if (listItemRating > 90) {
-				listItemRatingColor = "#6f6";
-			} if (listItemRating <= 90) {
-				listItemRatingColor = "#7f6";
-			} if (listItemRating < 80) {
-				listItemRatingColor = "#8e6";
-			} if (listItemRating < 70) {
-				listItemRatingColor = "#9e6";
-			} if (listItemRating < 60) {
-				listItemRatingColor = "#ad6";
-			} if (listItemRating < 50) {
-				listItemRatingColor = "#bd6";
-			} if (listItemRating < 40) {
-				listItemRatingColor = "#cc6";
-			} if (listItemRating < 30) {
-				listItemRatingColor = "#dc6";
-			} if (listItemRating < 20) {
-				listItemRatingColor = "#eb6";
-			} if (listItemRating < 10) {
-				listItemRatingColor = "#fb6";
-			} if (listItemRating == 0 || listItemRating == undefined) {
-				listItemRatingColor = "#fec";
-			}
+			listItemRatingColor = getRatingBadgeColor(listItemRating);
 			var doubleDigitNumber = ((1)+(j));
 			if (doubleDigitNumber < 10 && doubleDigitNumber >= 0) {
 				doubleDigitNumber =  "0" + doubleDigitNumber;
@@ -2359,7 +2338,42 @@ function getAssociations() {
 			output = output + "<div class='clearfix'></div></div></div></div></div>";
 
 		}
-		setElementById("output", output);		
+		var collapsedCardIds = {};
+		$(".card").each(function() {
+			var cId = $(this).attr('id');
+			if (cId && $(this).find(".toggle-display-card").is(":hidden")) {
+				collapsedCardIds[cId] = true;
+			}
+		});
+		var activeEl = document.activeElement;
+		var activeElId = (activeEl && activeEl.id) ? activeEl.id : null;
+		var activeSelStart = activeEl ? activeEl.selectionStart : null;
+		var activeSelEnd = activeEl ? activeEl.selectionEnd : null;
+
+		setElementById("output", output);
+
+		// Restore collapsed card states
+		for (var cId in collapsedCardIds) {
+			var cardEl = $("#" + cId);
+			if (cardEl.length) {
+				cardEl.find(".toggle-display-card").hide();
+				cardEl.find(".display-card").html("▶");
+			}
+		}
+
+		// Restore input focus and cursor position
+		if (activeElId) {
+			var elToRestore = document.getElementById(activeElId);
+			if (elToRestore) {
+				try {
+					elToRestore.focus();
+					if (activeSelStart !== null && activeSelEnd !== null && typeof elToRestore.setSelectionRange === 'function') {
+						elToRestore.setSelectionRange(activeSelStart, activeSelEnd);
+					}
+				} catch(e) {}
+			}
+		}
+
 		checkNames();
 		scrollTo(scrollToItem);
 		scrollToItem = "";
@@ -2624,4 +2638,149 @@ function escapeHtml(str) {
 
 function visit(string) {
 	window.open(string);
+}
+
+function getRatingBadgeColor(rating) {
+	var r = parseInt(rating);
+	if (!r || isNaN(r) || r <= 0) return "#fec";
+	if (r > 90) return "#6f6";
+	if (r >= 80) return "#7f6";
+	if (r >= 70) return "#8e6";
+	if (r >= 60) return "#9e6";
+	if (r >= 50) return "#ad6";
+	if (r >= 40) return "#bd6";
+	if (r >= 30) return "#cc6";
+	if (r >= 20) return "#dc6";
+	if (r >= 10) return "#eb6";
+	return "#fb6";
+}
+
+var realtimeAssociationUnsubscribe = null;
+var realtimeNotesUnsubscribe = null;
+var realtimeRefreshDebounceTimer = null;
+
+function setupRealtimeListeners() {
+	if (sPage !== "index") return;
+	var currentUser = Parse.User.current();
+	if (!currentUser || !window.db) return;
+	var uid = currentUser.id;
+
+	if (realtimeAssociationUnsubscribe) {
+		realtimeAssociationUnsubscribe();
+		realtimeAssociationUnsubscribe = null;
+	}
+	if (realtimeNotesUnsubscribe) {
+		realtimeNotesUnsubscribe();
+		realtimeNotesUnsubscribe = null;
+	}
+
+	var isInitialAssociationSnap = true;
+	try {
+		realtimeAssociationUnsubscribe = db.collection('Association')
+			.where('userId', '==', uid)
+			.onSnapshot(function(snapshot) {
+				if (isInitialAssociationSnap) {
+					isInitialAssociationSnap = false;
+					return;
+				}
+				if (!snapshot || !snapshot.docChanges) return;
+				var changes = snapshot.docChanges();
+				if (changes.length === 0) return;
+
+				var needsFullReload = false;
+				changes.forEach(function(change) {
+					var cardId = change.doc.id;
+					var data = change.doc.data();
+					if (change.type === 'modified') {
+						var ratingEl = document.getElementById(cardId + "ratingInput");
+						if (ratingEl && data && data.rating !== undefined) {
+							if (document.activeElement !== ratingEl) {
+								var rVal = parseInt(data.rating) || 0;
+								ratingEl.value = rVal > 0 ? rVal : "";
+								ratingEl.style.backgroundColor = getRatingBadgeColor(rVal);
+							}
+						}
+						// If user is sorting by rating or distance, or other properties changed, reload
+						if (sort === 'rating' || sort === 'distance') {
+							needsFullReload = true;
+						} else {
+							// Update name/location in-place if element exists
+							var nameEl = document.getElementById(cardId + "nameInput");
+							if (nameEl && data && data.name && document.activeElement !== nameEl) {
+								nameEl.value = data.name;
+							}
+							var locEl = document.getElementById(cardId + "locationInput");
+							if (locEl && data && data.location && document.activeElement !== locEl) {
+								locEl.value = cleanRawAddress(data.location);
+							}
+						}
+					} else if (change.type === 'added' || change.type === 'removed') {
+						needsFullReload = true;
+					}
+				});
+
+				if (needsFullReload) {
+					if (realtimeRefreshDebounceTimer) clearTimeout(realtimeRefreshDebounceTimer);
+					realtimeRefreshDebounceTimer = setTimeout(function() {
+						var activeEl = document.activeElement;
+						var isActivelyTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+						if (isActivelyTyping) {
+							$(activeEl).one('blur', function() {
+								getAssociations();
+							});
+						} else {
+							getAssociations();
+						}
+					}, 400);
+				}
+			}, function(err) {
+				console.warn("Realtime Association listener error:", err);
+			});
+	} catch(e) {
+		console.warn("Failed to attach Association realtime listener:", e);
+	}
+
+	var isInitialNoteSnap = true;
+	try {
+		realtimeNotesUnsubscribe = db.collection('Note')
+			.where('userId', '==', uid)
+			.onSnapshot(function(snapshot) {
+				if (isInitialNoteSnap) {
+					isInitialNoteSnap = false;
+					return;
+				}
+				if (!snapshot || !snapshot.docChanges) return;
+				var changes = snapshot.docChanges();
+				if (changes.length === 0) return;
+
+				var changedAssocIds = {};
+				changes.forEach(function(change) {
+					var data = change.doc.data();
+					if (data && data.associationId) {
+						changedAssocIds[data.associationId] = true;
+					}
+				});
+
+				for (var aId in changedAssocIds) {
+					if (document.getElementById("notes" + aId)) {
+						getNotes(aId);
+					}
+				}
+			}, function(err) {
+				console.warn("Realtime Note listener error:", err);
+			});
+	} catch(e) {
+		console.warn("Failed to attach Note realtime listener:", e);
+	}
+}
+
+function teardownRealtimeListeners() {
+	if (realtimeAssociationUnsubscribe) {
+		realtimeAssociationUnsubscribe();
+		realtimeAssociationUnsubscribe = null;
+	}
+	if (realtimeNotesUnsubscribe) {
+		realtimeNotesUnsubscribe();
+		realtimeNotesUnsubscribe = null;
+	}
 }

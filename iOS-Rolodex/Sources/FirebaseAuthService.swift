@@ -245,13 +245,18 @@ class FirebaseAuthService: ObservableObject {
 
         guard let uid = getParam("uid"), !uid.isEmpty else { return nil }
 
+        let token = getParam("idToken") ?? getParam("token")
+        let name = getParam("displayName") ?? getParam("name")
+        let photo = getParam("photoURL") ?? getParam("photo")
+        let refresh = getParam("refreshToken") ?? getParam("refresh_token")
+
         return User(
             uid: uid,
             email: getParam("email") ?? "",
-            displayName: getParam("displayName"),
-            photoURL: getParam("photoURL"),
-            idToken: getParam("idToken"),
-            refreshToken: nil
+            displayName: name,
+            photoURL: photo,
+            idToken: token,
+            refreshToken: refresh
         )
     }
 

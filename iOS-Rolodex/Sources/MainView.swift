@@ -16,6 +16,7 @@ struct MainView: View {
     @ObservedObject var authService = FirebaseAuthService.shared
     @ObservedObject var locationManager = LocationManager.shared
 
+    @Environment(\.scenePhase) private var scenePhase
     @State private var searchText = ""
     @State private var selectedFilter = "ALL" // "ALL", "ALL_ASSOCIATIONS", "ALL_ASSOCIATES", or custom type
     @State private var selectedSort: SortOption = .distanceAsc
@@ -232,7 +233,21 @@ struct MainView: View {
             }
             .task {
                 locationManager.requestPermission()
-                await refreshData()
+                if let uid = authService.currentUser?.uid {
+                    await refreshData()
+                    firestore.startRealtimeSync(for: uid)
+                }
+            }
+            .onDisappear {
+                firestore.stopRealtimeSync()
+            }
+            .onChange(of: scenePhase) { newPhase in
+                if newPhase == .active, let uid = authService.currentUser?.uid {
+                    firestore.startRealtimeSync(for: uid)
+                    Task { await refreshData() }
+                } else if newPhase == .background {
+                    firestore.stopRealtimeSync()
+                }
             }
         }
     }
@@ -310,9 +325,7 @@ struct MainView: View {
     private func refreshData() async {
         guard let uid = authService.currentUser?.uid else { return }
         await firestore.fetchAssociations(for: uid)
-        for card in firestore.associations {
-            await firestore.fetchNotes(for: card.id, userId: uid)
-        }
+        await firestore.fetchAllNotes(for: uid)
     }
 
     private func isCardExpanded(id: String) -> Binding<Bool> {

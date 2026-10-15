@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
@@ -320,11 +321,30 @@ class MainActivity : AppCompatActivity() {
                 }
                 .collect { list ->
                     binding.mainProgressBar.visibility = View.GONE
+                    val expandedMap = allCards.associate { it.id to it.isExpanded }
+                    for (card in list) {
+                        if (expandedMap.containsKey(card.id)) {
+                            card.isExpanded = expandedMap[card.id] ?: true
+                        }
+                    }
                     allCards = list
-                    loadAllNotes(userId)
                     populateDynamicTypeChips(userId)
                     updateAssociateLookups()
                     applyFilterAndSort()
+                }
+        }
+
+        lifecycleScope.launch {
+            repository.getAllNotesFlow(userId)
+                .catch { e ->
+                    Log.e("MainActivity", "Error listening to notes: ${e.message}")
+                }
+                .collect { notesList ->
+                    val grouped = notesList.groupBy { it.associationId.orEmpty() }
+                    notesCache.clear()
+                    notesCache.putAll(grouped)
+                    adapter.notesMap = notesCache.toMap()
+                    adapter.notifyItemRangeChanged(0, adapter.itemCount)
                 }
         }
     }
@@ -453,7 +473,7 @@ class MainActivity : AppCompatActivity() {
             SortOrder.NEWEST -> filtered.sortedByDescending { it.createdAt?.seconds ?: 0L }
         }
 
-        adapter.submitList(filtered)
+        adapter.submitList(filtered.toList())
         binding.emptyStateLayout.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
     }
 

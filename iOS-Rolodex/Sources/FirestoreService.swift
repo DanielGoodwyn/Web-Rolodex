@@ -11,7 +11,26 @@ class FirestoreService: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String? = nil
 
-    private var refreshTimer: AnyCancellable?
+    private var syncTask: Task<Void, Never>?
+
+    // MARK: - Realtime Sync
+    func startRealtimeSync(for userId: String) {
+        stopRealtimeSync()
+        syncTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 1_800_000_000) // 1.8s
+                if Task.isCancelled { break }
+                guard let self = self else { break }
+                await self.fetchAssociations(for: userId)
+                await self.fetchAllNotes(for: userId)
+            }
+        }
+    }
+
+    func stopRealtimeSync() {
+        syncTask?.cancel()
+        syncTask = nil
+    }
 
     // MARK: - Query Associations
     func fetchAssociations(for userId: String) async {
@@ -56,9 +75,32 @@ class FirestoreService: ObservableObject {
                 }
             }
 
-            self.associations = parsed
-            updateAssociateLookups()
-            await fetchUserTypes(for: userId)
+            let hasChanges = parsed.count != self.associations.count ||
+                zip(parsed, self.associations).contains { p, existing in
+                    p.id != existing.id ||
+                    p.name != existing.name ||
+                    p.rating != existing.rating ||
+                    p.allTypes != existing.allTypes ||
+                    p.location != existing.location ||
+                    p.neighborhood != existing.neighborhood ||
+                    p.safeAssociationIds != existing.safeAssociationIds ||
+                    p.websiteUrl != existing.websiteUrl ||
+                    p.facebookUrl != existing.facebookUrl ||
+                    p.instagramUrl != existing.instagramUrl ||
+                    p.twitterUrl != existing.twitterUrl
+                }
+
+            if hasChanges {
+                let existingMap = Dictionary(uniqueKeysWithValues: self.associations.map { ($0.id, $0) })
+                for i in 0..<parsed.count {
+                    if let old = existingMap[parsed[i].id] {
+                        parsed[i].distanceMiles = old.distanceMiles
+                    }
+                }
+                self.associations = parsed
+                updateAssociateLookups()
+                await fetchUserTypes(for: userId)
+            }
         } catch {
             self.errorMessage = error.localizedDescription
         }
@@ -150,6 +192,64 @@ class FirestoreService: ObservableObject {
             }
             notes.sort { ($0.name ?? "").lowercased() < ($1.name ?? "").lowercased() }
             self.notesCache[associationId] = notes
+        } catch {
+            // Ignore error
+        }
+    }
+
+    // MARK: - Query All Notes
+    func fetchAllNotes(for userId: String) async {
+        guard let url = URL(string: "\(FirebaseConfig.firestoreBaseURL):runQuery") else { return }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        if let token = FirebaseAuthService.shared.currentUser?.idToken {
+            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        let query: [String: Any] = [
+            "structuredQuery": [
+                "from": [["collectionId": "Note"]],
+                "where": [
+                    "fieldFilter": [
+                        "field": ["fieldPath": "userId"],
+                        "op": "EQUAL",
+                        "value": ["stringValue": userId]
+                    ]
+                ]
+            ]
+        ]
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: query)
+            let (data, _) = try await URLSession.shared.data(for: request)
+            let rawList = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] ?? []
+
+            var newCache: [String: [Note]] = [:]
+            for item in rawList {
+                guard let doc = item["document"] as? [String: Any],
+                      let namePath = doc["name"] as? String,
+                      let fields = doc["fields"] as? [String: Any] else {
+                    continue
+                }
+                let id = namePath.components(separatedBy: "/").last ?? ""
+                let name = (fields["name"] as? [String: Any])?["stringValue"] as? String
+                let note = (fields["note"] as? [String: Any])?["stringValue"] as? String
+                let associationId = (fields["associationId"] as? [String: Any])?["stringValue"] as? String ?? ""
+                if !associationId.isEmpty {
+                    newCache[associationId, default: []].append(
+                        Note(id: id, name: name, note: note, associationId: associationId, userId: userId)
+                    )
+                }
+            }
+            for (k, v) in newCache {
+                newCache[k] = v.sorted { ($0.name ?? "").lowercased() < ($1.name ?? "").lowercased() }
+            }
+            if newCache != self.notesCache {
+                self.notesCache = newCache
+            }
         } catch {
             // Ignore error
         }

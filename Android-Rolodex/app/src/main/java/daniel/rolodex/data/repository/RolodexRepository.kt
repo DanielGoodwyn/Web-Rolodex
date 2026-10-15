@@ -48,6 +48,31 @@ class RolodexRepository {
         awaitClose { listener.remove() }
     }
 
+    fun getAllNotesFlow(userId: String): Flow<List<Note>> = callbackFlow {
+        val query = db.collection(COLLECTION_NOTE)
+            .whereEqualTo("userId", userId)
+
+        val listener: ListenerRegistration = query.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                Log.e(TAG, "Error listening to Note updates", error)
+                close(error)
+                return@addSnapshotListener
+            }
+            if (snapshot != null) {
+                val list = snapshot.documents.mapNotNull { doc ->
+                    try {
+                        doc.toObject(Note::class.java)?.apply { id = doc.id }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error deserializing note ${doc.id}", e)
+                        null
+                    }
+                }.sortedBy { it.displayName.lowercase() }
+                trySend(list)
+            }
+        }
+        awaitClose { listener.remove() }
+    }
+
     suspend fun getNotesForAssociation(associationId: String, userId: String): List<Note> {
         val snap = db.collection(COLLECTION_NOTE)
             .whereEqualTo("userId", userId)

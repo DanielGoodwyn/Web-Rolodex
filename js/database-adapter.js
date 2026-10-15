@@ -53,6 +53,7 @@ const Parse = {
             if (typeof checkCurrentUser === 'function') checkCurrentUser();
             if (typeof setUserInputs === 'function') setUserInputs();
             if (typeof setCurrentUser === 'function') setCurrentUser();
+            if (typeof setupRealtimeListeners === 'function') setupRealtimeListeners();
           }).catch(function() {
             var userData = { email: user.email };
             Parse.User._currentUser = new Parse.UserClass(user, userData);
@@ -62,8 +63,10 @@ const Parse = {
             if (typeof checkCurrentUser === 'function') checkCurrentUser();
             if (typeof setUserInputs === 'function') setUserInputs();
             if (typeof setCurrentUser === 'function') setCurrentUser();
+            if (typeof setupRealtimeListeners === 'function') setupRealtimeListeners();
           });
         } else {
+          if (typeof teardownRealtimeListeners === 'function') teardownRealtimeListeners();
           Parse.User._currentUser = null;
           try {
             localStorage.removeItem('parse_current_user');
@@ -308,6 +311,7 @@ Parse.User = {
     }
   },
   logOut: function() {
+    if (typeof teardownRealtimeListeners === 'function') teardownRealtimeListeners();
     if (window.auth) auth.signOut();
     Parse.User._currentUser = null;
     try {
