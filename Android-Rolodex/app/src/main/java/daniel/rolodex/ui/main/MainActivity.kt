@@ -91,29 +91,51 @@ class MainActivity : AppCompatActivity() {
                     startActivity(Intent(this, AccountActivity::class.java))
                     true
                 }
-                R.id.sort_distance_asc -> {
-                    sortOrder = SortOrder.DISTANCE_ASC
-                    applyFilterAndSort()
+                R.id.action_sort -> {
+                    val anchor = findViewById<View>(R.id.action_sort) ?: binding.toolbar
+                    val popup = androidx.appcompat.widget.PopupMenu(this, anchor)
+                    popup.menu.add("Distance (Closest First)").setOnMenuItemClickListener {
+                        sortOrder = SortOrder.DISTANCE_ASC
+                        applyFilterAndSort()
+                        true
+                    }
+                    popup.menu.add("Distance (Farthest First)").setOnMenuItemClickListener {
+                        sortOrder = SortOrder.DISTANCE_DESC
+                        applyFilterAndSort()
+                        true
+                    }
+                    popup.menu.add("Rating (Highest First)").setOnMenuItemClickListener {
+                        sortOrder = SortOrder.RATING_DESC
+                        applyFilterAndSort()
+                        true
+                    }
+                    popup.menu.add("Name (A to Z)").setOnMenuItemClickListener {
+                        sortOrder = SortOrder.NAME_ASC
+                        applyFilterAndSort()
+                        true
+                    }
+                    popup.menu.add("Recently Added").setOnMenuItemClickListener {
+                        sortOrder = SortOrder.NEWEST
+                        applyFilterAndSort()
+                        true
+                    }
+                    popup.show()
                     true
                 }
-                R.id.sort_distance_desc -> {
-                    sortOrder = SortOrder.DISTANCE_DESC
-                    applyFilterAndSort()
-                    true
-                }
-                R.id.sort_rating_desc -> {
-                    sortOrder = SortOrder.RATING_DESC
-                    applyFilterAndSort()
-                    true
-                }
-                R.id.sort_name_asc -> {
-                    sortOrder = SortOrder.NAME_ASC
-                    applyFilterAndSort()
-                    true
-                }
-                R.id.sort_newest -> {
-                    sortOrder = SortOrder.NEWEST
-                    applyFilterAndSort()
+                R.id.action_expand_collapse -> {
+                    val anchor = findViewById<View>(R.id.action_expand_collapse) ?: binding.toolbar
+                    val popup = androidx.appcompat.widget.PopupMenu(this, anchor)
+                    popup.menu.add("Expand All Cards").setOnMenuItemClickListener {
+                        allCards.forEach { it.isExpanded = true }
+                        adapter.notifyItemRangeChanged(0, adapter.itemCount)
+                        true
+                    }
+                    popup.menu.add("Collapse All Cards").setOnMenuItemClickListener {
+                        allCards.forEach { it.isExpanded = false }
+                        adapter.notifyItemRangeChanged(0, adapter.itemCount)
+                        true
+                    }
+                    popup.show()
                     true
                 }
                 else -> false
@@ -124,6 +146,38 @@ class MainActivity : AppCompatActivity() {
     private fun setupRecyclerView() {
         adapter = CardsAdapter(
             onCardClick = {},
+            onUpdateRating = { card, rating ->
+                lifecycleScope.launch {
+                    try {
+                        repository.updateRating(card.id, rating.toLong())
+                    } catch (e: Exception) {
+                        Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
+            onEditCard = { card ->
+                val editSheet = EditCardBottomSheet(card) { updatedCard ->
+                    lifecycleScope.launch {
+                        try {
+                            val loc = updatedCard.location
+                            if (!loc.isNullOrBlank() && loc != card.location) {
+                                val coords = locationHelper.geocodeAddress(loc)
+                                if (coords != null) {
+                                    updatedCard.geo = mapOf("latitude" to coords.first, "longitude" to coords.second)
+                                    updatedCard.neighborhood = locationHelper.reverseGeocodeNeighborhood(coords.first, coords.second)
+                                } else {
+                                    updatedCard.geo = null
+                                    updatedCard.neighborhood = null
+                                }
+                            }
+                            repository.updateCard(updatedCard)
+                        } catch (e: Exception) {
+                            Toast.makeText(this@MainActivity, "Error updating card: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+                editSheet.show(supportFragmentManager, EditCardBottomSheet.TAG)
+            },
             onDeleteCard = { card ->
                 lifecycleScope.launch {
                     try {

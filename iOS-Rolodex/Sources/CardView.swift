@@ -3,9 +3,13 @@ import SwiftUI
 struct CardView: View {
     let card: Association
     let number: Int
+    @Binding var isExpanded: Bool
+    let availableTypes: [String]
     let allAssociateNames: [String]
     let allParentNames: [String]
     let notes: [Note]
+    let onUpdateRating: (Association, Int) -> Void
+    let onUpdateCard: (Association) -> Void
     let onDeleteCard: (Association) -> Void
     let onAddAssociate: (Association, String) -> Void
     let onUnlinkAssociate: (Association, String) -> Void
@@ -13,14 +17,16 @@ struct CardView: View {
     let onDeleteNote: (Note) -> Void
     let onSearch: (String) -> Void
 
-    @State private var isExpanded: Bool = true
     @State private var newAssociateText = ""
     @State private var newNoteText = ""
     @State private var showDeleteAlert = false
+    @State private var showRatingSheet = false
+    @State private var showEditSheet = false
+    @State private var tempRating: Double = 50
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Header Row: Expand Chevron + Number + Name + Rating Badge + Delete
+            // Header Row: Expand Chevron + Number + Name + Rating Badge + Edit + Delete
             Button(action: {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     isExpanded.toggle()
@@ -43,24 +49,38 @@ struct CardView: View {
                     Spacer()
 
                     if !card.isAssociate {
-                        if card.displayRating > 0 {
-                            Text("\(card.displayRating)")
-                                .font(.caption.bold())
-                                .foregroundColor(.black)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Theme.ratingColor(for: card.displayRating))
-                                .cornerRadius(4)
-                        } else {
-                            Text("-")
-                                .font(.caption.bold())
-                                .foregroundColor(.secondary)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color(uiColor: .systemGray5))
-                                .cornerRadius(4)
+                        Button(action: {
+                            tempRating = Double(card.displayRating > 0 ? card.displayRating : 50)
+                            showRatingSheet = true
+                        }) {
+                            if card.displayRating > 0 {
+                                Text("\(card.displayRating)")
+                                    .font(.caption.bold())
+                                    .foregroundColor(.black)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Theme.ratingColor(for: card.displayRating))
+                                    .cornerRadius(4)
+                            } else {
+                                Text("-")
+                                    .font(.caption.bold())
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color(uiColor: .systemGray5))
+                                    .cornerRadius(4)
+                            }
                         }
+                        .buttonStyle(.plain)
                     }
+
+                    Button(action: { showEditSheet = true }) {
+                        Image(systemName: "pencil")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .padding(4)
+                    }
+                    .buttonStyle(.plain)
 
                     Button(action: { showDeleteAlert = true }) {
                         Image(systemName: "xmark")
@@ -270,6 +290,65 @@ struct CardView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("Are you sure you want to delete \(card.name)?")
+        }
+        .sheet(isPresented: $showRatingSheet) {
+            NavigationStack {
+                VStack(spacing: 24) {
+                    Text(card.name)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+
+                    HStack(spacing: 12) {
+                        Text("\(Int(tempRating))")
+                            .font(.system(size: 36, weight: .bold))
+                            .foregroundColor(.black)
+                            .frame(width: 80, height: 50)
+                            .background(Theme.ratingColor(for: Int(tempRating)))
+                            .cornerRadius(10)
+                    }
+
+                    Slider(value: $tempRating, in: 1...100, step: 1)
+                        .tint(Theme.ratingColor(for: Int(tempRating)))
+                        .padding(.horizontal, 28)
+
+                    HStack(spacing: 8) {
+                        ForEach([20, 40, 60, 80, 95, 100], id: \.self) { preset in
+                            Button("\(preset)") {
+                                tempRating = Double(preset)
+                            }
+                            .font(.caption.bold())
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Theme.ratingColor(for: preset))
+                            .foregroundColor(.black)
+                            .cornerRadius(6)
+                        }
+                    }
+
+                    Spacer()
+                }
+                .padding(.top, 28)
+                .navigationTitle("Update Rating")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") { showRatingSheet = false }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Save") {
+                            onUpdateRating(card, Int(tempRating))
+                            showRatingSheet = false
+                        }
+                        .bold()
+                    }
+                }
+            }
+            .presentationDetents([.height(290)])
+        }
+        .sheet(isPresented: $showEditSheet) {
+            EditCardView(card: card, availableTypes: availableTypes) { updatedCard in
+                onUpdateCard(updatedCard)
+            }
         }
     }
 

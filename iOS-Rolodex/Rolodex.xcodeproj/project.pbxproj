@@ -14,6 +14,7 @@
 		2E2D34BEAF6DDFCB820FD221 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40586B3D5B301CB99A7A726E /* ContentView.swift */; };
 		34479E5359A118009337C510 /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A3B571A7EAE5A62811B9D6 /* CardView.swift */; };
 		3733C40C46453130341D9469 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F44E0C81F9269165D3BF26ED /* Assets.xcassets */; };
+		3F36663B0ED62E86D6466D12 /* EditCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E916B5B25AC9039B7CB007B1 /* EditCardView.swift */; };
 		66CD8AC9CCBFF23A26E2EE47 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C187F9DDA1ACCA87B64553D1 /* LoginView.swift */; };
 		7ADB83F0866F7F340BB639DE /* RolodexApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11266E4D3EB83E090130668A /* RolodexApp.swift */; };
 		85B1CD8E7E073A934EB48071 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E681B4FC7F3A4E9BC3DB81A /* Note.swift */; };
@@ -33,16 +34,18 @@
 		179D3900A2A7A2A5C935269D /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
 		3FC1EC74A919C21F9FC89314 /* FirestoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreService.swift; sourceTree = "<group>"; };
 		40586B3D5B301CB99A7A726E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		57D0F1E307F92E1A87E970A9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		6613B25A1740F8E609012C36 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		68A3B571A7EAE5A62811B9D6 /* CardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardView.swift; sourceTree = "<group>"; };
 		6D49E301F17A95AE022A2872 /* FirebaseAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseAuthService.swift; sourceTree = "<group>"; };
-		75DBE5D49CDD2DC19AF0FE83 /* Rolodex.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rolodex.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		75DBE5D49CDD2DC19AF0FE83 /* Rolodex.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Rolodex.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E681B4FC7F3A4E9BC3DB81A /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
 		A8ED52144ED500250A9E0955 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		AA028A00ACC90C4E0EF7677F /* AddCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCardView.swift; sourceTree = "<group>"; };
 		C187F9DDA1ACCA87B64553D1 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		C21D3638411AB8084574E2A6 /* FirebaseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseConfig.swift; sourceTree = "<group>"; };
 		CD937340FF0398B78A2C12D9 /* Association.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Association.swift; sourceTree = "<group>"; };
+		E916B5B25AC9039B7CB007B1 /* EditCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditCardView.swift; sourceTree = "<group>"; };
 		F44E0C81F9269165D3BF26ED /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F4559E560DF5CFE521C12E0A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -53,6 +56,7 @@
 			children = (
 				F44E0C81F9269165D3BF26ED /* Assets.xcassets */,
 				F4559E560DF5CFE521C12E0A /* GoogleService-Info.plist */,
+				57D0F1E307F92E1A87E970A9 /* Info.plist */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -82,6 +86,7 @@
 				CD937340FF0398B78A2C12D9 /* Association.swift */,
 				68A3B571A7EAE5A62811B9D6 /* CardView.swift */,
 				40586B3D5B301CB99A7A726E /* ContentView.swift */,
+				E916B5B25AC9039B7CB007B1 /* EditCardView.swift */,
 				6D49E301F17A95AE022A2872 /* FirebaseAuthService.swift */,
 				C21D3638411AB8084574E2A6 /* FirebaseConfig.swift */,
 				3FC1EC74A919C21F9FC89314 /* FirestoreService.swift */,
@@ -172,6 +177,7 @@
 				2A5A0AE24BC9799D8693480F /* Association.swift in Sources */,
 				34479E5359A118009337C510 /* CardView.swift in Sources */,
 				2E2D34BEAF6DDFCB820FD221 /* ContentView.swift in Sources */,
+				3F36663B0ED62E86D6466D12 /* EditCardView.swift in Sources */,
 				F2148F6A9512AF935F0A6284 /* FirebaseAuthService.swift in Sources */,
 				D2D96AC1ACA515F63A0B81AB /* FirebaseConfig.swift in Sources */,
 				08CF8EC53E90ADFE671F719B /* FirestoreService.swift in Sources */,
@@ -253,8 +259,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 3YH5RQ572Q;
 				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Rolodex;
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Rolodex uses your location to show nearby associations and your current neighborhood.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Rolodex uses your location to show nearby associations and your current neighborhood.";
@@ -274,8 +280,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 3YH5RQ572Q;
 				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Rolodex;
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Rolodex uses your location to show nearby associations and your current neighborhood.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Rolodex uses your location to show nearby associations and your current neighborhood.";

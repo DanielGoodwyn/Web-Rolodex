@@ -71,6 +71,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:background="@drawable/bg_rating_badge"
+                android:clickable="true"
+                android:focusable="true"
                 android:gravity="center"
                 android:paddingStart="8dp"
                 android:paddingTop="2dp"
@@ -80,6 +82,16 @@
                 android:textSize="12sp"
                 android:textStyle="bold"
                 tools:text="95" />
+
+            <!-- Edit Button -->
+            <ImageButton
+                android:id="@+id/btnEditCard"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Edit Card"
+                android:src="@android:drawable/ic_menu_edit"
+                app:tint="@color/text_secondary" />
 
             <!-- Delete Button -->
             <ImageButton

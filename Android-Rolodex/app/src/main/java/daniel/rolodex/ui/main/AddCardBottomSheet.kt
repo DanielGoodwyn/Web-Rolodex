@@ -48,6 +48,9 @@ class AddCardBottomSheet(
             val rating = binding.sliderRating.value.toLong()
             val location = binding.etAddLocation.text.toString().trim().ifEmpty { null }
             val web = binding.etAddWeb.text.toString().trim().ifEmpty { null }
+            val fb = binding.etAddFacebook.text.toString().trim().ifEmpty { null }
+            val ig = binding.etAddInstagram.text.toString().trim().ifEmpty { null }
+            val twitter = binding.etAddTwitter.text.toString().trim().ifEmpty { null }
 
             val newCard = Association(
                 name = name,
@@ -55,7 +58,10 @@ class AddCardBottomSheet(
                 types = typesList,
                 rating = rating,
                 location = location,
-                web = web
+                web = web,
+                fb = fb,
+                ig = ig,
+                twitter = twitter
             )
             onCardCreated(newCard)
             dismiss()

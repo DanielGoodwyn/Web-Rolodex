@@ -21,6 +21,8 @@ import daniel.rolodex.databinding.ItemCardBinding
 
 class CardsAdapter(
     private val onCardClick: (Association) -> Unit,
+    private val onUpdateRating: (Association, Int) -> Unit,
+    private val onEditCard: (Association) -> Unit,
     private val onDeleteCard: (Association) -> Unit,
     private val onAddAssociate: (Association, String) -> Unit,
     private val onUnlinkAssociate: (Association, String) -> Unit,
@@ -63,6 +65,49 @@ class CardsAdapter(
                 binding.tvRatingBadge.visibility = View.VISIBLE
                 binding.tvRatingBadge.text = "-"
                 binding.tvRatingBadge.setBackgroundColor(ContextCompat.getColor(context, R.color.rating_neutral))
+            }
+
+            // Rating click -> dialog
+            binding.tvRatingBadge.setOnClickListener {
+                val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_rating, null)
+                val tvDialogCardName = dialogView.findViewById<android.widget.TextView>(R.id.tvRatingDialogCardName)
+                val tvDialogBadge = dialogView.findViewById<android.widget.TextView>(R.id.tvDialogRatingBadge)
+                val slider = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderRating)
+
+                tvDialogCardName.text = card.name
+                val currentRating = if (card.displayRating > 0) card.displayRating.toFloat() else 50f
+                slider.value = currentRating
+
+                fun updateDialogBadge(v: Int) {
+                    tvDialogBadge.text = v.toString()
+                    tvDialogBadge.setBackgroundColor(getRatingColor(v.toLong(), context))
+                }
+
+                updateDialogBadge(currentRating.toInt())
+
+                slider.addOnChangeListener { _, value, _ ->
+                    updateDialogBadge(value.toInt())
+                }
+
+                dialogView.findViewById<android.view.View>(R.id.btnPreset20).setOnClickListener { slider.value = 20f }
+                dialogView.findViewById<android.view.View>(R.id.btnPreset40).setOnClickListener { slider.value = 40f }
+                dialogView.findViewById<android.view.View>(R.id.btnPreset60).setOnClickListener { slider.value = 60f }
+                dialogView.findViewById<android.view.View>(R.id.btnPreset80).setOnClickListener { slider.value = 80f }
+                dialogView.findViewById<android.view.View>(R.id.btnPreset95).setOnClickListener { slider.value = 95f }
+
+                MaterialAlertDialogBuilder(context)
+                    .setTitle("Update Rating")
+                    .setView(dialogView)
+                    .setPositiveButton("Save") { _, _ ->
+                        onUpdateRating(card, slider.value.toInt())
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+
+            // Edit Card Button
+            binding.btnEditCard.setOnClickListener {
+                onEditCard(card)
             }
 
             // Expand / Collapse

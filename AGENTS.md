@@ -82,9 +82,9 @@ This document provides complete context, architectural background, operational p
 │   │       │   │   └── location/            # LocationHelper (GPS, Haversine, Geocoder)
 │   │       │   └── ui/
 │   │       │       ├── auth/                # LoginActivity, ForgotPasswordDialog
-│   │       │       ├── main/                # MainActivity, CardsAdapter, NotesAdapter, AddCardBottomSheet
+│   │       │       ├── main/                # MainActivity, CardsAdapter, NotesAdapter, AddCardBottomSheet, EditCardBottomSheet
 │   │       │       └── account/             # AccountActivity
-│   │       └── res/                         # Material 3 layouts, drawables, colors, themes
+│   │       └── res/                         # Material 3 layouts, drawables, colors, themes (dialog_rating, bottom_sheet_edit_card)
 │   ├── build.gradle         # Root Gradle build script (AGP 8.7.0, Kotlin 2.0.21)
 │   ├── settings.gradle
 │   └── gradlew              # Gradle wrapper executable
@@ -93,13 +93,15 @@ This document provides complete context, architectural background, operational p
     ├── Rolodex.xcodeproj    # Generated Xcode project
     ├── Resources/
     │   ├── Assets.xcassets  # AppIcon (1024x1024), hood.png, rolodex.png
-    │   └── GoogleService-Info.plist # Firebase project configuration (rolodex-ade98)
+    │   ├── GoogleService-Info.plist # Firebase project configuration (rolodex-ade98)
+    │   └── Info.plist       # Plist configuration with rolodex-app URL scheme
     └── Sources/
         ├── RolodexApp.swift # SwiftUI App entry point
         ├── ContentView.swift# Root auth switcher
-        ├── MainView.swift   # Main dashboard, search, filter chips, location, sort
-        ├── CardView.swift   # Interactive expandable cards, ratings, Google/Apple Maps
-        ├── AddCardView.swift# Card creation with OSM geocoding & rating slider
+        ├── MainView.swift   # Main dashboard, search, filter chips, location, sort, expand/collapse
+        ├── CardView.swift   # Interactive expandable cards, rating popover/sheet, Google/Apple Maps
+        ├── AddCardView.swift# Card creation with OSM geocoding, rating slider, social links
+        ├── EditCardView.swift# Card editing with OSM re-geocoding, rating slider, social links
         ├── LoginView.swift  # Authentication view
         ├── AccountView.swift# Profile management & sign out
         ├── Association.swift# Association, LinkedItem, and GeoPoint models

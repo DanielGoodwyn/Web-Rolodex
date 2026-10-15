@@ -11,6 +11,9 @@ struct AddCardView: View {
     @State private var rating: Double = 90
     @State private var location: String = ""
     @State private var web: String = ""
+    @State private var fb: String = ""
+    @State private var ig: String = ""
+    @State private var twitter: String = ""
     @State private var isGeocoding: Bool = false
 
     var body: some View {
@@ -80,6 +83,12 @@ struct AddCardView: View {
                     TextField("Website / URL", text: $web)
                         .keyboardType(.URL)
                         .autocapitalization(.none)
+                    TextField("Facebook URL or handle", text: $fb)
+                        .autocapitalization(.none)
+                    TextField("Instagram URL or handle", text: $ig)
+                        .autocapitalization(.none)
+                    TextField("X / Twitter URL or handle", text: $twitter)
+                        .autocapitalization(.none)
                 }
             }
             .navigationTitle("New Card")
@@ -124,6 +133,9 @@ struct AddCardView: View {
                 location: locTrimmed.isEmpty ? nil : locTrimmed,
                 neighborhood: neighborhood,
                 site: web.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : web,
+                fb: fb.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : fb,
+                ig: ig.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : ig,
+                twitter: twitter.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : twitter,
                 geo: geoPoint,
                 userId: FirebaseAuthService.shared.currentUser?.uid ?? ""
             )

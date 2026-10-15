@@ -255,6 +255,106 @@ class FirestoreService: ObservableObject {
         }
     }
 
+    // MARK: - Update Rating
+    func updateRating(id: String, newRating: Int) async throws {
+        guard let url = URL(string: "\(FirebaseConfig.firestoreBaseURL)/Association/\(id)?updateMask.fieldPaths=rating&updateMask.fieldPaths=updatedAt") else { return }
+
+        let fields: [String: Any] = [
+            "rating": ["integerValue": "\(newRating)"],
+            "updatedAt": ["timestampValue": ISO8601DateFormatter().string(from: Date())]
+        ]
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = FirebaseAuthService.shared.currentUser?.idToken {
+            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["fields": fields])
+
+        _ = try await URLSession.shared.data(for: request)
+
+        if let idx = associations.firstIndex(where: { $0.id == id }) {
+            associations[idx].rating = newRating
+        }
+    }
+
+    // MARK: - Update Card
+    func updateCard(_ card: Association) async throws {
+        var maskFields: [String] = ["name", "rating", "updatedAt"]
+        var fields: [String: Any] = [
+            "name": ["stringValue": card.name],
+            "rating": ["integerValue": "\(card.displayRating)"],
+            "updatedAt": ["timestampValue": ISO8601DateFormatter().string(from: Date())]
+        ]
+
+        if let type = card.type {
+            fields["type"] = ["stringValue": type]
+            maskFields.append("type")
+        }
+        if let types = card.types {
+            fields["types"] = ["arrayValue": ["values": types.map { ["stringValue": $0] }]]
+            maskFields.append("types")
+        }
+        if let loc = card.location {
+            fields["location"] = ["stringValue": loc]
+            maskFields.append("location")
+        }
+        if let hood = card.neighborhood {
+            fields["neighborhood"] = ["stringValue": hood]
+            maskFields.append("neighborhood")
+        }
+        if let site = card.site {
+            fields["site"] = ["stringValue": site]
+            maskFields.append("site")
+        }
+        if let fb = card.fb {
+            fields["fb"] = ["stringValue": fb]
+            maskFields.append("fb")
+        }
+        if let ig = card.ig {
+            fields["ig"] = ["stringValue": ig]
+            maskFields.append("ig")
+        }
+        if let twitter = card.twitter {
+            fields["twitter"] = ["stringValue": twitter]
+            maskFields.append("twitter")
+        }
+        if let geo = card.geo {
+            fields["geo"] = [
+                "mapValue": [
+                    "fields": [
+                        "latitude": ["doubleValue": geo.latitude],
+                        "longitude": ["doubleValue": geo.longitude]
+                    ]
+                ]
+            ]
+            maskFields.append("geo")
+        }
+
+        let queryParams = maskFields.map { "updateMask.fieldPaths=\($0)" }.joined(separator: "&")
+        guard let url = URL(string: "\(FirebaseConfig.firestoreBaseURL)/Association/\(card.id)?\(queryParams)") else { return }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = FirebaseAuthService.shared.currentUser?.idToken {
+            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["fields": fields])
+
+        _ = try await URLSession.shared.data(for: request)
+
+        if let idx = associations.firstIndex(where: { $0.id == card.id }) {
+            associations[idx] = card
+            updateAssociateLookups()
+        }
+
+        for t in card.allTypes {
+            await ensureTypeExists(t, userId: card.userId)
+        }
+    }
+
     // MARK: - Delete Card
     func deleteCard(id: String) async throws {
         guard let url = URL(string: "\(FirebaseConfig.firestoreBaseURL)/Association/\(id)") else { return }

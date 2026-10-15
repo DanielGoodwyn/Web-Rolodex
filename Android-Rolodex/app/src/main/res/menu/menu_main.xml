@@ -6,25 +6,13 @@
         android:id="@+id/action_sort"
         android:title="Sort"
         android:icon="@android:drawable/ic_menu_sort_by_size"
-        app:showAsAction="ifRoom">
-        <menu>
-            <item
-                android:id="@+id/sort_distance_asc"
-                android:title="Distance (Closest First)" />
-            <item
-                android:id="@+id/sort_distance_desc"
-                android:title="Distance (Farthest First)" />
-            <item
-                android:id="@+id/sort_rating_desc"
-                android:title="Rating (Highest First)" />
-            <item
-                android:id="@+id/sort_name_asc"
-                android:title="Name (A to Z)" />
-            <item
-                android:id="@+id/sort_newest"
-                android:title="Recently Added" />
-        </menu>
-    </item>
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_expand_collapse"
+        android:title="View"
+        android:icon="@android:drawable/ic_menu_view"
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_account"

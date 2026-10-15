@@ -115,6 +115,35 @@ class RolodexRepository {
         ).await()
     }
 
+    suspend fun updateCard(association: Association) {
+        val updates = mutableMapOf<String, Any?>(
+            "name" to association.name,
+            "type" to association.type,
+            "types" to association.allTypes,
+            "rating" to association.displayRating,
+            "location" to association.location,
+            "neighborhood" to association.neighborhood,
+            "site" to association.websiteUrl,
+            "fb" to association.facebookUrl,
+            "ig" to association.instagramUrl,
+            "twitter" to association.twitterUrl,
+            "updatedAt" to FieldValue.serverTimestamp()
+        )
+        if (association.geo != null) {
+            updates["geo"] = association.geo
+        } else {
+            updates["geo"] = FieldValue.delete()
+        }
+
+        db.collection(COLLECTION_ASSOCIATION).document(association.id).update(updates).await()
+
+        for (t in association.allTypes) {
+            if (t.isNotBlank()) {
+                ensureTypeExists(t, association.userId)
+            }
+        }
+    }
+
     suspend fun updateLocation(
         cardId: String,
         location: String,

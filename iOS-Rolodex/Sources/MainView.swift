@@ -21,6 +21,7 @@ struct MainView: View {
     @State private var selectedSort: SortOption = .distanceAsc
     @State private var showAddCardSheet = false
     @State private var showAccountSheet = false
+    @State private var cardExpansionState: [String: Bool] = [:]
 
     var body: some View {
         NavigationStack {
@@ -93,9 +94,21 @@ struct MainView: View {
                                     CardView(
                                         card: card,
                                         number: index + 1,
+                                        isExpanded: isCardExpanded(id: card.id),
+                                        availableTypes: firestore.userTypes,
                                         allAssociateNames: firestore.associations.filter(\.isAssociate).map(\.name),
                                         allParentNames: firestore.associations.filter { !$0.isAssociate }.map(\.name),
                                         notes: firestore.notesCache[card.id] ?? [],
+                                        onUpdateRating: { c, rating in
+                                            Task {
+                                                try? await firestore.updateRating(id: c.id, newRating: rating)
+                                            }
+                                        },
+                                        onUpdateCard: { updated in
+                                            Task {
+                                                try? await firestore.updateCard(updated)
+                                            }
+                                        },
                                         onDeleteCard: { toDelete in
                                             Task {
                                                 try? await firestore.deleteCard(id: toDelete.id)
@@ -164,7 +177,7 @@ struct MainView: View {
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search cards or associates...")
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItemGroup(placement: .navigationBarLeading) {
                     Menu {
                         ForEach(SortOption.allCases) { opt in
                             Button(action: { selectedSort = opt }) {
@@ -178,6 +191,18 @@ struct MainView: View {
                         }
                     } label: {
                         Image(systemName: "arrow.up.arrow.down")
+                            .foregroundColor(.primary)
+                    }
+
+                    Menu {
+                        Button(action: expandAll) {
+                            Label("Expand All Cards", systemImage: "arrow.up.left.and.arrow.down.right")
+                        }
+                        Button(action: collapseAll) {
+                            Label("Collapse All Cards", systemImage: "arrow.down.right.and.arrow.up.left")
+                        }
+                    } label: {
+                        Image(systemName: "rectangle.expand.vertical")
                             .foregroundColor(.primary)
                     }
                 }
@@ -287,6 +312,29 @@ struct MainView: View {
         await firestore.fetchAssociations(for: uid)
         for card in firestore.associations {
             await firestore.fetchNotes(for: card.id, userId: uid)
+        }
+    }
+
+    private func isCardExpanded(id: String) -> Binding<Bool> {
+        Binding(
+            get: { cardExpansionState[id] ?? true },
+            set: { cardExpansionState[id] = $0 }
+        )
+    }
+
+    private func expandAll() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            for card in firestore.associations {
+                cardExpansionState[card.id] = true
+            }
+        }
+    }
+
+    private func collapseAll() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            for card in firestore.associations {
+                cardExpansionState[card.id] = false
+            }
         }
     }
 }
