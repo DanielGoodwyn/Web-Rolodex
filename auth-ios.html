@@ -100,61 +100,92 @@
         <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.347 2.827.957 4.039l3.007-2.332z"/>
         <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
       </svg>
-      <span>Continue with Google</span>
+      <span id="googleBtnText">Continue with Google</span>
     </button>
 
     <div id="spinner" class="spinner"></div>
     <div id="status" class="status"></div>
+    <a id="manualReturnLink" href="#" style="display: none; margin-top: 16px; padding: 10px 16px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px;">Open Rolodex App</a>
   </div>
 
   <script>
     firebase.initializeApp(firebaseConfig);
     var auth = firebase.auth();
+    var isCompleting = false;
 
     function setStatus(text, showSpinner) {
       document.getElementById('status').innerText = text;
       document.getElementById('spinner').style.display = showSpinner ? 'block' : 'none';
     }
 
-    // Check if returning from redirect
+    // Auth state listener: fires automatically on sign-in across popups or redirects
+    auth.onAuthStateChanged(function(user) {
+      if (user) {
+        completeAuth(user);
+      }
+    });
+
+    // Check redirect result in case of full page redirect flow
     auth.getRedirectResult().then(function(result) {
       if (result && result.user) {
         completeAuth(result.user);
       }
     }).catch(function(err) {
+      console.warn("Redirect result error:", err);
       setStatus(err.message, false);
     });
 
     function startSignIn() {
-      setStatus("Redirecting to Google...", true);
+      setStatus("Opening Google Sign-In...", true);
+      document.getElementById('googleBtn').style.opacity = '0.6';
       var provider = new firebase.auth.GoogleAuthProvider();
       provider.addScope('email');
       provider.addScope('profile');
-      auth.signInWithRedirect(provider);
+
+      // Attempt popup first (fast, works without losing page state)
+      auth.signInWithPopup(provider).then(function(result) {
+        if (result && result.user) {
+          completeAuth(result.user);
+        }
+      }).catch(function(err) {
+        console.warn("Popup failed, trying redirect:", err);
+        if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+          setStatus("Redirecting to Google...", true);
+          auth.signInWithRedirect(provider);
+        } else {
+          setStatus(err.message, false);
+          document.getElementById('googleBtn').style.opacity = '1';
+        }
+      });
     }
 
     function completeAuth(user) {
-      setStatus("Signing in as " + (user.displayName || user.email) + "...", true);
-      user.getIdToken().then(function(token) {
+      if (isCompleting || !user) return;
+      isCompleting = true;
+      setStatus("Signed in as " + (user.displayName || user.email) + ". Opening Rolodex...", true);
+
+      user.getIdToken(true).then(function(token) {
         var callback = "rolodex-app://auth?" +
           "uid=" + encodeURIComponent(user.uid) +
           "&email=" + encodeURIComponent(user.email || "") +
           "&displayName=" + encodeURIComponent(user.displayName || "") +
           "&photoURL=" + encodeURIComponent(user.photoURL || "") +
           "&idToken=" + encodeURIComponent(token);
-        window.location.href = callback;
-      }).catch(function(err) {
-        setStatus(err.message, false);
-      });
-    }
 
-    // Auto-trigger on initial load if not already processing
-    var hasRedirected = sessionStorage.getItem('google_redirect_in_progress');
-    if (!hasRedirected && !window.location.hash.includes('access_token')) {
-      sessionStorage.setItem('google_redirect_in_progress', 'true');
-      setTimeout(startSignIn, 400);
-    } else {
-      sessionStorage.removeItem('google_redirect_in_progress');
+        var link = document.getElementById('manualReturnLink');
+        if (link) {
+          link.href = callback;
+          link.style.display = 'inline-block';
+        }
+
+        window.location.href = callback;
+        setTimeout(function() {
+          window.location.replace(callback);
+        }, 500);
+      }).catch(function(err) {
+        isCompleting = false;
+        setStatus("Error: " + err.message, false);
+      });
     }
   </script>
 </body>

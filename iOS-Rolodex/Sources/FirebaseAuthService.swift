@@ -195,37 +195,18 @@ class FirebaseAuthService: ObservableObject {
                     return
                 }
 
-                guard let callbackURL = callbackURL,
-                      let components = URLComponents(url: callbackURL, resolvingAgainstBaseURL: false) else {
+                guard let callbackURL = callbackURL else {
                     continuation.resume(throwing: NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid callback URL"]))
                     return
                 }
 
-                let items = components.queryItems ?? []
-                let getParam = { (name: String) in items.first(where: { $0.name == name })?.value }
-
-                if let err = getParam("error"), !err.isEmpty {
-                    continuation.resume(throwing: NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: err]))
-                    return
-                }
-
-                guard let uid = getParam("uid"), !uid.isEmpty else {
-                    continuation.resume(throwing: NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Authentication missing user ID"]))
-                    return
-                }
-
-                let user = User(
-                    uid: uid,
-                    email: getParam("email") ?? "",
-                    displayName: getParam("displayName"),
-                    photoURL: getParam("photoURL"),
-                    idToken: getParam("idToken"),
-                    refreshToken: nil
-                )
-
-                Task { @MainActor [weak self] in
-                    self?.saveUser(user)
-                    continuation.resume()
+                if let user = self?.parseUser(from: callbackURL) {
+                    Task { @MainActor [weak self] in
+                        self?.saveUser(user)
+                        continuation.resume()
+                    }
+                } else {
+                    continuation.resume(throwing: NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Authentication failed to return valid user profile."]))
                 }
             }
 
@@ -233,6 +214,29 @@ class FirebaseAuthService: ObservableObject {
             session.prefersEphemeralWebBrowserSession = false
             session.start()
         }
+    }
+
+    func handleAuthCallback(_ url: URL) {
+        if let user = parseUser(from: url) {
+            saveUser(user)
+        }
+    }
+
+    private func parseUser(from url: URL) -> User? {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return nil }
+        let items = components.queryItems ?? []
+        let getParam = { (name: String) in items.first(where: { $0.name == name })?.value }
+
+        guard let uid = getParam("uid"), !uid.isEmpty else { return nil }
+
+        return User(
+            uid: uid,
+            email: getParam("email") ?? "",
+            displayName: getParam("displayName"),
+            photoURL: getParam("photoURL"),
+            idToken: getParam("idToken"),
+            refreshToken: nil
+        )
     }
 
     func signInWithGoogleToken(_ idToken: String) async throws {
