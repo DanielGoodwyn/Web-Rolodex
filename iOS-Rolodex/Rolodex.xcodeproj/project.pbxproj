@@ -16,6 +16,7 @@
 		3733C40C46453130341D9469 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F44E0C81F9269165D3BF26ED /* Assets.xcassets */; };
 		3788366AD98F58924063986C /* initial_cards.json in Resources */ = {isa = PBXBuildFile; fileRef = 9A0E4B5BD0D59B27787A506F /* initial_cards.json */; };
 		3F36663B0ED62E86D6466D12 /* EditCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E916B5B25AC9039B7CB007B1 /* EditCardView.swift */; };
+		4C7C3873BD09B73A5E3025FB /* Glyph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10E14EBE1FFBD06969CE71BA /* Glyph.swift */; };
 		66CD8AC9CCBFF23A26E2EE47 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C187F9DDA1ACCA87B64553D1 /* LoginView.swift */; };
 		7ADB83F0866F7F340BB639DE /* RolodexApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11266E4D3EB83E090130668A /* RolodexApp.swift */; };
 		85B1CD8E7E073A934EB48071 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E681B4FC7F3A4E9BC3DB81A /* Note.swift */; };
@@ -32,6 +33,7 @@
 /* Begin PBXFileReference section */
 		09CFE76177223B939F08B65C /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		0BA871F0DFD163AE8B05D025 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		10E14EBE1FFBD06969CE71BA /* Glyph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glyph.swift; sourceTree = "<group>"; };
 		11266E4D3EB83E090130668A /* RolodexApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RolodexApp.swift; sourceTree = "<group>"; };
 		179D3900A2A7A2A5C935269D /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
 		3FC1EC74A919C21F9FC89314 /* FirestoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreService.swift; sourceTree = "<group>"; };
@@ -96,6 +98,7 @@
 				6D49E301F17A95AE022A2872 /* FirebaseAuthService.swift */,
 				C21D3638411AB8084574E2A6 /* FirebaseConfig.swift */,
 				3FC1EC74A919C21F9FC89314 /* FirestoreService.swift */,
+				10E14EBE1FFBD06969CE71BA /* Glyph.swift */,
 				A8ED52144ED500250A9E0955 /* LocationManager.swift */,
 				C187F9DDA1ACCA87B64553D1 /* LoginView.swift */,
 				0BA871F0DFD163AE8B05D025 /* MainView.swift */,
@@ -190,6 +193,7 @@
 				F2148F6A9512AF935F0A6284 /* FirebaseAuthService.swift in Sources */,
 				D2D96AC1ACA515F63A0B81AB /* FirebaseConfig.swift in Sources */,
 				08CF8EC53E90ADFE671F719B /* FirestoreService.swift in Sources */,
+				4C7C3873BD09B73A5E3025FB /* Glyph.swift in Sources */,
 				C1AD45B90FE8929173ABE79E /* LocationManager.swift in Sources */,
 				66CD8AC9CCBFF23A26E2EE47 /* LoginView.swift in Sources */,
 				10D6BBD00E23DA48C8B4BF80 /* MainView.swift in Sources */,

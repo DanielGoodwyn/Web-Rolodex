@@ -2227,7 +2227,7 @@ function getAssociations() {
 			output = output + "<input class='locationInput' placeholder='location (example: 3101 24th Street, San Francisco, CA)' type='text' id='" + listItemId + "locationInput' onkeyup='updateLocation(&apos;" + listItemId + "&apos;, event)' value='" + listItemLocation + "'>";
 			if (listItemLocation && listItemLocation.trim() !== "") {
 				var mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(listItemLocation);
-				output = output + "<div><a href='" + mapsUrl + "' target='_blank' rel='noopener noreferrer' class='btn btn-google-maps' id='" + listItemId + "mapsLink'><i class='glyphicon glyphicon-map-marker'></i> Google Maps <i class='glyphicon glyphicon-new-window' style='font-size:9px;'></i></a></div>";
+				output = output + "<div><a href='" + mapsUrl + "' target='_blank' rel='noopener noreferrer' class='btn btn-google-maps' id='" + listItemId + "mapsLink'><i class='glyph-maps'></i> Google Maps <i class='glyphicon glyphicon-new-window'></i></a></div>";
 			}
 			output = output + "</div>";
 
@@ -2245,13 +2245,13 @@ function getAssociations() {
 			output = output + "<div class'row'>";
             output = output + "<div class='btn-padding btn-group btn-group-justified' role='group'>";
             output = output + "<div class='btn-group' role='group'>";
-			output = output + "<button class='btn btn-default btn-site' " + siteDisplay + " onclick='visit(&apos;" + listItemSite + "&apos;)'>web <i class='glyphicon glyphicon-new-window'></i></button>";
+			output = output + "<button class='btn btn-default btn-site' " + siteDisplay + " onclick='visit(&apos;" + listItemSite + "&apos;)'><i class='glyph-globe'></i> web <i class='glyphicon glyphicon-new-window'></i></button>";
             output = output + "</div><div class='btn-group' role='group'>";
-			output = output + "<button class='btn btn-default btn-fb' " + fbDisplay + " onclick='visit(&apos;" + listItemFb + "&apos;)'>fb <i class='glyphicon glyphicon-new-window'></i></button>";
+			output = output + "<button class='btn btn-default btn-fb' " + fbDisplay + " onclick='visit(&apos;" + listItemFb + "&apos;)'><i class='glyph-facebook'></i> fb <i class='glyphicon glyphicon-new-window'></i></button>";
             output = output + "</div><div class='btn-group' role='group'>";
-			output = output + "<button class='btn btn-default btn-ig' " + igDisplay + " onclick='visit(&apos;" + listItemIg + "&apos;)'>insta <i class='glyphicon glyphicon-new-window'></i></button>";
+			output = output + "<button class='btn btn-default btn-ig' " + igDisplay + " onclick='visit(&apos;" + listItemIg + "&apos;)'><i class='glyph-instagram'></i> insta <i class='glyphicon glyphicon-new-window'></i></button>";
             output = output + "</div><div class='btn-group' role='group'>";
-			output = output + "<button class='btn btn-default btn-twitter btn-x' " + twitterDisplay + " onclick='visit(&apos;" + listItemTwitter + "&apos;)'>x <i class='glyphicon glyphicon-new-window'></i></button>";
+			output = output + "<button class='btn btn-default btn-twitter btn-x' " + twitterDisplay + " onclick='visit(&apos;" + listItemTwitter + "&apos;)'><i class='glyph-xmark'></i> x <i class='glyphicon glyphicon-new-window'></i></button>";
 			output = output + "</div></div></div>";
 
 			output = output + "<div class'row'>";

@@ -39,7 +39,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:contentDescription="Expand/Collapse"
-                android:src="@android:drawable/arrow_down_float"
+                android:src="@drawable/ic_glyph_chevron_down"
                 app:tint="@color/text_secondary" />
 
             <TextView
@@ -90,7 +90,7 @@
                 android:layout_height="36dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Edit Card"
-                android:src="@android:drawable/ic_menu_edit"
+                android:src="@drawable/ic_glyph_pencil"
                 app:tint="@color/text_secondary" />
 
             <!-- Delete Button -->
@@ -100,7 +100,7 @@
                 android:layout_height="36dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Delete Card"
-                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:src="@drawable/ic_glyph_close"
                 app:tint="@color/delete_red" />
         </LinearLayout>
 
@@ -164,7 +164,7 @@
                         app:cornerRadius="8dp"
                         app:strokeWidth="1dp"
                         app:strokeColor="@color/google_maps"
-                        app:icon="@android:drawable/ic_dialog_map"
+                        app:icon="@drawable/ic_glyph_maps"
                         app:iconTint="@color/google_maps" />
 
                     <TextView
@@ -218,11 +218,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="36dp"
                             android:layout_marginEnd="6dp"
-                            android:text="🌐 Web"
+                            android:text="Web"
                             android:textColor="@color/primary"
                             app:cornerRadius="8dp"
                             app:strokeWidth="1dp"
                             app:strokeColor="@color/primary"
+                            app:icon="@drawable/ic_glyph_globe"
+                            app:iconTint="@color/primary"
+                            app:iconPadding="4dp"
                             android:textSize="11sp"
                             android:visibility="gone"
                             tools:visibility="visible" />
@@ -233,11 +236,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="36dp"
                             android:layout_marginEnd="6dp"
-                            android:text="👥 FB"
+                            android:text="FB"
                             android:textColor="@color/facebook_blue"
                             app:cornerRadius="8dp"
                             app:strokeWidth="1dp"
                             app:strokeColor="@color/facebook_blue"
+                            app:icon="@drawable/ic_glyph_facebook"
+                            app:iconTint="@color/facebook_blue"
+                            app:iconPadding="4dp"
                             android:textSize="11sp"
                             android:visibility="gone"
                             tools:visibility="visible" />
@@ -248,11 +254,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="36dp"
                             android:layout_marginEnd="6dp"
-                            android:text="📷 Insta"
+                            android:text="Insta"
                             android:textColor="@color/instagram_gradient"
                             app:cornerRadius="8dp"
                             app:strokeWidth="1dp"
                             app:strokeColor="@color/instagram_gradient"
+                            app:icon="@drawable/ic_glyph_instagram"
+                            app:iconTint="@color/instagram_gradient"
+                            app:iconPadding="4dp"
                             android:textSize="11sp"
                             android:visibility="gone"
                             tools:visibility="visible" />
@@ -262,11 +271,14 @@
                             style="@style/Widget.Material3.Button.OutlinedButton"
                             android:layout_width="wrap_content"
                             android:layout_height="36dp"
-                            android:text="✕ X"
+                            android:text="X"
                             android:textColor="@color/x_black"
                             app:cornerRadius="8dp"
                             app:strokeWidth="1dp"
                             app:strokeColor="@color/x_black"
+                            app:icon="@drawable/ic_glyph_xmark"
+                            app:iconTint="@color/x_black"
+                            app:iconPadding="4dp"
                             android:textSize="11sp"
                             android:visibility="gone"
                             tools:visibility="visible" />

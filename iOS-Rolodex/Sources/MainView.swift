@@ -50,10 +50,7 @@ struct MainView: View {
                             searchText = hood
                         }) {
                             HStack(spacing: 5) {
-                                Image("hood")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 15, height: 15)
+                                Glyph(name: "pin", size: 14, color: Theme.primary)
                                 Text(hood)
                                     .font(.caption.bold())
                                     .foregroundColor(.primary)
@@ -171,9 +168,7 @@ struct MainView: View {
 
                     // Floating Action Button (+)
                     Button(action: { showAddCardSheet = true }) {
-                        Image(systemName: "plus")
-                            .font(.title2.bold())
-                            .foregroundColor(.white)
+                        Glyph(name: "plus", size: 24, color: .white)
                             .frame(width: 56, height: 56)
                             .background(Theme.primary)
                             .clipShape(Circle())
@@ -200,16 +195,23 @@ struct MainView: View {
                             }
                         }
                     } label: {
-                        Image(systemName: "arrow.up.arrow.down")
-                            .foregroundColor(.primary)
+                        Glyph(name: "sort", size: 18, color: .primary)
                     }
 
                     Menu {
                         Button(action: expandAll) {
-                            Label("Expand All Cards", systemImage: "arrow.up.left.and.arrow.down.right")
+                            Label {
+                                Text("Expand All Cards")
+                            } icon: {
+                                Glyph(name: "chevron_down", size: 14, color: .primary)
+                            }
                         }
                         Button(action: collapseAll) {
-                            Label("Collapse All Cards", systemImage: "arrow.down.right.and.arrow.up.left")
+                            Label {
+                                Text("Collapse All Cards")
+                            } icon: {
+                                Glyph(name: "chevron_up", size: 14, color: .primary)
+                            }
                         }
                     } label: {
                         Image(systemName: "rectangle.expand.vertical")

@@ -89,7 +89,8 @@
             <ImageView
                 android:layout_width="16dp"
                 android:layout_height="16dp"
-                android:src="@drawable/hood"
+                android:src="@drawable/ic_glyph_pin"
+                app:tint="@color/primary"
                 android:contentDescription="Neighborhood" />
 
             <TextView
@@ -168,6 +169,6 @@
         android:backgroundTint="@color/primary"
         android:contentDescription="@string/add_card"
         app:tint="@android:color/white"
-        app:srcCompat="@android:drawable/ic_input_add" />
+        app:srcCompat="@drawable/ic_glyph_plus" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

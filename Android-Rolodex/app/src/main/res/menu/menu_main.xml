@@ -5,18 +5,18 @@
     <item
         android:id="@+id/action_sort"
         android:title="Sort"
-        android:icon="@android:drawable/ic_menu_sort_by_size"
+        android:icon="@drawable/ic_glyph_sort"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_expand_collapse"
         android:title="View"
-        android:icon="@android:drawable/ic_menu_view"
+        android:icon="@drawable/ic_glyph_chevron_down"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_account"
         android:title="Account"
-        android:icon="@android:drawable/ic_menu_myplaces"
+        android:icon="@drawable/ic_glyph_user"
         app:showAsAction="ifRoom" />
 </menu>

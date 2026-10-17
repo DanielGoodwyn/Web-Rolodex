@@ -38,9 +38,7 @@ struct CardView: View {
                 }
             }) {
                 HStack(spacing: 8) {
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.caption.bold())
-                        .foregroundColor(.secondary)
+                    Glyph(name: isExpanded ? "chevron_up" : "chevron_down", size: 12, color: .secondary)
 
                     Text(String(format: "%02d", number))
                         .font(.subheadline.bold())
@@ -85,17 +83,13 @@ struct CardView: View {
                     }
 
                     Button(action: { showEditSheet = true }) {
-                        Image(systemName: "pencil")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                        Glyph(name: "pencil", size: 14, color: .secondary)
                             .padding(4)
                     }
                     .buttonStyle(.plain)
 
                     Button(action: { showDeleteAlert = true }) {
-                        Image(systemName: "xmark")
-                            .font(.subheadline.bold())
-                            .foregroundColor(.red)
+                        Glyph(name: "close", size: 14, color: .red)
                             .padding(4)
                     }
                     .buttonStyle(.plain)
@@ -135,31 +129,39 @@ struct CardView: View {
 
                             HStack(spacing: 10) {
                                 Button(action: { openGoogleMaps(for: loc) }) {
-                                    Label("Google Maps", systemImage: "map.fill")
-                                        .font(.caption.bold())
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 6)
-                                        .background(Theme.googleMapsBlue.opacity(0.12))
-                                        .foregroundColor(Theme.googleMapsBlue)
-                                        .cornerRadius(8)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(Theme.googleMapsBlue.opacity(0.35), lineWidth: 1)
-                                        )
+                                    HStack(spacing: 5) {
+                                        Glyph(name: "maps", size: 14, color: Theme.googleMapsBlue)
+                                        Text("Google Maps")
+                                            .font(.caption.bold())
+                                        Glyph(name: "external", size: 10, color: Theme.googleMapsBlue)
+                                    }
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(Theme.googleMapsBlue.opacity(0.12))
+                                    .foregroundColor(Theme.googleMapsBlue)
+                                    .cornerRadius(8)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Theme.googleMapsBlue.opacity(0.35), lineWidth: 1)
+                                    )
                                 }
 
                                 Button(action: { openAppleMaps(for: loc) }) {
-                                    Label("Apple Maps", systemImage: "location.north.line.fill")
-                                        .font(.caption.bold())
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 6)
-                                        .background(Color.secondary.opacity(0.12))
-                                        .foregroundColor(.primary)
-                                        .cornerRadius(8)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-                                        )
+                                    HStack(spacing: 5) {
+                                        Glyph(name: "pin", size: 14, color: .primary)
+                                        Text("Apple Maps")
+                                            .font(.caption.bold())
+                                        Glyph(name: "external", size: 10, color: .primary)
+                                    }
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(Color.secondary.opacity(0.12))
+                                    .foregroundColor(.primary)
+                                    .cornerRadius(8)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                                    )
                                 }
 
                                 Spacer()
@@ -180,20 +182,19 @@ struct CardView: View {
 
                     // Links (Web, FB, Insta, X) Section
                     VStack(alignment: .leading, spacing: 8) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "link")
-                                .font(.caption.bold())
+                        HStack(spacing: 5) {
+                            Glyph(name: "link", size: 12, color: .secondary)
                             Text("Links")
                                 .font(.caption.bold())
                         }
                         .foregroundColor(.secondary)
 
                         // Action Buttons (Web, FB, Insta, X)
-                        let activeLinks: [(title: String, icon: String, url: String, color: Color)] = [
-                            card.websiteUrl.map { (title: "Web", icon: "globe", url: $0, color: Theme.primary) },
-                            card.facebookUrl.map { (title: "FB", icon: "person.2.fill", url: $0, color: Theme.facebookBlue) },
-                            card.instagramUrl.map { (title: "Insta", icon: "camera.fill", url: $0, color: Theme.instagramPink) },
-                            card.twitterUrl.map { (title: "X", icon: "xmark", url: $0, color: Theme.xBlack) }
+                        let activeLinks: [(title: String, glyph: String, url: String, color: Color)] = [
+                            card.websiteUrl.map { (title: "Web", glyph: "globe", url: $0, color: Theme.primary) },
+                            card.facebookUrl.map { (title: "FB", glyph: "facebook", url: $0, color: Theme.facebookBlue) },
+                            card.instagramUrl.map { (title: "Insta", glyph: "instagram", url: $0, color: Theme.instagramPink) },
+                            card.twitterUrl.map { (title: "X", glyph: "xmark", url: $0, color: Theme.xBlack) }
                         ].compactMap { $0 }
 
                         if !activeLinks.isEmpty {
@@ -201,12 +202,10 @@ struct CardView: View {
                                 ForEach(activeLinks, id: \.title) { item in
                                     Button(action: { openExternalUrl(item.url) }) {
                                         HStack(spacing: 5) {
-                                            Image(systemName: item.icon)
-                                                .font(.caption)
+                                            Glyph(name: item.glyph, size: 13, color: item.color)
                                             Text(item.title)
                                                 .font(.caption.bold())
-                                            Image(systemName: "arrow.up.right")
-                                                .font(.system(size: 9, weight: .bold))
+                                            Glyph(name: "external", size: 9, color: item.color)
                                         }
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, 5)
@@ -246,9 +245,12 @@ struct CardView: View {
 
                     // Associates Section
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(card.isAssociate ? "Associated With" : "Associates")
-                            .font(.caption.bold())
-                            .foregroundColor(.secondary)
+                        HStack(spacing: 5) {
+                            Glyph(name: card.isAssociate ? "briefcase" : "user", size: 12, color: .secondary)
+                            Text(card.isAssociate ? "Associated With" : "Associates")
+                                .font(.caption.bold())
+                        }
+                        .foregroundColor(.secondary)
 
                         let items = card.isAssociate ? card.linkedParentNames : card.linkedAssociateNames
                         if !items.isEmpty {
@@ -261,9 +263,7 @@ struct CardView: View {
                                             .onTapGesture { onSearch(item.name) }
 
                                         Button(action: { onUnlinkAssociate(card, item.id) }) {
-                                            Image(systemName: "xmark.circle.fill")
-                                                .font(.caption2)
-                                                .foregroundColor(.secondary)
+                                            Glyph(name: "close", size: 10, color: .secondary)
                                         }
                                     }
                                     .padding(.horizontal, 8)
@@ -286,18 +286,19 @@ struct CardView: View {
                                     newAssociateText = ""
                                 }
                             }) {
-                                Image(systemName: "plus.circle.fill")
-                                    .foregroundColor(Theme.primary)
-                                    .font(.title3)
+                                Glyph(name: "plus", size: 18, color: Theme.primary)
                             }
                         }
                     }
 
                     // Notes Section
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Notes")
-                            .font(.caption.bold())
-                            .foregroundColor(.secondary)
+                        HStack(spacing: 5) {
+                            Glyph(name: "notes", size: 12, color: .secondary)
+                            Text("Notes")
+                                .font(.caption.bold())
+                        }
+                        .foregroundColor(.secondary)
 
                         ForEach(notes) { note in
                             HStack(alignment: .top) {
