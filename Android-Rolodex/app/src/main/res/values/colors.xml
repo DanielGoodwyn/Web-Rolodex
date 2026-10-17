@@ -49,4 +49,7 @@
     <!-- Chip Colors for Dynamic Associate Chips -->
     <color name="chip_associate_bg">#E3F2FD</color>
     <color name="chip_associate_text">#1565C0</color>
+
+    <!-- Adaptive Launcher Icon Background -->
+    <color name="ic_launcher_background">#0b162c</color>
 </resources>
