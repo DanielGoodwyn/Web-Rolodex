@@ -11,7 +11,7 @@
     <item
         android:id="@+id/action_expand_collapse"
         android:title="View"
-        android:icon="@drawable/ic_glyph_chevron_down"
+        android:icon="@drawable/ic_glyph_triangle_down"
         app:showAsAction="ifRoom" />
 
     <item

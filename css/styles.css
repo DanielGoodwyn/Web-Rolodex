@@ -656,42 +656,195 @@ nav .navbar-brand img {
     box-shadow: 0 3px 8px rgba(0,0,0,0.15);
 }
 
-.btn-site i.glyph-globe,
-.btn-fb i.glyph-facebook,
-.btn-ig i.glyph-instagram,
-.btn-x i.glyph-xmark,
-.btn-twitter i.glyph-xmark {
+/* Nav App Icon Circle Crop */
+nav .navbar-brand img, .navbar-brand span img {
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+/* Pill Shape Aesthetic */
+input, select, textarea, .btn:not(.btn-circle):not(.btn-circle-action):not(.btn-circle-delete):not(.btn-circle-sm), .badge, .title-column, .corners, .corners-left, .corners-right {
+    border-radius: 9999px !important;
+}
+
+/* Big Panels with 1.25em Border Radius */
+.panel, .well, .card {
+    border-radius: 1.25em !important;
+    overflow: hidden;
+}
+
+.panel-heading {
+    border-top-left-radius: 1.25em !important;
+    border-top-right-radius: 1.25em !important;
+}
+
+/* Circular Control and Action Buttons */
+.btn-circle {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    text-align: center !important;
+}
+
+.btn-circle-action {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px solid rgba(0,0,0,0.15) !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08) !important;
+    transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+    margin: 0 4px !important;
+    text-decoration: none !important;
+    cursor: pointer;
+}
+
+.btn-circle-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+}
+
+.rolodex-glyph {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.btn-circle-action svg {
+    width: 20px;
+    height: 20px;
+}
+
+.btn-circle-google {
+    background: #e8f0fe !important;
+    border-color: #4285f4 !important;
+}
+.btn-circle-google svg, .btn-circle-google svg path { fill: #4285f4 !important; }
+
+.btn-circle-apple {
+    background: #f5f5f7 !important;
+    border-color: #555 !important;
+}
+.btn-circle-apple svg, .btn-circle-apple svg path { fill: #111 !important; }
+
+.btn-circle-web {
+    background: #e8f4fd !important;
+    border-color: #1976d2 !important;
+}
+.btn-circle-web svg, .btn-circle-web svg path { fill: #1976d2 !important; }
+
+.btn-circle-fb {
+    background: #e7f3ff !important;
+    border-color: #1877f2 !important;
+}
+.btn-circle-fb svg, .btn-circle-fb svg path { fill: #1877f2 !important; }
+
+.btn-circle-ig {
+    background: #fdf0f5 !important;
+    border-color: #e4405f !important;
+}
+.btn-circle-ig svg, .btn-circle-ig svg path { fill: #e4405f !important; }
+
+.btn-circle-x {
+    background: #f0f0f0 !important;
+    border-color: #111 !important;
+}
+.btn-circle-x svg, .btn-circle-x svg path { fill: #111 !important; }
+
+.btn-circle-delete {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 50% !important;
+    background: #d9534f !important;
+    color: #fff !important;
+    border: none !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 18px !important;
+    line-height: 1 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+    transition: background 0.15s ease;
+    cursor: pointer;
+}
+.btn-circle-delete:hover {
+    background: #c9302c !important;
+}
+
+/* Rating Slider & Pill Box */
+.rating-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 2px 0;
+}
+
+.rating-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    border-radius: 9999px !important;
+    background: #e0e0e0;
+    outline: none;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.15);
     margin: 0 !important;
-    font-size: 19px !important;
-    width: 1.25em !important;
-    height: 1.25em !important;
+    padding: 0 !important;
+    border: none !important;
 }
 
-.btn-site i.glyph-globe {
-    color: #007aff;
+.rating-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #337ab7;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    border: 2px solid #fff;
+    transition: transform 0.1s ease;
 }
 
-.btn-fb i.glyph-facebook {
-    color: #1877f2;
+.rating-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
 }
 
-.btn-ig i.glyph-instagram {
-    color: #e1306c;
+.rating-slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #337ab7;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    border: 2px solid #fff;
 }
 
-.btn-x i.glyph-xmark, .btn-twitter i.glyph-xmark {
-    color: #111111;
+.rating-pill-box {
+    width: 58px !important;
+    height: 32px !important;
+    border-radius: 9999px !important;
+    text-align: center !important;
+    font-weight: bold !important;
+    font-size: 13px !important;
+    border: 1px solid rgba(0,0,0,0.15) !important;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.08) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    flex-shrink: 0;
 }
 
-.btn-google-maps i.glyph-maps {
-    margin-right: 4px;
-    font-size: 13px;
-    color: #ea4335;
-}
-
-.btn-google-maps i.glyphicon-new-window {
-    font-size: 9px;
-    margin-left: 3px;
-    opacity: 0.8;
-}
 

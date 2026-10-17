@@ -117,12 +117,12 @@ class CardsAdapter(
 
             // Expand / Collapse
             binding.expandableBodyLayout.visibility = if (card.isExpanded) View.VISIBLE else View.GONE
-            binding.imgChevron.rotation = if (card.isExpanded) 180f else 0f
+            binding.imgChevron.rotation = if (card.isExpanded) 90f else 0f
 
             binding.headerLayout.setOnClickListener {
                 card.isExpanded = !card.isExpanded
                 binding.expandableBodyLayout.visibility = if (card.isExpanded) View.VISIBLE else View.GONE
-                binding.imgChevron.animate().rotation(if (card.isExpanded) 180f else 0f).setDuration(200).start()
+                binding.imgChevron.animate().rotation(if (card.isExpanded) 90f else 0f).setDuration(200).start()
             }
 
             // Delete Card
@@ -148,7 +148,7 @@ class CardsAdapter(
                 binding.chipGroupCardTypes.addView(chip)
             }
 
-            // Location & Google Maps
+            // Location & Google Maps / Apple Maps
             val loc = card.location
             if (!loc.isNullOrBlank()) {
                 binding.locationContainer.visibility = View.VISIBLE
@@ -161,6 +161,12 @@ class CardsAdapter(
 
                 binding.btnGoogleMaps.setOnClickListener {
                     val uri = Uri.parse("https://www.google.com/maps/search/?api=1&query=${Uri.encode(loc)}")
+                    val mapIntent = Intent(Intent.ACTION_VIEW, uri)
+                    context.startActivity(mapIntent)
+                }
+
+                binding.btnAppleMaps.setOnClickListener {
+                    val uri = Uri.parse("https://maps.apple.com/?q=${Uri.encode(loc)}")
                     val mapIntent = Intent(Intent.ACTION_VIEW, uri)
                     context.startActivity(mapIntent)
                 }

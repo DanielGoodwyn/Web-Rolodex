@@ -38,7 +38,10 @@ struct CardView: View {
                 }
             }) {
                 HStack(spacing: 8) {
-                    Glyph(name: isExpanded ? "chevron_up" : "chevron_down", size: 12, color: .secondary)
+                    Text(isExpanded ? "▼" : "▶")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.secondary)
+                        .frame(width: 14)
 
                     Text(String(format: "%02d", number))
                         .font(.subheadline.bold())
@@ -89,8 +92,12 @@ struct CardView: View {
                     .buttonStyle(.plain)
 
                     Button(action: { showDeleteAlert = true }) {
-                        Glyph(name: "close", size: 14, color: .red)
-                            .padding(4)
+                        Text("×")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 24, height: 24)
+                            .background(Color.red)
+                            .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
                 }
@@ -127,42 +134,30 @@ struct CardView: View {
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
 
-                            HStack(spacing: 10) {
+                            HStack(spacing: 8) {
                                 Button(action: { openGoogleMaps(for: loc) }) {
-                                    HStack(spacing: 5) {
-                                        Glyph(name: "maps", size: 14, color: Theme.googleMapsBlue)
-                                        Text("Google Maps")
-                                            .font(.caption.bold())
-                                        Glyph(name: "external", size: 10, color: Theme.googleMapsBlue)
-                                    }
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(Theme.googleMapsBlue.opacity(0.12))
-                                    .foregroundColor(Theme.googleMapsBlue)
-                                    .cornerRadius(8)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(Theme.googleMapsBlue.opacity(0.35), lineWidth: 1)
-                                    )
+                                    Glyph(name: "google", size: 18, color: Theme.googleMapsBlue)
+                                        .frame(width: 36, height: 36)
+                                        .background(Theme.googleMapsBlue.opacity(0.12))
+                                        .clipShape(Circle())
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Theme.googleMapsBlue.opacity(0.4), lineWidth: 1)
+                                        )
                                 }
+                                .buttonStyle(.plain)
 
                                 Button(action: { openAppleMaps(for: loc) }) {
-                                    HStack(spacing: 5) {
-                                        Glyph(name: "pin", size: 14, color: .primary)
-                                        Text("Apple Maps")
-                                            .font(.caption.bold())
-                                        Glyph(name: "external", size: 10, color: .primary)
-                                    }
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(Color.secondary.opacity(0.12))
-                                    .foregroundColor(.primary)
-                                    .cornerRadius(8)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-                                    )
+                                    Glyph(name: "apple", size: 18, color: .primary)
+                                        .frame(width: 36, height: 36)
+                                        .background(Color.secondary.opacity(0.12))
+                                        .clipShape(Circle())
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color.secondary.opacity(0.4), lineWidth: 1)
+                                        )
                                 }
+                                .buttonStyle(.plain)
 
                                 Spacer()
 
@@ -191,7 +186,7 @@ struct CardView: View {
 
                         // Action Buttons (Web, FB, Insta, X)
                         let activeLinks: [(title: String, glyph: String, url: String, color: Color)] = [
-                            card.websiteUrl.map { (title: "Web", glyph: "globe", url: $0, color: Theme.primary) },
+                            card.websiteUrl.map { (title: "Web", glyph: "link", url: $0, color: Theme.primary) },
                             card.facebookUrl.map { (title: "FB", glyph: "facebook", url: $0, color: Theme.facebookBlue) },
                             card.instagramUrl.map { (title: "Insta", glyph: "instagram", url: $0, color: Theme.instagramPink) },
                             card.twitterUrl.map { (title: "X", glyph: "xmark", url: $0, color: Theme.xBlack) }
@@ -201,21 +196,14 @@ struct CardView: View {
                             HStack(spacing: 8) {
                                 ForEach(activeLinks, id: \.title) { item in
                                     Button(action: { openExternalUrl(item.url) }) {
-                                        HStack(spacing: 5) {
-                                            Glyph(name: item.glyph, size: 13, color: item.color)
-                                            Text(item.title)
-                                                .font(.caption.bold())
-                                            Glyph(name: "external", size: 9, color: item.color)
-                                        }
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 5)
-                                        .background(item.color.opacity(0.12))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(item.color.opacity(0.4), lineWidth: 1)
-                                        )
-                                        .cornerRadius(8)
-                                        .foregroundColor(item.color)
+                                        Glyph(name: item.glyph, size: 18, color: item.color)
+                                            .frame(width: 36, height: 36)
+                                            .background(item.color.opacity(0.12))
+                                            .clipShape(Circle())
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(item.color.opacity(0.4), lineWidth: 1)
+                                            )
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -263,8 +251,14 @@ struct CardView: View {
                                             .onTapGesture { onSearch(item.name) }
 
                                         Button(action: { onUnlinkAssociate(card, item.id) }) {
-                                            Glyph(name: "close", size: 10, color: .secondary)
+                                            Text("×")
+                                                .font(.system(size: 11, weight: .bold))
+                                                .foregroundColor(.secondary)
+                                                .frame(width: 16, height: 16)
+                                                .background(Color(uiColor: .systemGray4))
+                                                .clipShape(Circle())
                                         }
+                                        .buttonStyle(.plain)
                                     }
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
@@ -286,8 +280,14 @@ struct CardView: View {
                                     newAssociateText = ""
                                 }
                             }) {
-                                Glyph(name: "plus", size: 18, color: Theme.primary)
+                                Text("+")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .frame(width: 28, height: 28)
+                                    .background(Theme.primary)
+                                    .clipShape(Circle())
                             }
+                            .buttonStyle(.plain)
                         }
                     }
 
@@ -307,10 +307,14 @@ struct CardView: View {
                                     .foregroundColor(.primary)
                                 Spacer()
                                 Button(action: { onDeleteNote(note) }) {
-                                    Image(systemName: "trash")
-                                        .font(.caption2)
-                                        .foregroundColor(.red)
+                                    Text("×")
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundColor(.white)
+                                        .frame(width: 18, height: 18)
+                                        .background(Color.red.opacity(0.85))
+                                        .clipShape(Circle())
                                 }
+                                .buttonStyle(.plain)
                             }
                             .padding(.vertical, 2)
                         }
@@ -327,10 +331,14 @@ struct CardView: View {
                                     newNoteText = ""
                                 }
                             }) {
-                                Image(systemName: "plus.circle.fill")
-                                    .foregroundColor(Theme.primary)
-                                    .font(.title3)
+                                Text("+")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .frame(width: 28, height: 28)
+                                    .background(Theme.primary)
+                                    .clipShape(Circle())
                             }
+                            .buttonStyle(.plain)
                         }
                     }
                 }

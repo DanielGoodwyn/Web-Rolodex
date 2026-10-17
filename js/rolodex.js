@@ -535,9 +535,9 @@ function setDefaults() {
 			freeReverseGeocode(currentLocationPointLatitude, currentLocationPointLongitude, function(res) {
 				if (res && res.success && res.neighborhood) {
 					neighborhood = res.neighborhood;
-					setElementById("hood", "<span><img src='images/hood.png'></span><span>" + neighborhood + "</span>");
+					setElementById("hood", "<span><svg class='rolodex-glyph' style='width:16px;height:16px;fill:#ea4335;vertical-align:-2px;margin-right:6px;'><use href='#glyph-pin'/></svg></span><span>" + neighborhood + "</span>");
 				} else {
-					setElementById("hood", "<span><img src='images/hood.png'></span><span>SF Bay Area</span>");
+					setElementById("hood", "<span><svg class='rolodex-glyph' style='width:16px;height:16px;fill:#ea4335;vertical-align:-2px;margin-right:6px;'><use href='#glyph-pin'/></svg></span><span>SF Bay Area</span>");
 				}
 				setOrder("ascending", false);
 				setTypeSelect();
@@ -545,7 +545,7 @@ function setDefaults() {
 		},
 		error: function(error) {
 			setTypeSelect();
-			setElementById("hood", "<span><img src='images/hood.png'></span><span>San Francisco (default)</span>");
+			setElementById("hood", "<span><svg class='rolodex-glyph' style='width:16px;height:16px;fill:#ea4335;vertical-align:-2px;margin-right:6px;'><use href='#glyph-pin'/></svg></span><span>San Francisco (default)</span>");
 		}
 	});
 	setCurrentUser();
@@ -1666,8 +1666,8 @@ function getNotes(AssociationObjectId) {
 				fullNotesHtml += "placeholder='Note' value='" + escapeHtml(note) + "'>";
 				fullNotesHtml += "</div>";
 
-				fullNotesHtml += "<div class='col-xs-2 col-sm-1 col-md-1 col-lg-1'>";
-				fullNotesHtml += "<button class='btn btn-danger btn-block' onclick='deleteNote(&apos;" + noteObjectId + "&apos;)'>×</button>";
+				fullNotesHtml += "<div class='col-xs-2 col-sm-1 col-md-1 col-lg-1' style='display:flex; align-items:center; justify-content:center;'>";
+				fullNotesHtml += "<button class='btn-circle-delete' onclick='deleteNote(&apos;" + noteObjectId + "&apos;)' title='Delete note'>×</button>";
 				fullNotesHtml += "</div></div>";
 			}
 			setElementById("notes" + AssociationObjectId, fullNotesHtml);
@@ -2322,23 +2322,25 @@ function getAssociations() {
 
 			output = output + "<div class='col-xs-8 col-sm-1 col-md-1 col-lg-1 float-left'><div class='title-column'>" + doubleDigitNumber + "</div></div>";
 			
-			output = output + "<div class='col-xs-10 col-sm-6 col-md-7 col-lg-7 float-left'>";
+			output = output + "<div class='col-xs-10 col-sm-8 col-md-9 col-lg-9 float-left'>";
 			output = output + "<input class='title title-column' placeholder='Name' type='text' id='" + listItemId + "nameInput' onkeyup='updateName(&apos;" + listItemId + "&apos;, event)' value='" + listItemName + "'>";
 
-			output = output + "</div><div class='col-xs-2 col-sm-3 col-md-3 col-lg-3 float-right'>";
-			output = output + "<button class='title-column btn-danger btn-block' onclick='deleteAssociation(&apos;" + listItemId + "&apos;)'><span class='hidden-xs'>delete card</span> ×</button>";
+			output = output + "</div><div class='col-xs-2 col-sm-1 col-md-1 col-lg-1 float-right text-right' style='padding-top:10px;'>";
+			output = output + "<button class='btn-circle-delete' onclick='deleteAssociation(&apos;" + listItemId + "&apos;)' title='Delete card'>×</button>";
 			output = output + "</div></div>";
 
 			output = output + "<div class='toggle-display-card'>";
 
 			output = output + "<div class='row'>";
 
-			output = output + "<div class='col-xs-6 col-sm-6 col-md-6 col-lg-7'>";
-			output = output + "<span class='rating'>";
-			output = output + "<input style='background:" + listItemRatingColor + ";' placeholder='my rating (1-100)' type='number' min='0' max='100' step='5' id='" + listItemId + "ratingInput' onchange='updateRating(&apos;" + listItemId + "&apos;)' value='" + listItemRating + "'>";
-			output = output + "</span></div>";
+			output = output + "<div class='col-xs-12 col-sm-6 col-md-6 col-lg-7'>";
+			output = output + "<div class='rating-slider-row'>";
+			var sliderVal = parseInt(listItemRating) || 50;
+			output = output + "<input type='range' class='rating-slider' min='0' max='100' step='1' value='" + sliderVal + "' id='" + listItemId + "ratingSlider' oninput='var b=document.getElementById(&apos;" + listItemId + "ratingInput&apos;); if(b){b.value=this.value; b.style.backgroundColor=getRatingBadgeColor(this.value);}' onchange='updateRating(&apos;" + listItemId + "&apos;)'>";
+			output = output + "<input type='number' min='0' max='100' step='1' class='rating-pill-box' style='background:" + listItemRatingColor + ";' placeholder='-' id='" + listItemId + "ratingInput' value='" + listItemRating + "' oninput='var s=document.getElementById(&apos;" + listItemId + "ratingSlider&apos;); if(s){s.value=this.value||50;} this.style.backgroundColor=getRatingBadgeColor(this.value);' onchange='updateRating(&apos;" + listItemId + "&apos;)'>";
+			output = output + "</div></div>";
 
-			output = output + "<div class='col-xs-6 col-sm-6 col-md-6 col-lg-5 text-right'>";
+			output = output + "<div class='col-xs-12 col-sm-6 col-md-6 col-lg-5 text-right'>";
 			var displayLabel = listItemTypes.length > 0 ? listItemTypes.join(", ") : "Select type";
 			var displayTooltip = escapeHtml(listItemTypes.join(", "));
 			output = output + "<div class='dropdown' id='" + listItemId + "typeDropdown' style='margin-bottom: 10px; display:inline-block; max-width:100%;'>";
@@ -2364,7 +2366,7 @@ function getAssociations() {
 			output = output + "<li><div class='input-group input-group-sm'>";
 			output = output + "<input type='text' class='form-control' placeholder='New type...' id='" + listItemId + "newTypeSubInput' onkeydown='if(event.keyCode===13){event.preventDefault();addNewTypeToCard(&apos;" + listItemId + "&apos;);}'>";
 			output = output + "<span class='input-group-btn'>";
-			output = output + "<button class='btn btn-primary' type='button' title='Add new type' onclick='addNewTypeToCard(&apos;" + listItemId + "&apos;)'>+</button>";
+			output = output + "<button class='btn btn-primary btn-circle btn-circle-sm' type='button' title='Add new type' onclick='addNewTypeToCard(&apos;" + listItemId + "&apos;)'>+</button>";
 			output = output + "</span></div></li>";
 			output = output + "</ul></div></div></div>";
 
@@ -2378,8 +2380,13 @@ function getAssociations() {
 
 			output = output + "<input class='locationInput' placeholder='location (example: 3101 24th Street, San Francisco, CA)' type='text' id='" + listItemId + "locationInput' onkeyup='updateLocation(&apos;" + listItemId + "&apos;, event)' value='" + listItemLocation + "'>";
 			if (listItemLocation && listItemLocation.trim() !== "") {
-				var mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(listItemLocation);
-				output = output + "<div><a href='" + mapsUrl + "' target='_blank' rel='noopener noreferrer' class='btn btn-google-maps' id='" + listItemId + "mapsLink'><i class='glyph-maps'></i> Google Maps <i class='glyphicon glyphicon-new-window'></i></a></div>";
+				var encLoc = encodeURIComponent(listItemLocation);
+				var gmapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encLoc;
+				var amapsUrl = "https://maps.apple.com/?q=" + encLoc;
+				output = output + "<div style='display:inline-flex; align-items:center; gap:6px; margin-top:8px;'>";
+				output = output + "<a href='" + gmapsUrl + "' target='_blank' rel='noopener noreferrer' class='btn-circle-action btn-circle-google' id='" + listItemId + "mapsLink' title='Google Maps' aria-label='Google Maps'><svg class='rolodex-glyph'><use href='#glyph-google'/></svg></a>";
+				output = output + "<a href='" + amapsUrl + "' target='_blank' rel='noopener noreferrer' class='btn-circle-action btn-circle-apple' id='" + listItemId + "appleMapsLink' title='Apple Maps' aria-label='Apple Maps'><svg class='rolodex-glyph'><use href='#glyph-apple'/></svg></a>";
+				output = output + "</div>";
 			}
 			output = output + "</div>";
 
@@ -2394,17 +2401,12 @@ function getAssociations() {
 			output = output + "<i class='glyphicon glyphicon-link'></i> Links<i class='float-left glyphicon glyphicon-collapse-down toggleCollapseGlyphicon'></i></div></h2>";
 			output = output + "<div id='collapse" + listItemId + "Links' class='panel-collapse collapse in' role='tabpanel' aria-labelledby='headingOne'>";
 
-			output = output + "<div class'row'>";
-            output = output + "<div class='btn-padding btn-group btn-group-justified' role='group'>";
-            output = output + "<div class='btn-group' role='group'>";
-			output = output + "<button class='btn btn-default btn-site' " + siteDisplay + " onclick='visit(&apos;" + listItemSite + "&apos;)' title='Website' aria-label='Website'><i class='glyph-globe'></i></button>";
-            output = output + "</div><div class='btn-group' role='group'>";
-			output = output + "<button class='btn btn-default btn-fb' " + fbDisplay + " onclick='visit(&apos;" + listItemFb + "&apos;)' title='Facebook' aria-label='Facebook'><i class='glyph-facebook'></i></button>";
-            output = output + "</div><div class='btn-group' role='group'>";
-			output = output + "<button class='btn btn-default btn-ig' " + igDisplay + " onclick='visit(&apos;" + listItemIg + "&apos;)' title='Instagram' aria-label='Instagram'><i class='glyph-instagram'></i></button>";
-            output = output + "</div><div class='btn-group' role='group'>";
-			output = output + "<button class='btn btn-default btn-twitter btn-x' " + twitterDisplay + " onclick='visit(&apos;" + listItemTwitter + "&apos;)' title='X' aria-label='X'><i class='glyph-xmark'></i></button>";
-			output = output + "</div></div></div>";
+			output = output + "<div style='display:flex; align-items:center; gap:8px; padding:6px 0;'>";
+			output = output + "<a class='btn-circle-action btn-circle-web' " + siteDisplay + " onclick='visit(&apos;" + listItemSite + "&apos;)' title='Website' aria-label='Website'><svg class='rolodex-glyph'><use href='#glyph-link'/></svg></a>";
+			output = output + "<a class='btn-circle-action btn-circle-fb' " + fbDisplay + " onclick='visit(&apos;" + listItemFb + "&apos;)' title='Facebook' aria-label='Facebook'><svg class='rolodex-glyph'><use href='#glyph-facebook'/></svg></a>";
+			output = output + "<a class='btn-circle-action btn-circle-ig' " + igDisplay + " onclick='visit(&apos;" + listItemIg + "&apos;)' title='Instagram' aria-label='Instagram'><svg class='rolodex-glyph'><use href='#glyph-instagram'/></svg></a>";
+			output = output + "<a class='btn-circle-action btn-circle-x' " + twitterDisplay + " onclick='visit(&apos;" + listItemTwitter + "&apos;)' title='X' aria-label='X'><svg class='rolodex-glyph'><use href='#glyph-xmark'/></svg></a>";
+			output = output + "</div>";
 
 			output = output + "<div class'row'>";
 
@@ -2437,8 +2439,8 @@ function getAssociations() {
 				output = output + "<div class='row'><div class='col-xs-12 col-sm-12 col-md-12 col-lg-12'><div id='parentAssoc" + listItemId + "'></div></div></div>";
 				output = output + "<div class='row'><div class='col-xs-10 col-sm-11 col-md-11 col-lg-11'>";
 				output = output + "<input placeholder='Link to association (example: Dolores Park Church)' type='text' id='newParentInput" + listItemId + "' onkeyup='linkParentAssociation(&apos;" + listItemId + "&apos;, event)' value=''>";
-				output = output + "</div><div class='col-xs-2 col-sm-1 col-md-1 col-lg-1'>";
-				output = output + "<button class='linkParent btn btn-primary btn-block'>+</button>";
+				output = output + "</div><div class='col-xs-2 col-sm-1 col-md-1 col-lg-1' style='display:flex; align-items:center; justify-content:center;'>";
+				output = output + "<button class='linkParent btn btn-primary btn-circle' title='Link association'>+</button>";
 				output = output + "</div></div></div>";
 			} else {
 				output = output + "<h2><div data-toggle='collapse' data-parent='#accordion-" + listItemId + "' href='#collapse" + listItemId + "Associates' aria-expanded='true' aria-controls='collapse" + listItemId + "Associates' class='collapsed'>";
@@ -2460,8 +2462,8 @@ function getAssociations() {
 				output = output + "</div></div>";
 				output = output + "<div class='row'><div class='col-xs-10 col-sm-11 col-md-11 col-lg-11'>";
 				output = output + "<input placeholder='Add associate (example: Daniel Goodwyn)' type='text' id='newAssociateInput" + listItemId + "' onkeyup='newAssociate(event, &apos;" + listItemId + "&apos;)' value=''>";
-				output = output + "</div><div class='col-xs-2 col-sm-1 col-md-1 col-lg-1'>";
-				output = output + "<button class='newAssociate btn btn-primary btn-block' title='Add associate'>+</button>";
+				output = output + "</div><div class='col-xs-2 col-sm-1 col-md-1 col-lg-1' style='display:flex; align-items:center; justify-content:center;'>";
+				output = output + "<button class='newAssociate btn btn-primary btn-circle' title='Add associate'>+</button>";
 				output = output + "</div></div></div></div>";
 			}
 
@@ -2483,8 +2485,8 @@ function getAssociations() {
 			output = output + "<input class='newNoteInput' id='newNoteInput" + listItemId + "' onkeyup='newNote(&apos;" + listItemId + "&apos;, event)' placeholder='New Note'>";
 			output = output + "</div>";
 
-			output = output + "<div class='col-xs-2 col-sm-1 col-md-1 col-lg-1'>";
-			output = output + "<button class='newNote btn btn-primary btn-block'>+</button>";
+			output = output + "<div class='col-xs-2 col-sm-1 col-md-1 col-lg-1' style='display:flex; align-items:center; justify-content:center;'>";
+			output = output + "<button class='newNote btn btn-primary btn-circle' title='Add note'>+</button>";
 			output = output + "</div></div></div></div></div>";
 
 			output = output + "<div class='clearfix'></div></div></div></div></div>";
@@ -2603,9 +2605,9 @@ function getAssociations() {
 							for (var p = 0; p < uniqueParentIds.length; p++) {
 								var pid = uniqueParentIds[p];
 								var aBtn = "<div class='btn-padding float-left'>" +
-									"<div class='btn-group' role='group'>" +
+									"<div class='btn-group' role='group' style='display:inline-flex; align-items:center; gap:4px;'>" +
 									"<button class='btn btn-default' onclick='findAssociate(&apos;" + escapeJsString(aName) + "&apos;)'>" + escapeHtml(aName) + "</button>" +
-									"<button class='btn btn-danger' title='Unlink associate' onclick='unlinkAssociate(&apos;" + aId + "&apos;, &apos;" + pid + "&apos;, &apos;" + escapeJsString(aName) + "&apos;)'>×</button>" +
+									"<button class='btn-circle-delete' style='width:22px!important;height:22px!important;font-size:14px!important;' title='Unlink associate' onclick='unlinkAssociate(&apos;" + aId + "&apos;, &apos;" + pid + "&apos;, &apos;" + escapeJsString(aName) + "&apos;)'>×</button>" +
 									"</div></div>";
 								assocHtmlMap[pid] = (assocHtmlMap[pid] || "") + aBtn;
 							}
@@ -2618,10 +2620,10 @@ function getAssociations() {
 								var pOrgName = pOrg ? pOrg.name : ("Association #" + pOrgId.substring(0, 5));
 								var pOrgType = (pOrg && pOrg.types && pOrg.types.length > 0) ? pOrg.types[0] : (pOrg ? pOrg.type : "");
 								parentHtml += "<div class='btn-padding float-left'>" +
-									"<div class='btn-group' role='group'>" +
+									"<div class='btn-group' role='group' style='display:inline-flex; align-items:center; gap:4px;'>" +
 									"<button class='btn btn-info' onclick='goToAssociation(&apos;" + pOrgId + "&apos;, &apos;" + escapeJsString(pOrgType) + "&apos;)'>" +
 									"<i class='glyphicon glyphicon-briefcase'></i> " + escapeHtml(pOrgName) + "</button>" +
-									"<button class='btn btn-danger' title='Unlink association' onclick='unlinkAssociate(&apos;" + aId + "&apos;, &apos;" + pOrgId + "&apos;, &apos;" + escapeJsString(aName) + "&apos;)'>×</button>" +
+									"<button class='btn-circle-delete' style='width:22px!important;height:22px!important;font-size:14px!important;' title='Unlink association' onclick='unlinkAssociate(&apos;" + aId + "&apos;, &apos;" + pOrgId + "&apos;, &apos;" + escapeJsString(aName) + "&apos;)'>×</button>" +
 									"</div></div>";
 							}
 							if (parentHtml === "") {

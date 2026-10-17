@@ -194,7 +194,7 @@ struct MainView: View {
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search cards or associates...")
             .toolbar {
-                ToolbarItemGroup(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Menu {
                         ForEach(SortOption.allCases) { opt in
                             Button(action: { selectedSort = opt }) {
@@ -209,26 +209,23 @@ struct MainView: View {
                     } label: {
                         Glyph(name: "sort", size: 18, color: .primary)
                     }
+                    .buttonStyle(.plain)
+                }
 
+                ToolbarItem(placement: .navigationBarLeading) {
                     Menu {
                         Button(action: expandAll) {
-                            Label {
-                                Text("Expand All Cards")
-                            } icon: {
-                                Glyph(name: "chevron_down", size: 14, color: .primary)
-                            }
+                            Text("Expand All Cards")
                         }
                         Button(action: collapseAll) {
-                            Label {
-                                Text("Collapse All Cards")
-                            } icon: {
-                                Glyph(name: "chevron_up", size: 14, color: .primary)
-                            }
+                            Text("Collapse All Cards")
                         }
                     } label: {
-                        Image(systemName: "rectangle.expand.vertical")
+                        Text("▼")
+                            .font(.system(size: 13, weight: .bold))
                             .foregroundColor(.primary)
                     }
+                    .buttonStyle(.plain)
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -236,9 +233,10 @@ struct MainView: View {
                         Image("rolodex")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 28, height: 28)
+                            .frame(width: 32, height: 32)
                             .clipShape(Circle())
                     }
+                    .buttonStyle(.plain)
                 }
             }
             .sheet(isPresented: $showAddCardSheet) {
