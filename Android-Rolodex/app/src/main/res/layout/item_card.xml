@@ -199,91 +199,108 @@
                     android:textColor="@color/text_secondary" />
 
                 <!-- Action Buttons (Web, FB, Insta, X) -->
-                <HorizontalScrollView
+                <LinearLayout
                     android:id="@+id/linksButtonsScroll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:scrollbars="none">
+                    android:orientation="horizontal">
 
-                    <LinearLayout
-                        android:id="@+id/linksContainer"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnWeb"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:text="Web"
+                        android:textColor="@color/primary"
+                        android:paddingStart="4dp"
+                        android:paddingEnd="4dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:minWidth="0dp"
+                        app:cornerRadius="8dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/primary"
+                        app:icon="@drawable/ic_glyph_globe"
+                        app:iconTint="@color/primary"
+                        app:iconPadding="3dp"
+                        android:textSize="11sp"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnWeb"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="36dp"
-                            android:layout_marginEnd="6dp"
-                            android:text="Web"
-                            android:textColor="@color/primary"
-                            app:cornerRadius="8dp"
-                            app:strokeWidth="1dp"
-                            app:strokeColor="@color/primary"
-                            app:icon="@drawable/ic_glyph_globe"
-                            app:iconTint="@color/primary"
-                            app:iconPadding="4dp"
-                            android:textSize="11sp"
-                            android:visibility="gone"
-                            tools:visibility="visible" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFacebook"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:text="FB"
+                        android:textColor="@color/facebook_blue"
+                        android:paddingStart="4dp"
+                        android:paddingEnd="4dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:minWidth="0dp"
+                        app:cornerRadius="8dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/facebook_blue"
+                        app:icon="@drawable/ic_glyph_facebook"
+                        app:iconTint="@color/facebook_blue"
+                        app:iconPadding="3dp"
+                        android:textSize="11sp"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnFacebook"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="36dp"
-                            android:layout_marginEnd="6dp"
-                            android:text="FB"
-                            android:textColor="@color/facebook_blue"
-                            app:cornerRadius="8dp"
-                            app:strokeWidth="1dp"
-                            app:strokeColor="@color/facebook_blue"
-                            app:icon="@drawable/ic_glyph_facebook"
-                            app:iconTint="@color/facebook_blue"
-                            app:iconPadding="4dp"
-                            android:textSize="11sp"
-                            android:visibility="gone"
-                            tools:visibility="visible" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnInstagram"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:text="Insta"
+                        android:textColor="@color/instagram_gradient"
+                        android:paddingStart="4dp"
+                        android:paddingEnd="4dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:minWidth="0dp"
+                        app:cornerRadius="8dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/instagram_gradient"
+                        app:icon="@drawable/ic_glyph_instagram"
+                        app:iconTint="@color/instagram_gradient"
+                        app:iconPadding="3dp"
+                        android:textSize="11sp"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnInstagram"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="36dp"
-                            android:layout_marginEnd="6dp"
-                            android:text="Insta"
-                            android:textColor="@color/instagram_gradient"
-                            app:cornerRadius="8dp"
-                            app:strokeWidth="1dp"
-                            app:strokeColor="@color/instagram_gradient"
-                            app:icon="@drawable/ic_glyph_instagram"
-                            app:iconTint="@color/instagram_gradient"
-                            app:iconPadding="4dp"
-                            android:textSize="11sp"
-                            android:visibility="gone"
-                            tools:visibility="visible" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnX"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="36dp"
-                            android:text="X"
-                            android:textColor="@color/x_black"
-                            app:cornerRadius="8dp"
-                            app:strokeWidth="1dp"
-                            app:strokeColor="@color/x_black"
-                            app:icon="@drawable/ic_glyph_xmark"
-                            app:iconTint="@color/x_black"
-                            app:iconPadding="4dp"
-                            android:textSize="11sp"
-                            android:visibility="gone"
-                            tools:visibility="visible" />
-                    </LinearLayout>
-                </HorizontalScrollView>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnX"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:text="X"
+                        android:textColor="@color/x_black"
+                        android:paddingStart="4dp"
+                        android:paddingEnd="4dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:minWidth="0dp"
+                        app:cornerRadius="8dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/x_black"
+                        app:icon="@drawable/ic_glyph_xmark"
+                        app:iconTint="@color/x_black"
+                        app:iconPadding="3dp"
+                        android:textSize="11sp"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+                </LinearLayout>
 
                 <!-- URL Inputs (www, fb, insta, x) matching Web -->
                 <LinearLayout
