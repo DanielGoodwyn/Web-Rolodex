@@ -231,6 +231,55 @@ class RolodexRepository {
         }
     }
 
+    suspend fun renameType(oldType: String, newType: String, userId: String) {
+        val cleanedNew = newType.trim()
+        if (cleanedNew.isBlank() || cleanedNew.equals(oldType, ignoreCase = true) || oldType.equals("associate", ignoreCase = true)) {
+            return
+        }
+
+        // 1. Update Type collection
+        val typeQuery = db.collection(COLLECTION_TYPE)
+            .whereEqualTo("userId", userId)
+            .whereEqualTo("type", oldType)
+            .get()
+            .await()
+
+        for (doc in typeQuery.documents) {
+            doc.reference.update("type", cleanedNew).await()
+        }
+
+        ensureTypeExists(cleanedNew, userId)
+
+        // 2. Cascade across all Associations belonging to this user
+        val assocQuery = db.collection(COLLECTION_ASSOCIATION)
+            .whereEqualTo("userId", userId)
+            .get()
+            .await()
+
+        for (doc in assocQuery.documents) {
+            var modified = false
+            val updates = mutableMapOf<String, Any>()
+
+            val docType = doc.getString("type")
+            if (docType == oldType) {
+                updates["type"] = cleanedNew
+                modified = true
+            }
+
+            val docTypes = (doc.get("types") as? List<*>)?.mapNotNull { it?.toString() }
+            if (docTypes != null && docTypes.contains(oldType)) {
+                val updatedTypes = docTypes.map { if (it == oldType) cleanedNew else it }.distinct()
+                updates["types"] = updatedTypes
+                modified = true
+            }
+
+            if (modified) {
+                updates["updatedAt"] = FieldValue.serverTimestamp()
+                doc.reference.update(updates).await()
+            }
+        }
+    }
+
     suspend fun deleteCard(cardId: String) {
         db.collection(COLLECTION_ASSOCIATION).document(cardId).delete().await()
     }

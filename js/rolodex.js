@@ -1001,6 +1001,7 @@ function setTypeSelect() {
 		}
 		typeSelectDiv += "</optgroup>";
 		typeSelectDiv += "</select>";
+		typeSelectDiv += "<div id='renameTypeContainer' style='margin-top:6px; display:none;'><button class='btn btn-xs btn-default' id='btnRenameType' type='button' onclick='promptRenameType()' title='Rename selected type'><i class='glyphicon glyphicon-pencil'></i> rename type</button></div>";
 
 		setElementById("typeSelectDiv", typeSelectDiv);
 
@@ -1059,6 +1060,18 @@ function setType() {
 		filterAssociateCategory = null;
 		filterAssociationId = null;
 		filterAssociationName = null;
+	}
+
+	var renameContainer = document.getElementById("renameTypeContainer");
+	if (renameContainer) {
+		var targetCategory = filterAssociateCategory || (type !== "all_associations" && type !== "associate" ? type : null);
+		if (targetCategory) {
+			renameContainer.style.display = "block";
+			var btn = document.getElementById("btnRenameType");
+			if (btn) btn.innerHTML = "<i class='glyphicon glyphicon-pencil'></i> rename " + escapeHtml(targetCategory);
+		} else {
+			renameContainer.style.display = "none";
+		}
 	}
 
 	if (document.getElementById("newTypeInput")) {
@@ -1752,6 +1765,141 @@ function deleteType(AssociationObjectId) {
 	});
 }
 
+function promptRenameType(targetType) {
+	if (!targetType) {
+		if (filterAssociateCategory) {
+			targetType = filterAssociateCategory;
+		} else if (type && type !== "all_associations" && type !== "associate" && !type.startsWith("associate_type:")) {
+			targetType = type;
+		}
+	}
+	if (!targetType || targetType === "all_associations" || targetType === "associate" || targetType.startsWith("associate_type:")) {
+		alert("Please select a specific category/type to rename.");
+		return;
+	}
+
+	var newName = prompt("Rename category/type '" + targetType + "' to:", targetType);
+	if (newName === null) return;
+	newName = newName.trim();
+	if (!newName) {
+		alert("Category name cannot be empty.");
+		return;
+	}
+	newName = capitaliseFirstLetter(newName);
+	if (newName === targetType) return;
+
+	renameType(targetType, newName);
+}
+
+function renameType(oldType, newType) {
+	if (!oldType || !newType) return;
+	if (oldType.toLowerCase() === newType.toLowerCase()) return;
+	if (oldType.toLowerCase() === "associate") {
+		alert("The built-in 'Associate' type cannot be renamed.");
+		return;
+	}
+
+	// 1. Update matching document in 'Type' collection
+	var typeQ = new Parse.Query("Type");
+	typeQ.equalTo("userId", userId);
+	typeQ.equalTo("type", oldType);
+	typeQ.find({
+		success: function(typeResults) {
+			for (var t = 0; t < typeResults.length; t++) {
+				typeResults[t].set("type", newType);
+				typeResults[t].save();
+			}
+
+			// Ensure a Type doc with newType exists if none existed
+			if (typeResults.length === 0) {
+				var TypeClass = Parse.Object.extend("Type");
+				var newTypeDoc = new TypeClass();
+				newTypeDoc.set("type", newType);
+				newTypeDoc.set("userId", userId);
+				newTypeDoc.save();
+			}
+
+			// 2. Cascade rename across all Associations belonging to this user
+			var assocQ = new Parse.Query("Association");
+			assocQ.equalTo("userId", userId);
+			assocQ.limit(1000);
+			assocQ.find({
+				success: function(assocs) {
+					var pendingSaves = 0;
+					var checkComplete = function() {
+						if (pendingSaves <= 0) {
+							// Update local in-memory types
+							var idx = availableBaseTypes.indexOf(oldType);
+							if (idx !== -1) {
+								availableBaseTypes[idx] = newType;
+							}
+							if (type === oldType) {
+								type = newType;
+							}
+							if (filterAssociateCategory === oldType) {
+								filterAssociateCategory = newType;
+							}
+							setTypeSelect();
+							getAssociations();
+						}
+					};
+
+					for (var i = 0; i < assocs.length; i++) {
+						var card = assocs[i];
+						var modified = false;
+
+						// Check primary type
+						if (card.get("type") === oldType) {
+							card.set("type", newType);
+							modified = true;
+						}
+
+						// Check types array
+						var cardTypes = card.get("types");
+						if (Array.isArray(cardTypes) && cardTypes.indexOf(oldType) !== -1) {
+							var updatedTypes = cardTypes.map(function(t) {
+								return t === oldType ? newType : t;
+							});
+							var deduped = [];
+							for (var d = 0; d < updatedTypes.length; d++) {
+								if (deduped.indexOf(updatedTypes[d]) === -1) {
+									deduped.push(updatedTypes[d]);
+								}
+							}
+							card.set("types", deduped);
+							modified = true;
+						}
+
+						if (modified) {
+							pendingSaves++;
+							card.save(null, {
+								success: function() {
+									pendingSaves--;
+									checkComplete();
+								},
+								error: function() {
+									pendingSaves--;
+									checkComplete();
+								}
+							});
+						}
+					}
+
+					if (pendingSaves === 0) {
+						checkComplete();
+					}
+				},
+				error: function(err) {
+					alert("Error updating associations: " + (err.message || err.code));
+				}
+			});
+		},
+		error: function(err) {
+			alert("Error querying types: " + (err.message || err.code));
+		}
+	});
+}
+
 function updateSite(AssociationObjectId, event) {
 	if (event.which == 13 || event.keyCode == 13 || event == "focusout") {
 		var newValue = document.getElementById(AssociationObjectId + "siteInput").value;
@@ -2202,11 +2350,15 @@ function getAssociations() {
 			for (var bt = 0; bt < availableBaseTypes.length; bt++) {
 				var bType = availableBaseTypes[bt];
 				var isChecked = listItemTypes.indexOf(bType) !== -1 ? "checked" : "";
-				output = output + "<li style='margin: 4px 0;'>";
-				output = output + "<label style='font-weight: normal; cursor: pointer; display: block; margin: 0;'>";
-				output = output + "<input type='checkbox' value='" + escapeHtml(bType) + "' " + isChecked + " onchange='toggleCardType(&apos;" + listItemId + "&apos;, &apos;" + escapeJsString(bType) + "&apos;, this.checked)'> ";
-				output = output + escapeHtml(bType);
-				output = output + "</label></li>";
+				output = output + "<li style='margin: 4px 0; display:flex; justify-content:space-between; align-items:center;'>";
+				output = output + "<label style='font-weight: normal; cursor: pointer; margin: 0; flex-grow:1; display:inline-flex; align-items:center; gap:6px;'>";
+				output = output + "<input type='checkbox' style='margin:0;' value='" + escapeHtml(bType) + "' " + isChecked + " onchange='toggleCardType(&apos;" + listItemId + "&apos;, &apos;" + escapeJsString(bType) + "&apos;, this.checked)'> ";
+				output = output + "<span>" + escapeHtml(bType) + "</span>";
+				output = output + "</label>";
+				if (bType !== 'associate') {
+					output = output + "<a href='javascript:void(0)' onclick='event.stopPropagation(); promptRenameType(&apos;" + escapeJsString(bType) + "&apos;);' title='Rename " + escapeHtml(bType) + "' style='color:#888; padding:0 4px; margin-left:6px;'><i class='glyphicon glyphicon-pencil' style='font-size:10px;'></i></a>";
+				}
+				output = output + "</li>";
 			}
 			output = output + "<li class='divider' style='margin: 6px 0;'></li>";
 			output = output + "<li><div class='input-group input-group-sm'>";
@@ -2245,13 +2397,13 @@ function getAssociations() {
 			output = output + "<div class'row'>";
             output = output + "<div class='btn-padding btn-group btn-group-justified' role='group'>";
             output = output + "<div class='btn-group' role='group'>";
-			output = output + "<button class='btn btn-default btn-site' " + siteDisplay + " onclick='visit(&apos;" + listItemSite + "&apos;)'><i class='glyph-globe'></i> web <i class='glyphicon glyphicon-new-window'></i></button>";
+			output = output + "<button class='btn btn-default btn-site' " + siteDisplay + " onclick='visit(&apos;" + listItemSite + "&apos;)' title='Website' aria-label='Website'><i class='glyph-globe'></i></button>";
             output = output + "</div><div class='btn-group' role='group'>";
-			output = output + "<button class='btn btn-default btn-fb' " + fbDisplay + " onclick='visit(&apos;" + listItemFb + "&apos;)'><i class='glyph-facebook'></i> fb <i class='glyphicon glyphicon-new-window'></i></button>";
+			output = output + "<button class='btn btn-default btn-fb' " + fbDisplay + " onclick='visit(&apos;" + listItemFb + "&apos;)' title='Facebook' aria-label='Facebook'><i class='glyph-facebook'></i></button>";
             output = output + "</div><div class='btn-group' role='group'>";
-			output = output + "<button class='btn btn-default btn-ig' " + igDisplay + " onclick='visit(&apos;" + listItemIg + "&apos;)'><i class='glyph-instagram'></i> insta <i class='glyphicon glyphicon-new-window'></i></button>";
+			output = output + "<button class='btn btn-default btn-ig' " + igDisplay + " onclick='visit(&apos;" + listItemIg + "&apos;)' title='Instagram' aria-label='Instagram'><i class='glyph-instagram'></i></button>";
             output = output + "</div><div class='btn-group' role='group'>";
-			output = output + "<button class='btn btn-default btn-twitter btn-x' " + twitterDisplay + " onclick='visit(&apos;" + listItemTwitter + "&apos;)'><i class='glyph-xmark'></i> x <i class='glyphicon glyphicon-new-window'></i></button>";
+			output = output + "<button class='btn btn-default btn-twitter btn-x' " + twitterDisplay + " onclick='visit(&apos;" + listItemTwitter + "&apos;)' title='X' aria-label='X'><i class='glyph-xmark'></i></button>";
 			output = output + "</div></div></div>";
 
 			output = output + "<div class'row'>";
@@ -2588,17 +2740,18 @@ function checkNames() {
 	}
 	typeQuery.find({
 		success: function(results) {
-			checkNamesDiv = "<div><i class='glyphicon glyphicon-filter'></i> " + type + "</div>";
+			checkNamesDiv = "<div style='display:inline-flex; align-items:center; gap:6px;'><i class='glyphicon glyphicon-filter'></i> <strong>" + escapeHtml(type) + "</strong> <button class='btn btn-default btn-xs' onclick='promptRenameType(&apos;" + escapeJsString(type) + "&apos;)' title='Rename " + escapeHtml(type) + "'><i class='glyphicon glyphicon-pencil'></i> rename</button>";
 			if (results && results.length > 0) {
 				typeId = results[0].id;
 				if (output === "" && typeId) {
-					checkNamesDiv = "<button class='btn btn-danger' onclick='deleteType(&apos;" + typeId + "&apos;)'>delete " + type + " ×</button>";
+					checkNamesDiv += " <button class='btn btn-danger btn-xs' onclick='deleteType(&apos;" + typeId + "&apos;)'>delete " + escapeHtml(type) + " ×</button>";
 				}
 			}
+			checkNamesDiv += "</div>";
 			setElementById("checkNamesDiv", checkNamesDiv);
 		},
 		error: function(error) {
-			setElementById("checkNamesDiv", "<div><i class='glyphicon glyphicon-filter'></i> " + type + "</div>");
+			setElementById("checkNamesDiv", "<div><i class='glyphicon glyphicon-filter'></i> " + escapeHtml(type) + "</div>");
 		}
 	});
 }

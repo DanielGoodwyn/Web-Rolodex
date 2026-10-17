@@ -8,6 +8,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
+import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.chip.Chip
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import daniel.rolodex.R
 import daniel.rolodex.data.location.LocationHelper
 import daniel.rolodex.data.models.Association
@@ -441,6 +444,10 @@ class MainActivity : AppCompatActivity() {
                             val chip = Chip(this@MainActivity).apply {
                                 text = t
                                 isCheckable = true
+                                setOnLongClickListener {
+                                    showRenameTypeDialog(t, userId)
+                                    true
+                                }
                             }
                             binding.chipGroupFilters.addView(chip)
                         }
@@ -450,6 +457,49 @@ class MainActivity : AppCompatActivity() {
                 // Ignore
             }
         }
+    }
+
+    private fun showRenameTypeDialog(oldType: String, userId: String) {
+        val input = EditText(this).apply {
+            setText(oldType)
+            setSelection(oldType.length)
+            hint = "Category name"
+        }
+        val container = FrameLayout(this).apply {
+            val padding = (20 * resources.displayMetrics.density).toInt()
+            setPadding(padding, padding / 2, padding, 0)
+            addView(input)
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Rename '$oldType'")
+            .setMessage("This will update all cards belonging to '$oldType'.")
+            .setView(container)
+            .setPositiveButton("Rename") { _, _ ->
+                val newName = input.text.toString().trim()
+                if (newName.isNotBlank() && !newName.equals(oldType, ignoreCase = true)) {
+                    lifecycleScope.launch {
+                        try {
+                            repository.renameType(oldType, newName, userId)
+                            val staticIds = setOf(R.id.chipAll, R.id.chipAssociations, R.id.chipAssociates)
+                            val toRemove = mutableListOf<View>()
+                            for (i in 0 until binding.chipGroupFilters.childCount) {
+                                val child = binding.chipGroupFilters.getChildAt(i)
+                                if (!staticIds.contains(child.id)) {
+                                    toRemove.add(child)
+                                }
+                            }
+                            toRemove.forEach { binding.chipGroupFilters.removeView(it) }
+                            populateDynamicTypeChips(userId)
+                            Toast.makeText(this@MainActivity, "Renamed '$oldType' to '$newName'", Toast.LENGTH_SHORT).show()
+                        } catch (e: Exception) {
+                            Toast.makeText(this@MainActivity, "Error renaming: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun applyFilterAndSort() {

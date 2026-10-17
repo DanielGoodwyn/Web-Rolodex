@@ -23,6 +23,9 @@ struct MainView: View {
     @State private var showAddCardSheet = false
     @State private var showAccountSheet = false
     @State private var cardExpansionState: [String: Bool] = [:]
+    @State private var showRenameTypeAlert = false
+    @State private var typeToRename: String? = nil
+    @State private var renamedTypeInput = ""
 
     var body: some View {
         NavigationStack {
@@ -36,6 +39,15 @@ struct MainView: View {
 
                         ForEach(firestore.userTypes, id: \.self) { t in
                             filterChip(title: t, tag: t)
+                                .contextMenu {
+                                    Button(action: {
+                                        typeToRename = t
+                                        renamedTypeInput = t
+                                        showRenameTypeAlert = true
+                                    }) {
+                                        Label("Rename '\(t)'", systemImage: "pencil")
+                                    }
+                                }
                         }
                     }
                     .padding(.horizontal, 16)
@@ -238,6 +250,23 @@ struct MainView: View {
             }
             .sheet(isPresented: $showAccountSheet) {
                 AccountView()
+            }
+            .alert("Rename Type", isPresented: $showRenameTypeAlert) {
+                TextField("New name", text: $renamedTypeInput)
+                Button("Rename") {
+                    if let old = typeToRename, !renamedTypeInput.trimmingCharacters(in: .whitespaces).isEmpty {
+                        let newName = renamedTypeInput.trimmingCharacters(in: .whitespaces)
+                        Task {
+                            try? await firestore.renameType(oldType: old, newType: newName)
+                            if selectedFilter == old {
+                                selectedFilter = newName
+                            }
+                        }
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Renaming '\(typeToRename ?? "")' will update all cards with this type.")
             }
             .refreshable {
                 await refreshData()

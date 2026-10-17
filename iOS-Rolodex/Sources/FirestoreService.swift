@@ -519,6 +519,109 @@ class FirestoreService: ObservableObject {
         }
     }
 
+    // MARK: - Rename Type
+    func renameType(oldType: String, newType: String) async throws {
+        guard let userId = FirebaseAuthService.shared.currentUser?.uid else { return }
+        let cleanedNew = newType.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleanedNew.isEmpty, cleanedNew.lowercased() != oldType.lowercased() else { return }
+        guard oldType.lowercased() != "associate" else { return }
+
+        // 1. Update matching Type document in Firestore
+        if let runQueryUrl = URL(string: "\(FirebaseConfig.firestoreBaseURL):runQuery") {
+            var request = URLRequest(url: runQueryUrl)
+            request.httpMethod = "POST"
+            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            if let token = await FirebaseAuthService.shared.refreshIdTokenIfNeeded() {
+                request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            }
+            let query: [String: Any] = [
+                "structuredQuery": [
+                    "from": [["collectionId": "Type"]],
+                    "where": [
+                        "compositeFilter": [
+                            "op": "AND",
+                            "filters": [
+                                [
+                                    "fieldFilter": [
+                                        "field": ["fieldPath": "userId"],
+                                        "op": "EQUAL",
+                                        "value": ["stringValue": userId]
+                                    ]
+                                ],
+                                [
+                                    "fieldFilter": [
+                                        "field": ["fieldPath": "type"],
+                                        "op": "EQUAL",
+                                        "value": ["stringValue": oldType]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+            if let queryData = try? JSONSerialization.data(withJSONObject: query) {
+                request.httpBody = queryData
+                if let (data, _) = try? await URLSession.shared.data(for: request),
+                   let rawList = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
+                    for item in rawList {
+                        if let doc = item["document"] as? [String: Any],
+                           let docName = doc["name"] as? String,
+                           let docUrl = URL(string: "https://firestore.googleapis.com/v1/\(docName)?updateMask.fieldPaths=type") {
+                            var patchReq = URLRequest(url: docUrl)
+                            patchReq.httpMethod = "PATCH"
+                            patchReq.addValue("application/json", forHTTPHeaderField: "Content-Type")
+                            if let token = await FirebaseAuthService.shared.refreshIdTokenIfNeeded() {
+                                patchReq.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                            }
+                            let patchBody: [String: Any] = [
+                                "fields": [
+                                    "type": ["stringValue": cleanedNew],
+                                    "userId": ["stringValue": userId]
+                                ]
+                            ]
+                            patchReq.httpBody = try? JSONSerialization.data(withJSONObject: patchBody)
+                            _ = try? await URLSession.shared.data(for: patchReq)
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2. Cascade across all Associations belonging to this user
+        for i in 0..<associations.count {
+            var card = associations[i]
+            var modified = false
+
+            if card.type == oldType {
+                card.type = cleanedNew
+                modified = true
+            }
+
+            if let currentTypes = card.types, currentTypes.contains(oldType) {
+                var newTypesList: [String] = []
+                for t in currentTypes {
+                    let mapped = (t == oldType) ? cleanedNew : t
+                    if !newTypesList.contains(mapped) {
+                        newTypesList.append(mapped)
+                    }
+                }
+                card.types = newTypesList
+                modified = true
+            }
+
+            if modified {
+                associations[i] = card
+                try? await updateCard(card)
+            }
+        }
+
+        // 3. Update userTypes & associate lookups
+        updateAssociateLookups()
+        await fetchUserTypes(for: userId)
+        persistLocalCache()
+    }
+
     // MARK: - Update Single Link
     func updateLink(id: String, type: String, value: String?) async throws {
         let fieldName: String
