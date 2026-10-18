@@ -1222,16 +1222,35 @@ function setSort() {
 	getAssociations();
 }
 
+function toggleSortOrder() {
+	var newOrder = (order === "ascending") ? "descending" : "ascending";
+	setOrder(newOrder, true);
+}
+
 function setOrder(string, bool) {
-	order = string;
+	order = string || "ascending";
 	
-	if (string == "ascending") {
-		document.getElementById("ascendingButton").style.display = "none";
-		document.getElementById("descendingButton").style.display = "inline-block";
+	var toggleBtn = document.getElementById("sortOrderToggle");
+	if (toggleBtn) {
+		if (order === "ascending") {
+			toggleBtn.innerHTML = "<svg class='rolodex-glyph' style='width:18px;height:18px;'><use href='#glyph-arrow-up'/></svg>";
+			toggleBtn.title = "Order: Ascending (click for Descending)";
+		} else {
+			toggleBtn.innerHTML = "<svg class='rolodex-glyph' style='width:18px;height:18px;'><use href='#glyph-arrow-down'/></svg>";
+			toggleBtn.title = "Order: Descending (click for Ascending)";
+		}
 	}
-	if (string == "descending") {
-		document.getElementById("ascendingButton").style.display = "inline-block";
-		document.getElementById("descendingButton").style.display = "none";
+
+	var ascBtn = document.getElementById("ascendingButton");
+	var descBtn = document.getElementById("descendingButton");
+	if (ascBtn && descBtn) {
+		if (order === "ascending") {
+			ascBtn.style.display = "none";
+			descBtn.style.display = "inline-block";
+		} else {
+			ascBtn.style.display = "inline-block";
+			descBtn.style.display = "none";
+		}
 	}
 	
 	if (bool) {

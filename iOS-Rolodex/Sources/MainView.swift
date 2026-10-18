@@ -1,12 +1,11 @@
 import SwiftUI
 import CoreLocation
 
-enum SortOption: String, CaseIterable, Identifiable {
-    case distanceAsc = "Distance (Nearest)"
-    case distanceDesc = "Distance (Farthest)"
-    case ratingDesc = "Rating (Highest)"
-    case nameAsc = "Name (A-Z)"
-    case newest = "Newest"
+enum SortType: String, CaseIterable, Identifiable {
+    case name = "Name"
+    case neighborhood = "Neighborhood"
+    case distance = "Distance"
+    case rating = "Rating"
 
     var id: String { rawValue }
 }
@@ -19,7 +18,8 @@ struct MainView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var searchText = ""
     @State private var selectedFilter = "ALL" // "ALL", "ALL_ASSOCIATIONS", "ALL_ASSOCIATES", or custom type
-    @State private var selectedSort: SortOption = .distanceAsc
+    @State private var selectedSortType: SortType = .distance
+    @State private var sortAscending: Bool = true
     @State private var showAddCardSheet = false
     @State private var showAccountSheet = false
     @State private var cardExpansionState: [String: Bool] = [:]
@@ -195,14 +195,22 @@ struct MainView: View {
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search cards or associates...")
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    HStack(spacing: 12) {
-                        HStack(spacing: 8) {
+                    HStack(spacing: 0) {
+                        HStack(spacing: 2) {
+                            // 1. Sort Type Dropdown Menu (Generous 40x40 hit target)
                             Menu {
-                                ForEach(SortOption.allCases) { opt in
-                                    Button(action: { selectedSort = opt }) {
+                                ForEach(SortType.allCases) { type in
+                                    Button(action: {
+                                        selectedSortType = type
+                                        if type == .rating {
+                                            sortAscending = false
+                                        } else {
+                                            sortAscending = true
+                                        }
+                                    }) {
                                         HStack {
-                                            Text(opt.rawValue)
-                                            if selectedSort == opt {
+                                            Text(type.rawValue)
+                                            if selectedSortType == type {
                                                 Image(systemName: "checkmark")
                                             }
                                         }
@@ -210,20 +218,45 @@ struct MainView: View {
                                 }
                             } label: {
                                 Glyph(name: "sort", size: 18, color: .primary)
+                                    .frame(width: 40, height: 40)
+                                    .contentShape(Rectangle())
                             }
+                            .accessibilityLabel("Sort by: \(selectedSortType.rawValue)")
 
-                            Menu {
-                                Button(action: expandAll) {
-                                    Text("Expand All Cards")
-                                }
-                                Button(action: collapseAll) {
-                                    Text("Collapse All Cards")
-                                }
-                            } label: {
-                                Text("▼")
-                                    .font(.system(size: 13, weight: .bold))
+                            // 2. Sort Direction Toggle (Ascending / Descending) (Generous 40x40 hit target)
+                            Button(action: {
+                                sortAscending.toggle()
+                            }) {
+                                Image(systemName: sortAscending ? "arrow.up" : "arrow.down")
+                                    .font(.system(size: 15, weight: .bold))
                                     .foregroundColor(.primary)
+                                    .frame(width: 40, height: 40)
+                                    .contentShape(Rectangle())
                             }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(sortAscending ? "Sort ascending, tap for descending" : "Sort descending, tap for ascending")
+
+                            // 3. Expand All Cards (1-Click Button) (Generous 40x40 hit target)
+                            Button(action: expandAll) {
+                                Text("▼")
+                                    .font(.system(size: 13, weight: .black))
+                                    .foregroundColor(.primary)
+                                    .frame(width: 40, height: 40)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Expand all cards")
+
+                            // 4. Collapse All Cards (1-Click Button) (Generous 40x40 hit target)
+                            Button(action: collapseAll) {
+                                Text("▶")
+                                    .font(.system(size: 12, weight: .black))
+                                    .foregroundColor(.primary)
+                                    .frame(width: 40, height: 40)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Collapse all cards")
                         }
 
                         Spacer()
@@ -233,6 +266,7 @@ struct MainView: View {
 
                         Spacer()
 
+                        // Account Profile Button (Generous 40x40 hit target)
                         Button(action: { showAccountSheet = true }) {
                             Image("rolodex")
                                 .resizable()
@@ -240,7 +274,10 @@ struct MainView: View {
                                 .frame(width: 32, height: 32)
                                 .clipShape(Circle())
                         }
+                        .frame(width: 40, height: 40)
+                        .contentShape(Rectangle())
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Account settings")
                     }
                     .frame(maxWidth: .infinity)
                 }
@@ -352,17 +389,31 @@ struct MainView: View {
         }
 
         // 4. Sort
-        switch selectedSort {
-        case .distanceAsc:
-            return list.sorted { ($0.distanceMiles ?? .infinity) < ($1.distanceMiles ?? .infinity) }
-        case .distanceDesc:
-            return list.sorted { ($0.distanceMiles ?? -1) > ($1.distanceMiles ?? -1) }
-        case .ratingDesc:
-            return list.sorted { $0.displayRating > $1.displayRating }
-        case .nameAsc:
-            return list.sorted { $0.name.lowercased() < $1.name.lowercased() }
-        case .newest:
-            return list.sorted { ($0.createdAt ?? .distantPast) > ($1.createdAt ?? .distantPast) }
+        switch selectedSortType {
+        case .name:
+            return list.sorted { a, b in
+                let comp = a.name.localizedCaseInsensitiveCompare(b.name)
+                return sortAscending ? (comp == .orderedAscending) : (comp == .orderedDescending)
+            }
+        case .neighborhood:
+            return list.sorted { a, b in
+                let aHood = a.neighborhood?.trimmingCharacters(in: .whitespaces) ?? ""
+                let bHood = b.neighborhood?.trimmingCharacters(in: .whitespaces) ?? ""
+                if aHood.isEmpty && !bHood.isEmpty { return false }
+                if !aHood.isEmpty && bHood.isEmpty { return true }
+                let comp = aHood.localizedCaseInsensitiveCompare(bHood)
+                return sortAscending ? (comp == .orderedAscending) : (comp == .orderedDescending)
+            }
+        case .distance:
+            return list.sorted { a, b in
+                let aDist = a.distanceMiles ?? .infinity
+                let bDist = b.distanceMiles ?? .infinity
+                return sortAscending ? (aDist < bDist) : (aDist > bDist)
+            }
+        case .rating:
+            return list.sorted { a, b in
+                return sortAscending ? (a.displayRating < b.displayRating) : (a.displayRating > b.displayRating)
+            }
         }
     }
 
