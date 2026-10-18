@@ -92,8 +92,8 @@ struct CardView: View {
                     .buttonStyle(.plain)
 
                     Button(action: { showDeleteAlert = true }) {
-                        Text("×")
-                            .font(.system(size: 16, weight: .bold))
+                        Image(systemName: "xmark")
+                            .font(.system(size: 11, weight: .bold))
                             .foregroundColor(.white)
                             .frame(width: 24, height: 24)
                             .background(Color.red)
@@ -134,44 +134,49 @@ struct CardView: View {
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
 
-                            HStack(spacing: 8) {
+                            HStack(spacing: 0) {
+                                // 1st quarter: Google Maps
                                 Button(action: { openGoogleMaps(for: loc) }) {
                                     Glyph(name: "google", size: 18, color: Theme.googleMapsBlue)
                                         .frame(width: 36, height: 36)
                                         .background(Theme.googleMapsBlue.opacity(0.12))
                                         .clipShape(Circle())
                                         .overlay(
-                                            Circle()
-                                                .stroke(Theme.googleMapsBlue.opacity(0.4), lineWidth: 1)
+                                            Circle().stroke(Theme.googleMapsBlue.opacity(0.4), lineWidth: 1)
                                         )
                                 }
                                 .buttonStyle(.plain)
+                                .frame(maxWidth: .infinity)
 
+                                // 2nd quarter: Apple Maps
                                 Button(action: { openAppleMaps(for: loc) }) {
                                     Glyph(name: "apple", size: 18, color: .primary)
                                         .frame(width: 36, height: 36)
                                         .background(Color.secondary.opacity(0.12))
                                         .clipShape(Circle())
                                         .overlay(
-                                            Circle()
-                                                .stroke(Color.secondary.opacity(0.4), lineWidth: 1)
+                                            Circle().stroke(Color.secondary.opacity(0.4), lineWidth: 1)
                                         )
                                 }
                                 .buttonStyle(.plain)
+                                .frame(maxWidth: .infinity)
 
-                                Spacer()
+                                // 3rd & 4th quarters: Neighborhood and distance
+                                HStack {
+                                    let locationDetails = [
+                                        card.neighborhood,
+                                        card.distanceMiles.map { String(format: "%.1f mi", $0) }
+                                    ].compactMap { $0 }.joined(separator: " • ")
 
-                                let locationDetails = [
-                                    card.neighborhood,
-                                    card.distanceMiles.map { String(format: "%.1f mi", $0) }
-                                ].compactMap { $0 }.joined(separator: " • ")
-
-                                if !locationDetails.isEmpty {
-                                    Text(locationDetails)
-                                        .font(.caption.bold())
-                                        .foregroundColor(.secondary)
+                                    if !locationDetails.isEmpty {
+                                        Text(locationDetails)
+                                            .font(.caption.bold())
+                                            .foregroundColor(.secondary)
+                                    }
                                 }
+                                .frame(maxWidth: .infinity, alignment: .trailing)
                             }
+                            .frame(maxWidth: .infinity)
                         }
                     }
 
@@ -184,31 +189,69 @@ struct CardView: View {
                         }
                         .foregroundColor(.secondary)
 
-                        // Action Buttons (Web, FB, Insta, X)
-                        let activeLinks: [(title: String, glyph: String, url: String, color: Color)] = [
-                            card.websiteUrl.map { (title: "Web", glyph: "link", url: $0, color: Theme.primary) },
-                            card.facebookUrl.map { (title: "FB", glyph: "facebook", url: $0, color: Theme.facebookBlue) },
-                            card.instagramUrl.map { (title: "Insta", glyph: "instagram", url: $0, color: Theme.instagramPink) },
-                            card.twitterUrl.map { (title: "X", glyph: "xmark", url: $0, color: Theme.xBlack) }
-                        ].compactMap { $0 }
-
-                        if !activeLinks.isEmpty {
-                            HStack(spacing: 8) {
-                                ForEach(activeLinks, id: \.title) { item in
-                                    Button(action: { openExternalUrl(item.url) }) {
-                                        Glyph(name: item.glyph, size: 18, color: item.color)
+                        // 4-Quarters Grid for Links (Web, FB, Insta, X)
+                        HStack(spacing: 0) {
+                            // 1st quarter: Web
+                            Group {
+                                if let url = card.websiteUrl, !url.isEmpty {
+                                    Button(action: { openExternalUrl(url) }) {
+                                        Glyph(name: "link", size: 18, color: Theme.primary)
                                             .frame(width: 36, height: 36)
-                                            .background(item.color.opacity(0.12))
+                                            .background(Theme.primary.opacity(0.12))
                                             .clipShape(Circle())
-                                            .overlay(
-                                                Circle()
-                                                    .stroke(item.color.opacity(0.4), lineWidth: 1)
-                                            )
+                                            .overlay(Circle().stroke(Theme.primary.opacity(0.4), lineWidth: 1))
                                     }
                                     .buttonStyle(.plain)
                                 }
                             }
+                            .frame(maxWidth: .infinity)
+
+                            // 2nd quarter: Facebook
+                            Group {
+                                if let url = card.facebookUrl, !url.isEmpty {
+                                    Button(action: { openExternalUrl(url) }) {
+                                        Glyph(name: "facebook", size: 18, color: Theme.facebookBlue)
+                                            .frame(width: 36, height: 36)
+                                            .background(Theme.facebookBlue.opacity(0.12))
+                                            .clipShape(Circle())
+                                            .overlay(Circle().stroke(Theme.facebookBlue.opacity(0.4), lineWidth: 1))
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+
+                            // 3rd quarter: Instagram
+                            Group {
+                                if let url = card.instagramUrl, !url.isEmpty {
+                                    Button(action: { openExternalUrl(url) }) {
+                                        Glyph(name: "instagram", size: 18, color: Theme.instagramPink)
+                                            .frame(width: 36, height: 36)
+                                            .background(Theme.instagramPink.opacity(0.12))
+                                            .clipShape(Circle())
+                                            .overlay(Circle().stroke(Theme.instagramPink.opacity(0.4), lineWidth: 1))
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+
+                            // 4th quarter: X
+                            Group {
+                                if let url = card.twitterUrl, !url.isEmpty {
+                                    Button(action: { openExternalUrl(url) }) {
+                                        Glyph(name: "xmark", size: 18, color: Theme.xBlack)
+                                            .frame(width: 36, height: 36)
+                                            .background(Theme.xBlack.opacity(0.12))
+                                            .clipShape(Circle())
+                                            .overlay(Circle().stroke(Theme.xBlack.opacity(0.4), lineWidth: 1))
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
                         }
+                        .frame(maxWidth: .infinity)
 
                         // Inline URL textboxes matching Web: www (url), fb (url), insta (url), x (url)
                         VStack(spacing: 6) {
@@ -251,8 +294,8 @@ struct CardView: View {
                                             .onTapGesture { onSearch(item.name) }
 
                                         Button(action: { onUnlinkAssociate(card, item.id) }) {
-                                            Text("×")
-                                                .font(.system(size: 11, weight: .bold))
+                                            Image(systemName: "xmark")
+                                                .font(.system(size: 8, weight: .bold))
                                                 .foregroundColor(.secondary)
                                                 .frame(width: 16, height: 16)
                                                 .background(Color(uiColor: .systemGray4))
@@ -280,8 +323,8 @@ struct CardView: View {
                                     newAssociateText = ""
                                 }
                             }) {
-                                Text("+")
-                                    .font(.system(size: 16, weight: .bold))
+                                Image(systemName: "plus")
+                                    .font(.system(size: 13, weight: .bold))
                                     .foregroundColor(.white)
                                     .frame(width: 28, height: 28)
                                     .background(Theme.primary)
@@ -307,8 +350,8 @@ struct CardView: View {
                                     .foregroundColor(.primary)
                                 Spacer()
                                 Button(action: { onDeleteNote(note) }) {
-                                    Text("×")
-                                        .font(.system(size: 12, weight: .bold))
+                                    Image(systemName: "xmark")
+                                        .font(.system(size: 9, weight: .bold))
                                         .foregroundColor(.white)
                                         .frame(width: 18, height: 18)
                                         .background(Color.red.opacity(0.85))
@@ -331,8 +374,8 @@ struct CardView: View {
                                     newNoteText = ""
                                 }
                             }) {
-                                Text("+")
-                                    .font(.system(size: 16, weight: .bold))
+                                Image(systemName: "plus")
+                                    .font(.system(size: 13, weight: .bold))
                                     .foregroundColor(.white)
                                     .frame(width: 28, height: 28)
                                     .background(Theme.primary)

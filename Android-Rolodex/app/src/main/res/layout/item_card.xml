@@ -153,58 +153,72 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:weightSum="4">
 
-                    <!-- Google Maps Button -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnGoogleMaps"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:contentDescription="Google Maps"
-                        android:padding="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        app:cornerRadius="19dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="@color/google_maps"
-                        app:backgroundTint="@color/google_maps_bg"
-                        app:icon="@drawable/ic_glyph_google"
-                        app:iconGravity="textStart"
-                        app:iconPadding="0dp"
-                        app:iconTint="@color/google_maps" />
+                    <!-- Quarter 1: Google Maps Button -->
+                    <FrameLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
 
-                    <!-- Apple Maps Button -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnAppleMaps"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginStart="8dp"
-                        android:contentDescription="Apple Maps"
-                        android:padding="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        app:cornerRadius="19dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="@color/text_secondary"
-                        app:backgroundTint="#15888888"
-                        app:icon="@drawable/ic_glyph_apple"
-                        app:iconGravity="textStart"
-                        app:iconPadding="0dp"
-                        app:iconTint="@color/text_primary" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnGoogleMaps"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="Google Maps"
+                            android:padding="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp"
+                            app:cornerRadius="19dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="@color/google_maps"
+                            app:backgroundTint="@color/google_maps_bg"
+                            app:icon="@drawable/ic_glyph_google"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp"
+                            app:iconTint="@color/google_maps" />
+                    </FrameLayout>
 
+                    <!-- Quarter 2: Apple Maps Button -->
+                    <FrameLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnAppleMaps"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="Apple Maps"
+                            android:padding="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp"
+                            app:cornerRadius="19dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="@color/text_secondary"
+                            app:backgroundTint="#15888888"
+                            app:icon="@drawable/ic_glyph_apple"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp"
+                            app:iconTint="@color/text_primary" />
+                    </FrameLayout>
+
+                    <!-- Quarters 3 & 4: Neighborhood / Distance -->
                     <TextView
                         android:id="@+id/tvNeighborhoodAndDistance"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:layout_weight="1"
-                        android:gravity="end"
+                        android:layout_weight="2"
+                        android:gravity="end|center_vertical"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp"
                         tools:text="Castro • 0.8 mi" />
@@ -229,104 +243,138 @@
                     android:textStyle="bold"
                     android:textColor="@color/text_secondary" />
 
-                <!-- Action Buttons (Web, FB, Insta, X) -->
+                <!-- Action Buttons (Web, FB, Insta, X) in Centered Quarters -->
                 <LinearLayout
                     android:id="@+id/linksButtonsScroll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:weightSum="4">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnWeb"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="10dp"
-                        android:contentDescription="Website"
-                        android:padding="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        app:cornerRadius="19dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="@color/primary"
-                        app:backgroundTint="#151976d2"
-                        app:icon="@drawable/ic_glyph_link"
-                        app:iconGravity="textStart"
-                        app:iconPadding="0dp"
-                        app:iconTint="@color/primary"
-                        android:visibility="gone"
-                        tools:visibility="visible" />
+                    <!-- Quarter 1: Web -->
+                    <FrameLayout
+                        android:id="@+id/containerWeb"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnFacebook"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="10dp"
-                        android:contentDescription="Facebook"
-                        android:padding="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        app:cornerRadius="19dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="@color/facebook_blue"
-                        app:backgroundTint="#151877f2"
-                        app:icon="@drawable/ic_glyph_facebook"
-                        app:iconGravity="textStart"
-                        app:iconPadding="0dp"
-                        app:iconTint="@color/facebook_blue"
-                        android:visibility="gone"
-                        tools:visibility="visible" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnWeb"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="Website"
+                            android:padding="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp"
+                            app:cornerRadius="19dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="@color/primary"
+                            app:backgroundTint="#151976d2"
+                            app:icon="@drawable/ic_glyph_link"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp"
+                            app:iconTint="@color/primary"
+                            android:visibility="gone"
+                            tools:visibility="visible" />
+                    </FrameLayout>
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnInstagram"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="10dp"
-                        android:contentDescription="Instagram"
-                        android:padding="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        app:cornerRadius="19dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="@color/instagram_gradient"
-                        app:backgroundTint="#15e4405f"
-                        app:icon="@drawable/ic_glyph_instagram"
-                        app:iconGravity="textStart"
-                        app:iconPadding="0dp"
-                        app:iconTint="@color/instagram_gradient"
-                        android:visibility="gone"
-                        tools:visibility="visible" />
+                    <!-- Quarter 2: Facebook -->
+                    <FrameLayout
+                        android:id="@+id/containerFacebook"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnX"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:contentDescription="X"
-                        android:padding="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        app:cornerRadius="19dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="@color/x_black"
-                        app:backgroundTint="#15000000"
-                        app:icon="@drawable/ic_glyph_xmark"
-                        app:iconGravity="textStart"
-                        app:iconPadding="0dp"
-                        app:iconTint="@color/x_black"
-                        android:visibility="gone"
-                        tools:visibility="visible" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnFacebook"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="Facebook"
+                            android:padding="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp"
+                            app:cornerRadius="19dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="@color/facebook_blue"
+                            app:backgroundTint="#151877f2"
+                            app:icon="@drawable/ic_glyph_facebook"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp"
+                            app:iconTint="@color/facebook_blue"
+                            android:visibility="gone"
+                            tools:visibility="visible" />
+                    </FrameLayout>
+
+                    <!-- Quarter 3: Instagram -->
+                    <FrameLayout
+                        android:id="@+id/containerInstagram"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnInstagram"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="Instagram"
+                            android:padding="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp"
+                            app:cornerRadius="19dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="@color/instagram_gradient"
+                            app:backgroundTint="#15e4405f"
+                            app:icon="@drawable/ic_glyph_instagram"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp"
+                            app:iconTint="@color/instagram_gradient"
+                            android:visibility="gone"
+                            tools:visibility="visible" />
+                    </FrameLayout>
+
+                    <!-- Quarter 4: X -->
+                    <FrameLayout
+                        android:id="@+id/containerX"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnX"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="X"
+                            android:padding="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp"
+                            app:cornerRadius="19dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="@color/x_black"
+                            app:backgroundTint="#15000000"
+                            app:icon="@drawable/ic_glyph_xmark"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp"
+                            app:iconTint="@color/x_black"
+                            android:visibility="gone"
+                            tools:visibility="visible" />
+                    </FrameLayout>
                 </LinearLayout>
 
                 <!-- URL Inputs (www, fb, insta, x) matching Web -->
@@ -462,20 +510,17 @@
                         android:textSize="13sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <com.google.android.material.button.MaterialButton
+                <ImageButton
                     android:id="@+id/btnAddAssociate"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:layout_marginStart="8dp"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:insetLeft="0dp"
-                    android:insetRight="0dp"
-                    app:cornerRadius="19dp"
-                    android:padding="0dp"
-                    android:text="+"
-                    android:textSize="18sp" />
+                    android:background="@drawable/bg_circle_primary"
+                    android:contentDescription="Add Associate"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_glyph_plus"
+                    app:tint="@android:color/white" />
             </LinearLayout>
 
             <!-- Divider -->
@@ -531,21 +576,18 @@
                         android:textSize="13sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <com.google.android.material.button.MaterialButton
+                <ImageButton
                     android:id="@+id/btnAddNote"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:layout_marginStart="8dp"
                     android:layout_gravity="center_vertical"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:insetLeft="0dp"
-                    android:insetRight="0dp"
-                    app:cornerRadius="19dp"
-                    android:padding="0dp"
-                    android:text="+"
-                    android:textSize="18sp" />
+                    android:background="@drawable/bg_circle_primary"
+                    android:contentDescription="Add Note"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_glyph_plus"
+                    app:tint="@android:color/white" />
             </LinearLayout>
 
         </LinearLayout>

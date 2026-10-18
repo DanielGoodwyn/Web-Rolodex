@@ -679,10 +679,39 @@ input, select, textarea, .btn:not(.btn-circle):not(.btn-circle-action):not(.btn-
     border-top-right-radius: 1.25em !important;
 }
 
+/* Quarters Layout for Maps & Links */
+.card-quarters-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    width: 100% !important;
+    max-width: 320px !important;
+    margin-top: 8px !important;
+    margin-bottom: 8px !important;
+}
+
+.card-quarter-item {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
 /* Circular Control and Action Buttons */
 .btn-circle {
     width: 32px !important;
     height: 32px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    text-align: center !important;
+}
+
+.btn-circle-sm {
+    width: 26px !important;
+    height: 26px !important;
     border-radius: 50% !important;
     padding: 0 !important;
     display: inline-flex !important;
@@ -703,7 +732,7 @@ input, select, textarea, .btn:not(.btn-circle):not(.btn-circle-action):not(.btn-
     border: 1px solid rgba(0,0,0,0.15) !important;
     box-shadow: 0 2px 5px rgba(0,0,0,0.08) !important;
     transition: transform 0.15s ease, box-shadow 0.15s ease !important;
-    margin: 0 4px !important;
+    margin: 0 !important;
     text-decoration: none !important;
     cursor: pointer;
 }
@@ -781,6 +810,28 @@ input, select, textarea, .btn:not(.btn-circle):not(.btn-circle-action):not(.btn-
 }
 .btn-circle-delete:hover {
     background: #c9302c !important;
+}
+
+.btn-circle svg, .btn-circle-delete svg {
+    display: block !important;
+    margin: auto !important;
+    pointer-events: none;
+}
+
+.btn-circle-label-plus {
+    display: inline-block;
+    line-height: 1;
+    transform: translateY(-1px);
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.btn-circle-label-close {
+    display: inline-block;
+    line-height: 1;
+    transform: translateY(-1px);
+    font-size: 18px;
+    font-weight: bold;
 }
 
 /* Rating Slider & Pill Box */

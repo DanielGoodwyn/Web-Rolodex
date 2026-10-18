@@ -972,6 +972,7 @@ function setTypeSelect() {
 		availableBaseTypes.push('associate');
 
 		if (orgTypes.length === 0) {
+			typeSelectDiv += "<option value='all_cards'>all cards (associations & associates)</option>";
 			typeSelectDiv += "<option value='all_associations'>all associations</option>";
 			typeSelectDiv += "<option value='associate'>all associates</option>";
 			typeSelectDiv += "</select>";
@@ -984,6 +985,9 @@ function setTypeSelect() {
 		$("#checkNamesDiv").show();
 		$("#expandCards").show();
 		$("#collapseCards").show();
+
+		// All in one option
+		typeSelectDiv += "<option value='all_cards'>all cards (associations & associates)</option>";
 
 		// Association cards optgroup
 		typeSelectDiv += "<optgroup label='Association Cards'>";
@@ -1011,6 +1015,8 @@ function setTypeSelect() {
 			targetVal = "associate_type:" + filterAssociateCategory;
 		} else if (type === "associate") {
 			targetVal = "associate";
+		} else if (type === "all_cards") {
+			targetVal = "all_cards";
 		} else if (type === "all_associations") {
 			targetVal = "all_associations";
 		} else if (type && orgTypes.indexOf(type) !== -1) {
@@ -1040,7 +1046,12 @@ function setType() {
 		selVal = typeSelect.options[typeSelect.selectedIndex].value;
 	}
 
-	if (selVal === "all_associations") {
+	if (selVal === "all_cards") {
+		type = "all_cards";
+		filterAssociateCategory = null;
+		filterAssociationId = null;
+		filterAssociationName = null;
+	} else if (selVal === "all_associations") {
 		type = "all_associations";
 		filterAssociateCategory = null;
 		filterAssociationId = null;
@@ -1064,7 +1075,7 @@ function setType() {
 
 	var renameContainer = document.getElementById("renameTypeContainer");
 	if (renameContainer) {
-		var targetCategory = filterAssociateCategory || (type !== "all_associations" && type !== "associate" ? type : null);
+		var targetCategory = filterAssociateCategory || (type !== "all_associations" && type !== "associate" && type !== "all_cards" ? type : null);
 		if (targetCategory) {
 			renameContainer.style.display = "block";
 			var btn = document.getElementById("btnRenameType");
@@ -1075,7 +1086,7 @@ function setType() {
 	}
 
 	if (document.getElementById("newTypeInput")) {
-		document.getElementById("newTypeInput").value = (type === "all_associations" || type === "associate") ? "" : (type || "");
+		document.getElementById("newTypeInput").value = (type === "all_associations" || type === "associate" || type === "all_cards") ? "" : (type || "");
 	}
 	setSort();
 }
@@ -1667,7 +1678,7 @@ function getNotes(AssociationObjectId) {
 				fullNotesHtml += "</div>";
 
 				fullNotesHtml += "<div class='col-xs-2 col-sm-1 col-md-1 col-lg-1' style='display:flex; align-items:center; justify-content:center;'>";
-				fullNotesHtml += "<button class='btn-circle-delete' onclick='deleteNote(&apos;" + noteObjectId + "&apos;)' title='Delete note'>×</button>";
+				fullNotesHtml += "<button class='btn-circle-delete' onclick='deleteNote(&apos;" + noteObjectId + "&apos;)' title='Delete note'><svg class='rolodex-glyph' style='width:12px;height:12px;fill:#fff;'><use href='#glyph-close'/></svg></button>";
 				fullNotesHtml += "</div></div>";
 			}
 			setElementById("notes" + AssociationObjectId, fullNotesHtml);
@@ -1773,7 +1784,7 @@ function promptRenameType(targetType) {
 			targetType = type;
 		}
 	}
-	if (!targetType || targetType === "all_associations" || targetType === "associate" || targetType.startsWith("associate_type:")) {
+	if (!targetType || targetType === "all_associations" || targetType === "all_cards" || targetType === "associate" || targetType.startsWith("associate_type:")) {
 		alert("Please select a specific category/type to rename.");
 		return;
 	}
@@ -2149,7 +2160,9 @@ function getAssociations() {
 	var neighborhoodArray = [];
 	var distanceArray = [];
 	var query = new Parse.Query("Association");
-	if (type === "all_associations") {
+	if (type === "all_cards") {
+		// All cards: associations and associates all in one
+	} else if (type === "all_associations") {
 		query.notEqualTo("type", "associate");
 	} else {
 		query.equalTo("type", type);
@@ -2326,7 +2339,7 @@ function getAssociations() {
 			output = output + "<input class='title title-column' placeholder='Name' type='text' id='" + listItemId + "nameInput' onkeyup='updateName(&apos;" + listItemId + "&apos;, event)' value='" + listItemName + "'>";
 
 			output = output + "</div><div class='col-xs-2 col-sm-1 col-md-1 col-lg-1 float-right text-right' style='padding-top:10px;'>";
-			output = output + "<button class='btn-circle-delete' onclick='deleteAssociation(&apos;" + listItemId + "&apos;)' title='Delete card'>×</button>";
+			output = output + "<button class='btn-circle-delete' onclick='deleteAssociation(&apos;" + listItemId + "&apos;)' title='Delete card'><svg class='rolodex-glyph' style='width:12px;height:12px;fill:#fff;'><use href='#glyph-close'/></svg></button>";
 			output = output + "</div></div>";
 
 			output = output + "<div class='toggle-display-card'>";
@@ -2366,7 +2379,7 @@ function getAssociations() {
 			output = output + "<li><div class='input-group input-group-sm'>";
 			output = output + "<input type='text' class='form-control' placeholder='New type...' id='" + listItemId + "newTypeSubInput' onkeydown='if(event.keyCode===13){event.preventDefault();addNewTypeToCard(&apos;" + listItemId + "&apos;);}'>";
 			output = output + "<span class='input-group-btn'>";
-			output = output + "<button class='btn btn-primary btn-circle btn-circle-sm' type='button' title='Add new type' onclick='addNewTypeToCard(&apos;" + listItemId + "&apos;)'>+</button>";
+			output = output + "<button class='btn btn-primary btn-circle btn-circle-sm' type='button' title='Add new type' onclick='addNewTypeToCard(&apos;" + listItemId + "&apos;)'><svg class='rolodex-glyph' style='width:12px;height:12px;fill:#fff;'><use href='#glyph-plus'/></svg></button>";
 			output = output + "</span></div></li>";
 			output = output + "</ul></div></div></div>";
 
@@ -2383,9 +2396,11 @@ function getAssociations() {
 				var encLoc = encodeURIComponent(listItemLocation);
 				var gmapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encLoc;
 				var amapsUrl = "https://maps.apple.com/?q=" + encLoc;
-				output = output + "<div style='display:inline-flex; align-items:center; gap:6px; margin-top:8px;'>";
-				output = output + "<a href='" + gmapsUrl + "' target='_blank' rel='noopener noreferrer' class='btn-circle-action btn-circle-google' id='" + listItemId + "mapsLink' title='Google Maps' aria-label='Google Maps'><svg class='rolodex-glyph'><use href='#glyph-google'/></svg></a>";
-				output = output + "<a href='" + amapsUrl + "' target='_blank' rel='noopener noreferrer' class='btn-circle-action btn-circle-apple' id='" + listItemId + "appleMapsLink' title='Apple Maps' aria-label='Apple Maps'><svg class='rolodex-glyph'><use href='#glyph-apple'/></svg></a>";
+				output = output + "<div class='card-quarters-grid'>";
+				output = output + "<div class='card-quarter-item'><a href='" + gmapsUrl + "' target='_blank' rel='noopener noreferrer' class='btn-circle-action btn-circle-google' id='" + listItemId + "mapsLink' title='Google Maps' aria-label='Google Maps'><svg class='rolodex-glyph'><use href='#glyph-google'/></svg></a></div>";
+				output = output + "<div class='card-quarter-item'><a href='" + amapsUrl + "' target='_blank' rel='noopener noreferrer' class='btn-circle-action btn-circle-apple' id='" + listItemId + "appleMapsLink' title='Apple Maps' aria-label='Apple Maps'><svg class='rolodex-glyph'><use href='#glyph-apple'/></svg></a></div>";
+				output = output + "<div class='card-quarter-item'></div>";
+				output = output + "<div class='card-quarter-item'></div>";
 				output = output + "</div>";
 			}
 			output = output + "</div>";
@@ -2401,11 +2416,11 @@ function getAssociations() {
 			output = output + "<i class='glyphicon glyphicon-link'></i> Links<i class='float-left glyphicon glyphicon-collapse-down toggleCollapseGlyphicon'></i></div></h2>";
 			output = output + "<div id='collapse" + listItemId + "Links' class='panel-collapse collapse in' role='tabpanel' aria-labelledby='headingOne'>";
 
-			output = output + "<div style='display:flex; align-items:center; gap:8px; padding:6px 0;'>";
-			output = output + "<a class='btn-circle-action btn-circle-web' " + siteDisplay + " onclick='visit(&apos;" + listItemSite + "&apos;)' title='Website' aria-label='Website'><svg class='rolodex-glyph'><use href='#glyph-link'/></svg></a>";
-			output = output + "<a class='btn-circle-action btn-circle-fb' " + fbDisplay + " onclick='visit(&apos;" + listItemFb + "&apos;)' title='Facebook' aria-label='Facebook'><svg class='rolodex-glyph'><use href='#glyph-facebook'/></svg></a>";
-			output = output + "<a class='btn-circle-action btn-circle-ig' " + igDisplay + " onclick='visit(&apos;" + listItemIg + "&apos;)' title='Instagram' aria-label='Instagram'><svg class='rolodex-glyph'><use href='#glyph-instagram'/></svg></a>";
-			output = output + "<a class='btn-circle-action btn-circle-x' " + twitterDisplay + " onclick='visit(&apos;" + listItemTwitter + "&apos;)' title='X' aria-label='X'><svg class='rolodex-glyph'><use href='#glyph-xmark'/></svg></a>";
+			output = output + "<div class='card-quarters-grid'>";
+			output = output + "<div class='card-quarter-item'><a class='btn-circle-action btn-circle-web' " + siteDisplay + " onclick='visit(&apos;" + listItemSite + "&apos;)' title='Website' aria-label='Website'><svg class='rolodex-glyph'><use href='#glyph-link'/></svg></a></div>";
+			output = output + "<div class='card-quarter-item'><a class='btn-circle-action btn-circle-fb' " + fbDisplay + " onclick='visit(&apos;" + listItemFb + "&apos;)' title='Facebook' aria-label='Facebook'><svg class='rolodex-glyph'><use href='#glyph-facebook'/></svg></a></div>";
+			output = output + "<div class='card-quarter-item'><a class='btn-circle-action btn-circle-ig' " + igDisplay + " onclick='visit(&apos;" + listItemIg + "&apos;)' title='Instagram' aria-label='Instagram'><svg class='rolodex-glyph'><use href='#glyph-instagram'/></svg></a></div>";
+			output = output + "<div class='card-quarter-item'><a class='btn-circle-action btn-circle-x' " + twitterDisplay + " onclick='visit(&apos;" + listItemTwitter + "&apos;)' title='X' aria-label='X'><svg class='rolodex-glyph'><use href='#glyph-xmark'/></svg></a></div>";
 			output = output + "</div>";
 
 			output = output + "<div class'row'>";
@@ -2440,7 +2455,7 @@ function getAssociations() {
 				output = output + "<div class='row'><div class='col-xs-10 col-sm-11 col-md-11 col-lg-11'>";
 				output = output + "<input placeholder='Link to association (example: Dolores Park Church)' type='text' id='newParentInput" + listItemId + "' onkeyup='linkParentAssociation(&apos;" + listItemId + "&apos;, event)' value=''>";
 				output = output + "</div><div class='col-xs-2 col-sm-1 col-md-1 col-lg-1' style='display:flex; align-items:center; justify-content:center;'>";
-				output = output + "<button class='linkParent btn btn-primary btn-circle' title='Link association'>+</button>";
+				output = output + "<button class='linkParent btn btn-primary btn-circle' title='Link association'><svg class='rolodex-glyph' style='width:14px;height:14px;fill:#fff;'><use href='#glyph-plus'/></svg></button>";
 				output = output + "</div></div></div>";
 			} else {
 				output = output + "<h2><div data-toggle='collapse' data-parent='#accordion-" + listItemId + "' href='#collapse" + listItemId + "Associates' aria-expanded='true' aria-controls='collapse" + listItemId + "Associates' class='collapsed'>";
@@ -2463,7 +2478,7 @@ function getAssociations() {
 				output = output + "<div class='row'><div class='col-xs-10 col-sm-11 col-md-11 col-lg-11'>";
 				output = output + "<input placeholder='Add associate (example: Daniel Goodwyn)' type='text' id='newAssociateInput" + listItemId + "' onkeyup='newAssociate(event, &apos;" + listItemId + "&apos;)' value=''>";
 				output = output + "</div><div class='col-xs-2 col-sm-1 col-md-1 col-lg-1' style='display:flex; align-items:center; justify-content:center;'>";
-				output = output + "<button class='newAssociate btn btn-primary btn-circle' title='Add associate'>+</button>";
+				output = output + "<button class='newAssociate btn btn-primary btn-circle' title='Add associate'><svg class='rolodex-glyph' style='width:14px;height:14px;fill:#fff;'><use href='#glyph-plus'/></svg></button>";
 				output = output + "</div></div></div></div>";
 			}
 
@@ -2486,7 +2501,7 @@ function getAssociations() {
 			output = output + "</div>";
 
 			output = output + "<div class='col-xs-2 col-sm-1 col-md-1 col-lg-1' style='display:flex; align-items:center; justify-content:center;'>";
-			output = output + "<button class='newNote btn btn-primary btn-circle' title='Add note'>+</button>";
+			output = output + "<button class='newNote btn btn-primary btn-circle' title='Add note'><svg class='rolodex-glyph' style='width:14px;height:14px;fill:#fff;'><use href='#glyph-plus'/></svg></button>";
 			output = output + "</div></div></div></div></div>";
 
 			output = output + "<div class='clearfix'></div></div></div></div></div>";
@@ -2607,7 +2622,8 @@ function getAssociations() {
 								var aBtn = "<div class='btn-padding float-left'>" +
 									"<div class='btn-group' role='group' style='display:inline-flex; align-items:center; gap:4px;'>" +
 									"<button class='btn btn-default' onclick='findAssociate(&apos;" + escapeJsString(aName) + "&apos;)'>" + escapeHtml(aName) + "</button>" +
-									"<button class='btn-circle-delete' style='width:22px!important;height:22px!important;font-size:14px!important;' title='Unlink associate' onclick='unlinkAssociate(&apos;" + aId + "&apos;, &apos;" + pid + "&apos;, &apos;" + escapeJsString(aName) + "&apos;)'>×</button>" +
+									"<button class='btn-circle-delete' style='width:22px!important;height:22px!important;padding:0!important;' title='Unlink associate' onclick='unlinkAssociate(&apos;" + aId + "&apos;, &apos;" + pid + "&apos;, &apos;" + escapeJsString(aName) + "&apos;)'>" +
+									"<svg class='rolodex-glyph' style='width:10px;height:10px;fill:#fff;'><use href='#glyph-close'/></svg></button>" +
 									"</div></div>";
 								assocHtmlMap[pid] = (assocHtmlMap[pid] || "") + aBtn;
 							}
@@ -2623,7 +2639,8 @@ function getAssociations() {
 									"<div class='btn-group' role='group' style='display:inline-flex; align-items:center; gap:4px;'>" +
 									"<button class='btn btn-info' onclick='goToAssociation(&apos;" + pOrgId + "&apos;, &apos;" + escapeJsString(pOrgType) + "&apos;)'>" +
 									"<i class='glyphicon glyphicon-briefcase'></i> " + escapeHtml(pOrgName) + "</button>" +
-									"<button class='btn-circle-delete' style='width:22px!important;height:22px!important;font-size:14px!important;' title='Unlink association' onclick='unlinkAssociate(&apos;" + aId + "&apos;, &apos;" + pOrgId + "&apos;, &apos;" + escapeJsString(aName) + "&apos;)'>×</button>" +
+									"<button class='btn-circle-delete' style='width:22px!important;height:22px!important;padding:0!important;' title='Unlink association' onclick='unlinkAssociate(&apos;" + aId + "&apos;, &apos;" + pOrgId + "&apos;, &apos;" + escapeJsString(aName) + "&apos;)'>" +
+									"<svg class='rolodex-glyph' style='width:10px;height:10px;fill:#fff;'><use href='#glyph-close'/></svg></button>" +
 									"</div></div>";
 							}
 							if (parentHtml === "") {
@@ -2719,6 +2736,12 @@ function checkNames() {
 			"<i class='glyphicon glyphicon-filter'></i> <b>" + escapeHtml(filterAssociateCategory) + "</b> associates " +
 			"<a href='javascript:void(0)' onclick='clearAssociateCategoryFilter()' style='color:#fff; text-decoration:none; font-weight:bold; margin-left:8px; cursor:pointer;' title='Show all associates'>×</a>" +
 			"</span></div>";
+		setElementById("checkNamesDiv", checkNamesDiv);
+		return;
+	}
+
+	if (type === "all_cards") {
+		checkNamesDiv = "<div><i class='glyphicon glyphicon-filter'></i> all cards (associations & associates)</div>";
 		setElementById("checkNamesDiv", checkNamesDiv);
 		return;
 	}

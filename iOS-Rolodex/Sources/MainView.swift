@@ -194,49 +194,55 @@ struct MainView: View {
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search cards or associates...")
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Menu {
-                        ForEach(SortOption.allCases) { opt in
-                            Button(action: { selectedSort = opt }) {
-                                HStack {
-                                    Text(opt.rawValue)
-                                    if selectedSort == opt {
-                                        Image(systemName: "checkmark")
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 12) {
+                        HStack(spacing: 8) {
+                            Menu {
+                                ForEach(SortOption.allCases) { opt in
+                                    Button(action: { selectedSort = opt }) {
+                                        HStack {
+                                            Text(opt.rawValue)
+                                            if selectedSort == opt {
+                                                Image(systemName: "checkmark")
+                                            }
+                                        }
                                     }
                                 }
+                            } label: {
+                                Glyph(name: "sort", size: 18, color: .primary)
+                            }
+
+                            Menu {
+                                Button(action: expandAll) {
+                                    Text("Expand All Cards")
+                                }
+                                Button(action: collapseAll) {
+                                    Text("Collapse All Cards")
+                                }
+                            } label: {
+                                Text("▼")
+                                    .font(.system(size: 13, weight: .bold))
+                                    .foregroundColor(.primary)
                             }
                         }
-                    } label: {
-                        Glyph(name: "sort", size: 18, color: .primary)
-                    }
-                    .buttonStyle(.plain)
-                }
 
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Menu {
-                        Button(action: expandAll) {
-                            Text("Expand All Cards")
-                        }
-                        Button(action: collapseAll) {
-                            Text("Collapse All Cards")
-                        }
-                    } label: {
-                        Text("▼")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.primary)
-                    }
-                    .buttonStyle(.plain)
-                }
+                        Spacer()
 
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showAccountSheet = true }) {
-                        Image("rolodex")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 32, height: 32)
-                            .clipShape(Circle())
+                        Text("Rolodex")
+                            .font(.headline.bold())
+
+                        Spacer()
+
+                        Button(action: { showAccountSheet = true }) {
+                            Image("rolodex")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 32, height: 32)
+                                .clipShape(Circle())
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
+                    .frame(maxWidth: .infinity)
                 }
             }
             .sheet(isPresented: $showAddCardSheet) {

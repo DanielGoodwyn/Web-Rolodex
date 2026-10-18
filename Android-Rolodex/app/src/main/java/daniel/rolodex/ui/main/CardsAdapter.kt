@@ -262,6 +262,7 @@ class CardsAdapter(
                     val chip = Chip(context).apply {
                         text = parentName
                         isCloseIconVisible = true
+                        setCloseIconResource(R.drawable.ic_glyph_close)
                         setChipBackgroundColorResource(R.color.chip_associate_bg)
                         setTextColor(ContextCompat.getColor(context, R.color.chip_associate_text))
                         closeIconTint = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.chip_associate_text))
@@ -281,6 +282,7 @@ class CardsAdapter(
                     val chip = Chip(context).apply {
                         text = assocName
                         isCloseIconVisible = true
+                        setCloseIconResource(R.drawable.ic_glyph_close)
                         setChipBackgroundColorResource(R.color.chip_associate_bg)
                         setTextColor(ContextCompat.getColor(context, R.color.chip_associate_text))
                         closeIconTint = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.chip_associate_text))
